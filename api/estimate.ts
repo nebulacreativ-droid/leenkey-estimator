@@ -161,36 +161,75 @@ async function sendLeadEmail({
 
   const DISCLAIMER = `Ce document constitue une analyse automatisée basée sur les informations renseignées et les données de marché disponibles. Il est fourni à titre informatif et ne constitue ni une expertise immobilière ni une estimation réalisée par un professionnel habilité au sens de la loi Hoguet.`;
 
+  // Champs supplémentaires pour enrichir le lead
+  const etat = (payload.etat as Record<string, unknown>) ?? {};
+  const energie = (payload.energie as Record<string, unknown>) ?? {};
+  const situation = (payload.situation as Record<string, unknown>) ?? {};
+  const projet = (payload.projet as Record<string, unknown>) ?? {};
+  const exterieur = (payload.exterieur as string[]) ?? [];
+
+  // Atouts du bien (extérieur + prestations)
+  const prestations = Array.isArray(etat.prestations) ? (etat.prestations as string[]) : [];
+  const atouts = [...exterieur, ...prestations].filter(Boolean).join(", ") || "—";
+
   // ───── EMAIL 1 : Admin (notification lead) ─────
   const htmlAdmin = `
 <!DOCTYPE html>
 <html><body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,sans-serif;color:#0F172A;">
-<div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
+<div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
   <div style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);padding:24px;color:#fff;">
-    <h1 style="margin:0;font-size:20px;">🏠 Nouvelle demande de valorisation</h1>
+    <div style="font-size:12px;font-weight:700;opacity:.85;letter-spacing:1.5px;text-transform:uppercase">Leenkey</div>
+    <h1 style="margin:6px 0 0;font-size:22px;">🏠 Nouvelle estimation</h1>
     <p style="margin:6px 0 0;opacity:.9;font-size:13px;">Réf. ${esc(ref)} · ${new Date().toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}</p>
   </div>
-  <div style="padding:20px;">
-    <h2 style="margin:0 0 12px;font-size:16px;color:#3B82F6;">📞 Contact</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">
-      <tr><td style="padding:6px 8px;color:#64748B;width:30%;">Nom</td><td style="padding:6px 8px;font-weight:600;">${esc(contact.prenom)} ${esc(contact.nom)}</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B;">Email</td><td style="padding:6px 8px;"><a href="mailto:${esc(contact.email)}" style="color:#3B82F6;">${esc(contact.email)}</a></td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B;">Téléphone</td><td style="padding:6px 8px;">${esc(contact.telephone || "—")}</td></tr>
+  <div style="padding:24px;">
+
+    <h2 style="margin:0 0 12px;font-size:16px;color:#1156FC;">📞 Coordonnées du prospect</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;background:#F8FAFC;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:10px 12px;color:#64748B;width:35%;border-bottom:1px solid #E2E8F0;">Nom complet</td><td style="padding:10px 12px;font-weight:600;border-bottom:1px solid #E2E8F0;">${esc(contact.prenom)} ${esc(contact.nom)}</td></tr>
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Email</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;"><a href="mailto:${esc(contact.email)}" style="color:#1156FC;font-weight:600;">${esc(contact.email)}</a></td></tr>
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Téléphone</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;"><a href="tel:${esc(contact.telephone)}" style="color:#1156FC;font-weight:600;">${esc(contact.telephone || "—")}</a></td></tr>
+      ${contact.contact_conseiller ? '<tr><td style="padding:10px 12px;color:#64748B;" colspan="2"><span style="display:inline-block;background:#10B981;color:#fff;padding:3px 10px;border-radius:100px;font-size:11px;font-weight:700">✓ Souhaite être contacté</span></td></tr>' : ""}
     </table>
-    <h2 style="margin:0 0 12px;font-size:16px;color:#3B82F6;">🏡 Bien</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;">
-      <tr><td style="padding:6px 8px;color:#64748B;width:30%;">Type</td><td style="padding:6px 8px;font-weight:600;">${esc(bien.type)}</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B;">Adresse</td><td style="padding:6px 8px;">${esc(bien.adresse)}, ${esc(bien.code_postal)} ${esc(bien.ville)}</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B;">Surface</td><td style="padding:6px 8px;">${esc(bien.surface_habitable)} m²</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B;">Pièces</td><td style="padding:6px 8px;">${esc(bien.pieces)} (${esc(bien.chambres)} chambres)</td></tr>
+
+    <h2 style="margin:0 0 12px;font-size:16px;color:#1156FC;">🏡 Le bien</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;background:#F8FAFC;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:10px 12px;color:#64748B;width:35%;border-bottom:1px solid #E2E8F0;">Type</td><td style="padding:10px 12px;font-weight:600;border-bottom:1px solid #E2E8F0;">${esc(bien.type)}</td></tr>
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Adresse</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.adresse)}, ${esc(bien.code_postal)} ${esc(bien.ville)}</td></tr>
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Surface</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.surface_habitable)} m²</td></tr>
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Pièces / chambres</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.pieces)} pièces · ${esc(bien.chambres)} chambres</td></tr>
+      ${bien.etage !== undefined && bien.etage !== null && bien.etage !== "" ? `<tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Étage</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.etage)}${bien.dernier_etage ? " (dernier)" : ""}</td></tr>` : ""}
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">État</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(etat.general)}</td></tr>
+      ${energie.dpe ? `<tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">DPE</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(energie.dpe)}${energie.ges ? " · GES " + esc(energie.ges) : ""}</td></tr>` : ""}
+      ${energie.annee_construction ? `<tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Année construction</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(energie.annee_construction)}</td></tr>` : ""}
+      ${atouts !== "—" ? `<tr><td style="padding:10px 12px;color:#64748B;">Atouts</td><td style="padding:10px 12px;">${esc(atouts)}</td></tr>` : ""}
     </table>
-    <h2 style="margin:0 0 12px;font-size:16px;color:#3B82F6;">💰 Valorisation IA</h2>
-    <div style="background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(139,92,246,.08));border-radius:10px;padding:16px;">
-      <div style="font-size:28px;font-weight:800;color:#0F172A;">${esc(result.prix_median)} €</div>
-      <div style="font-size:13px;color:#64748B;margin-top:4px;">Fourchette : ${esc(result.prix_bas)} € — ${esc(result.prix_haut)} €</div>
-      <div style="font-size:13px;color:#64748B;margin-top:2px;">${esc(result.prix_m2)} €/m² · Délai : ${esc(result.delai_vente)}</div>
+
+    <h2 style="margin:0 0 12px;font-size:16px;color:#1156FC;">📋 Situation & projet</h2>
+    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;background:#F8FAFC;border-radius:8px;overflow:hidden;">
+      <tr><td style="padding:10px 12px;color:#64748B;width:35%;border-bottom:1px solid #E2E8F0;">Statut</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(situation.proprietaire)}</td></tr>
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Occupation</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(situation.occupation)}</td></tr>
+      ${projet.raison_vente ? `<tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Raison vente</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(projet.raison_vente)}</td></tr>` : ""}
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">⏱️ Délai souhaité</td><td style="padding:10px 12px;font-weight:700;color:#1156FC;border-bottom:1px solid #E2E8F0;">${esc(projet.delai)}</td></tr>
+      ${projet.prix_souhaite ? `<tr><td style="padding:10px 12px;color:#64748B;">Prix souhaité</td><td style="padding:10px 12px;font-weight:600;">${esc(projet.prix_souhaite)} €</td></tr>` : ""}
+    </table>
+
+    <h2 style="margin:0 0 12px;font-size:16px;color:#1156FC;">💰 Valorisation Leenkey</h2>
+    <div style="background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(139,92,246,.08));border-radius:12px;padding:20px;text-align:center;">
+      <div style="font-size:11px;font-weight:700;text-transform:uppercase;letter-spacing:1px;color:#64748B">Valeur estimée</div>
+      <div style="font-size:32px;font-weight:800;color:#1156FC;margin:6px 0">${esc(result.prix_median)} €</div>
+      <div style="font-size:13px;color:#64748B;">Fourchette : ${esc(result.prix_bas)} € — ${esc(result.prix_haut)} €</div>
+      <div style="font-size:13px;color:#64748B;margin-top:2px;">${esc(result.prix_m2)} €/m² · Délai vente estimé : <strong>${esc(result.delai_vente)}</strong></div>
     </div>
-    ${result.analyse ? `<h2 style="margin:24px 0 12px;font-size:16px;color:#3B82F6;">📊 Analyse</h2><p style="font-size:14px;line-height:1.6;color:#475569;margin:0;">${esc(result.analyse)}</p>` : ""}
+
+    ${result.analyse ? `<h2 style="margin:24px 0 12px;font-size:16px;color:#1156FC;">📊 Analyse IA</h2><p style="font-size:14px;line-height:1.6;color:#475569;margin:0;background:#F8FAFC;padding:14px;border-radius:8px;border-left:3px solid #1156FC;">${esc(result.analyse)}</p>` : ""}
+
+    <div style="margin-top:24px;padding:14px;background:#FEF3C7;border-radius:8px;border:1px solid #FCD34D;text-align:center">
+      <p style="margin:0;font-size:13px;color:#78350F"><strong>💡 Action recommandée :</strong> contacter le prospect sous 48h</p>
+    </div>
+  </div>
+  <div style="background:#f8fafc;padding:14px 24px;color:#64748B;font-size:11px;text-align:center;border-top:1px solid #e2e8f0">
+    Reply directement à cet email pour répondre au prospect · Leenkey
   </div>
 </div>
 </body></html>`.trim();
