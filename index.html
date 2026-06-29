@@ -1,0 +1,72 @@
+<!DOCTYPE html>
+<html lang="fr">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/leenkey-logo.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Leenkey — Estimez votre bien immobilier gratuitement</title>
+    <meta name="description" content="Obtenez une estimation fiable et personnalisée de votre bien en quelques minutes. Vendez sans agence avec Leenkey." />
+    <meta property="og:title" content="Leenkey — Estimez votre bien immobilier gratuitement" />
+    <meta property="og:description" content="Plateforme PropTech française pour vendre votre bien sans agence. Estimation gratuite en quelques minutes." />
+    <meta property="og:type" content="website" />
+    <meta name="twitter:card" content="summary" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Sora:wght@500;600;700&family=DM+Sans:wght@400;500;600&family=Poppins:wght@400;600;700;800&display=swap" rel="stylesheet" />
+    <!-- Préchargement des pages HTML + CSS pour navigation ultra-rapide -->
+    <link rel="preload" href="/pages/landing.html" as="fetch" crossorigin="anonymous" />
+    <link rel="preload" href="/pages/leenkey.css" as="style" />
+    <link rel="prefetch" href="/pages/concept.html" />
+    <link rel="prefetch" href="/pages/investir.html" />
+  </head>
+  <body>
+    <style>
+      /* Loader pré-React — masqué dès que React monte */
+      #lk-boot-loader {
+        position: fixed; inset: 0;
+        display: flex; align-items: center; justify-content: center;
+        background: #ffffff;
+        z-index: 9999;
+        transition: opacity .3s ease;
+      }
+      #lk-boot-loader.fade { opacity: 0; pointer-events: none; }
+      #lk-boot-loader .ring {
+        width: 44px; height: 44px;
+        border: 3px solid #e2e8f0;
+        border-top-color: #3B82F6;
+        border-radius: 50%;
+        animation: lk-spin .8s linear infinite;
+      }
+      @keyframes lk-spin { to { transform: rotate(360deg); } }
+    </style>
+    <div id="lk-boot-loader"><div class="ring"></div></div>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    <script>
+      // Cache le boot-loader dès que React a inséré du contenu dans #root
+      (function() {
+        var loader = document.getElementById('lk-boot-loader');
+        var root = document.getElementById('root');
+        if (!loader || !root) return;
+        var observer = new MutationObserver(function() {
+          if (root.childElementCount > 0) {
+            // Attendre 200ms supplémentaires pour laisser le CSS premier rendu se faire
+            setTimeout(function() {
+              loader.classList.add('fade');
+              setTimeout(function() { loader.remove(); }, 300);
+            }, 200);
+            observer.disconnect();
+          }
+        });
+        observer.observe(root, { childList: true });
+        // Failsafe : disparaît après 5s max
+        setTimeout(function() {
+          if (loader.parentNode) {
+            loader.classList.add('fade');
+            setTimeout(function() { loader.remove(); }, 300);
+          }
+        }, 5000);
+      })();
+    </script>
+  </body>
+</html>

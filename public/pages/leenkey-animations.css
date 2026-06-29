@@ -1,0 +1,256 @@
+/* ════════════════════════════════════════════════════════
+   Leenkey — Animations enrichies pour les pages HTML
+   Améliorations UX globales : reveal, parallax, counters,
+   hover effects, smooth scroll
+   ════════════════════════════════════════════════════════ */
+
+/* ─── Smooth scroll global ─── */
+html { scroll-behavior: smooth; }
+
+/* ─── Animation reveal améliorée (override de la base) ─── */
+.reveal {
+  opacity: 0;
+  transform: translateY(28px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+  will-change: opacity, transform;
+}
+.reveal.in {
+  opacity: 1;
+  transform: translateY(0);
+  animation: none;  /* on remplace l'animation par une transition fluide */
+}
+
+/* Stagger pour groupes de cards */
+.reveal.in[data-d="1"] { transition-delay: 60ms; }
+.reveal.in[data-d="2"] { transition-delay: 140ms; }
+.reveal.in[data-d="3"] { transition-delay: 220ms; }
+.reveal.in[data-d="4"] { transition-delay: 300ms; }
+.reveal.in[data-d="5"] { transition-delay: 380ms; }
+.reveal.in[data-d="6"] { transition-delay: 460ms; }
+
+/* ─── Animation mot-à-mot pour les gros titres ─── */
+.lk-word {
+  display: inline-block;
+  opacity: 0;
+  transform: translateY(24px);
+  filter: blur(8px);
+  transition:
+    opacity 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    transform 0.7s cubic-bezier(0.22, 1, 0.36, 1),
+    filter 0.7s cubic-bezier(0.22, 1, 0.36, 1);
+}
+.lk-word.in {
+  opacity: 1;
+  transform: translateY(0);
+  filter: blur(0);
+}
+
+/* Cas spécial : .text-grad qui devient un .lk-word — on garde le dégradé */
+.text-grad.lk-word {
+  /* On préserve les styles background-clip:text qui sont déjà sur .text-grad */
+  /* On ajoute juste display: inline-block pour que transform fonctionne */
+  display: inline-block;
+}
+
+/* ─── Compteurs animés ─── */
+.lk-counter {
+  display: inline-block;
+  font-variant-numeric: tabular-nums;
+  transition: transform 0.3s ease;
+}
+.lk-counter.counting {
+  animation: lkCounterPulse 0.4s ease;
+}
+@keyframes lkCounterPulse {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.08); }
+}
+
+/* ─── Parallax léger sur images de fond hero ─── */
+.hero-bg,
+.hero-photo,
+image-slot.hero-bg img,
+image-slot.estimate-photo img {
+  transition: transform 0.1s linear;
+  will-change: transform;
+}
+
+/* ─── Underline animation sur les liens internes ─── */
+.faq-q,
+.btn-ghost,
+.constat-item h4,
+.feat-card h3,
+.step-title {
+  position: relative;
+}
+
+/* ─── Card hover : élévation subtile ─── */
+.constat-item,
+.feat-card,
+.step-card,
+.price-card,
+.cmp-col,
+.inv-herostat,
+.prob-card,
+.ensuite-card,
+.solution-card,
+.recap-step,
+.stat-card,
+.team-member,
+.timeline-step,
+.proj-card {
+  transition:
+    transform 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.4s cubic-bezier(0.16, 1, 0.3, 1),
+    border-color 0.3s ease;
+  will-change: transform;
+}
+.constat-item:hover,
+.feat-card:hover,
+.step-card:hover,
+.cmp-col:hover:not(.feature-col),
+.prob-card:hover,
+.ensuite-card:hover,
+.solution-card:hover,
+.stat-card:hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 40px -16px rgba(15, 23, 42, 0.12);
+}
+
+/* Price card hover (sauf featured qui a déjà transformation) */
+.price-card:not(.featured):hover {
+  transform: translateY(-4px);
+  box-shadow: 0 24px 48px -16px rgba(17, 86, 252, 0.18);
+}
+
+/* ─── Boutons : effets micro ─── */
+.btn-primary {
+  transition:
+    transform 0.2s cubic-bezier(0.16, 1, 0.3, 1),
+    box-shadow 0.3s ease,
+    background 0.3s ease;
+  will-change: transform;
+}
+.btn-primary:hover {
+  transform: translateY(-2px) scale(1.02);
+  box-shadow: 0 12px 28px -8px rgba(17, 86, 252, 0.45);
+}
+.btn-primary:active {
+  transform: translateY(0) scale(0.98);
+}
+.btn-ghost,
+.btn-ghost-dark,
+.btn-white {
+  transition: all 0.25s ease;
+}
+.btn-ghost:hover,
+.btn-ghost-dark:hover,
+.btn-white:hover {
+  transform: translateY(-2px);
+}
+
+/* ─── Hero — effet zoom subtil sur l'image ─── */
+.hero.has-photo .hero-bg {
+  animation: lkHeroZoom 18s ease-in-out infinite alternate;
+}
+@keyframes lkHeroZoom {
+  0%   { transform: scale(1); }
+  100% { transform: scale(1.06); }
+}
+
+/* ─── Section entrée — animation directionnelle ─── */
+.lk-fade-left {
+  opacity: 0;
+  transform: translateX(-32px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lk-fade-left.in {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+.lk-fade-right {
+  opacity: 0;
+  transform: translateX(32px);
+  transition:
+    opacity 0.8s cubic-bezier(0.16, 1, 0.3, 1),
+    transform 0.8s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lk-fade-right.in {
+  opacity: 1;
+  transform: translateX(0);
+}
+
+/* ─── Gradient text shimmer ─── */
+.text-grad {
+  background-size: 200% auto;
+  animation: lkGradShimmer 6s linear infinite;
+}
+@keyframes lkGradShimmer {
+  0%   { background-position: 0% center; }
+  100% { background-position: 200% center; }
+}
+
+/* ─── Pulse subtil sur badges importants ─── */
+.badge.badge-blue,
+.price-badge {
+  animation: lkBadgePulse 3s ease-in-out infinite;
+}
+@keyframes lkBadgePulse {
+  0%, 100% { box-shadow: 0 0 0 0 rgba(17, 86, 252, 0); }
+  50%      { box-shadow: 0 0 0 6px rgba(17, 86, 252, 0.08); }
+}
+
+/* ─── Liens nav : underline animée ─── */
+.lk-nav-link::after {
+  content: '';
+  position: absolute;
+  bottom: -4px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background: linear-gradient(90deg, #3B82F6, #8B5CF6);
+  transform: scaleX(0);
+  transform-origin: left center;
+  transition: transform 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+}
+.lk-nav-link:hover::after {
+  transform: scaleX(1);
+}
+
+/* ─── FAQ ouverture fluide ─── */
+.faq-a {
+  transition:
+    max-height 0.5s cubic-bezier(0.4, 0, 0.2, 1),
+    opacity 0.3s ease;
+}
+
+/* ─── Scroll indicator subtil ─── */
+@keyframes lkScrollHint {
+  0%, 100% { transform: translateY(0); opacity: 0.5; }
+  50%      { transform: translateY(6px); opacity: 1; }
+}
+
+/* ─── Respect des préférences utilisateur ─── */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+  .reveal,
+  .lk-word,
+  .lk-fade-left,
+  .lk-fade-right {
+    opacity: 1 !important;
+    transform: none !important;
+    filter: none !important;
+  }
+}

@@ -1,0 +1,8 @@
+          [text/javascript             ]    31kb  18d2f95f-9836-4210-b1ef-6ddb8ed0f983  18d2f95f-9836-4210-b1ef-6ddb8ed0f983.js
+          [application/javascript      ]     5kb  4bbdcbaf-e16e-4ead-b70c-525bf1e3fa4b  4bbdcbaf-e16e-4ead-b70c-525bf1e3fa4b.js
+          [font/woff2                  ]    51kb  c8e949e9-c38b-46e9-b688-da6bbc103933  
+          [font/woff2                  ]    58kb  8a307b65-818d-4d25-8984-f9bce1b0d753  
+          [font/woff2                  ]    51kb  4a52cb6b-4e05-4ac2-b005-762f7d3cea3e  
+          [font/woff2                  ]    51kb  fa94fecf-9e69-4220-9311-80d7cdf06fa2  
+          [font/woff2                  ]    51kb  47f37e4e-a49e-4c88-a261-c95efe2ae656  
+          [font/woff2                  ]    51kb  bbffd748-b481-4c9e-b014-837e4859d59b  

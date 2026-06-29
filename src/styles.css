@@ -1,0 +1,199 @@
+@import "tailwindcss" source(none);
+@source "../src";
+@import "tw-animate-css";
+
+@custom-variant dark (&:is(.dark *));
+
+@theme inline {
+  --radius-sm: 8px;
+  --radius-md: 10px;
+  --radius-lg: 14px;
+  --radius-xl: 18px;
+  --radius-2xl: 22px;
+
+  --font-sans: "DM Sans", system-ui, sans-serif;
+  --font-display: "Sora", system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+  --color-ring-offset-background: var(--background);
+
+  --color-navy: var(--navy);
+  --color-sky: var(--sky);
+  --color-sky-mid: var(--sky-mid);
+  --color-sub: var(--sub);
+  --color-success: var(--success);
+  --color-amber: var(--amber);
+}
+
+:root {
+  --radius: 14px;
+  --background: oklch(1 0 0);
+  --foreground: oklch(0.24 0.04 256);
+  --card: oklch(1 0 0);
+  --card-foreground: oklch(0.24 0.04 256);
+  --popover: oklch(1 0 0);
+  --popover-foreground: oklch(0.24 0.04 256);
+
+  /* Leenkey blue #1156FC */
+  --primary: oklch(0.56 0.24 264);
+  --primary-foreground: oklch(1 0 0);
+
+  --secondary: oklch(0.97 0.02 256);
+  --secondary-foreground: oklch(0.24 0.04 256);
+  --muted: oklch(0.97 0.015 256);
+  --muted-foreground: oklch(0.55 0.04 256);
+  --accent: oklch(0.96 0.03 264);
+  --accent-foreground: oklch(0.24 0.04 256);
+  --destructive: oklch(0.62 0.22 27);
+  --destructive-foreground: oklch(1 0 0);
+  --border: oklch(0.92 0.015 256);
+  --input: oklch(0.92 0.015 256);
+  --ring: oklch(0.56 0.24 264);
+
+  /* Brand tokens */
+  --navy: oklch(0.27 0.07 263);
+  --sky: oklch(0.97 0.025 264);
+  --sky-mid: oklch(0.93 0.045 264);
+  --sub: oklch(0.55 0.04 256);
+  --success: oklch(0.68 0.16 162);
+  --amber: oklch(0.76 0.16 75);
+}
+
+.dark {
+  --background: oklch(0.18 0.03 263);
+  --foreground: oklch(0.98 0.003 256);
+  --card: oklch(0.22 0.04 263);
+  --card-foreground: oklch(0.98 0.003 256);
+  --popover: oklch(0.22 0.04 263);
+  --popover-foreground: oklch(0.98 0.003 256);
+  --primary: oklch(0.65 0.2 264);
+  --primary-foreground: oklch(0.18 0.03 263);
+  --secondary: oklch(0.28 0.04 260);
+  --secondary-foreground: oklch(0.98 0.003 256);
+  --muted: oklch(0.28 0.04 260);
+  --muted-foreground: oklch(0.7 0.04 256);
+  --accent: oklch(0.28 0.04 260);
+  --accent-foreground: oklch(0.98 0.003 256);
+  --destructive: oklch(0.7 0.19 22);
+  --destructive-foreground: oklch(0.98 0.003 256);
+  --border: oklch(1 0 0 / 10%);
+  --input: oklch(1 0 0 / 15%);
+  --ring: oklch(0.55 0.03 264);
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html,
+  body {
+    font-family: var(--font-sans);
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    -webkit-font-smoothing: antialiased;
+  }
+
+  h1,
+  h2,
+  h3,
+  h4 {
+    font-family: var(--font-display);
+    color: var(--color-navy);
+    letter-spacing: -0.01em;
+  }
+}
+
+@keyframes leenkey-slide-in {
+  from {
+    opacity: 0;
+    transform: translateX(24px);
+  }
+  to {
+    opacity: 1;
+    transform: translateX(0);
+  }
+}
+
+@keyframes leenkey-fade-up {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+@utility step-enter {
+  animation: leenkey-slide-in 0.3s ease-out;
+}
+
+@utility fade-up {
+  animation: leenkey-fade-up 0.4s ease-out backwards;
+}
+
+/* Scroll behavior — fix sticky header offset (navbar 80px + wizard header ~52px) */
+html {
+  scroll-padding-top: 145px;
+}
+
+@media (max-width: 640px) {
+  html {
+    scroll-padding-top: 165px;
+  }
+}
+
+/* Ensure smooth scroll behavior site-wide */
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+/* ─── Champ en erreur — bordure rouge sur tous les inputs/selects/textarea ─── */
+.lk-field-error input,
+.lk-field-error select,
+.lk-field-error textarea,
+.lk-field-error button[role="combobox"],
+.lk-field-error [data-radix-collection-item],
+.lk-field-error .border-2 {
+  border-color: hsl(var(--destructive)) !important;
+  background-color: color-mix(in srgb, hsl(var(--destructive)) 4%, transparent) !important;
+}
+.lk-field-error input:focus,
+.lk-field-error select:focus,
+.lk-field-error textarea:focus,
+.lk-field-error button[role="combobox"]:focus {
+  box-shadow: 0 0 0 4px color-mix(in srgb, hsl(var(--destructive)) 15%, transparent) !important;
+}
+/* Animation shake quand erreur apparait */
+.lk-field-error {
+  animation: lk-error-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
+}
+@keyframes lk-error-shake {
+  10%, 90%   { transform: translateX(-2px); }
+  20%, 80%   { transform: translateX(3px); }
+  30%, 50%, 70% { transform: translateX(-4px); }
+  40%, 60%   { transform: translateX(4px); }
+}
+

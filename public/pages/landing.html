@@ -1,0 +1,513 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leenkey · Vendez votre bien autrement</title>
+<link rel="stylesheet" href="leenkey.css?v=4">
+<style>
+  /* Override forcé pour le tableau comparatif (4 colonnes côte à côte) */
+  .compare {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+  @media (min-width: 680px) {
+    .compare {
+      grid-template-columns: 1.1fr 1fr 1fr 1fr !important;
+      gap: 0 !important;
+    }
+  }
+  /* Logo Leenkey dans le comparatif — proportionnel aux libellés Vente seul / Agence */
+  .cmp-logo-img {
+    height: 40px !important;
+    width: auto !important;
+  }
+  /* Photo dans la carte estimation à droite — cover */
+  img.estimate-photo {
+    object-fit: cover !important;
+    object-position: center !important;
+  }
+  /* Fond proptech Leenkey — gradient bleu/violet avec pattern technique */
+  .hero {
+    background:
+      radial-gradient(ellipse at top right, rgba(139, 92, 246, 0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at bottom left, rgba(17, 86, 252, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+      linear-gradient(135deg, #0F1E35 0%, #1A2B4A 45%, #1156FC 130%);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Couche pattern : maillage de points subtil (effet "data/tech") */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+    background-size: 28px 28px;
+    background-position: 0 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+  /* Lignes obliques décoratives très subtiles (effet PropTech) */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(110deg, transparent 0%, transparent 45%, rgba(139, 92, 246, 0.06) 50%, transparent 55%, transparent 100%),
+      linear-gradient(70deg, transparent 0%, transparent 60%, rgba(59, 130, 246, 0.08) 65%, transparent 70%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* S'assurer que le contenu reste au-dessus */
+  .hero .container,
+  .hero-grid,
+  .hero-dots {
+    position: relative;
+    z-index: 2;
+  }
+  /* Texte hero en blanc pour bon contraste sur le fond sombre */
+  .hero h1,
+  .hero .h1-display,
+  .hero .hero-sub,
+  .hero .lead {
+    color: #ffffff !important;
+  }
+  .hero .hero-sub strong {
+    color: #ffffff !important;
+  }
+  .hero .reassure-item {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+  .hero .reassure-item .ri-ic {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+  }
+</style>
+</head>
+<body>
+
+<!-- ===================== NAVBAR ===================== -->
+<span id="top"></span>
+
+<!-- ===================== HERO ===================== -->
+<header class="hero has-photo" id="valoriser" data-screen-label="Hero">
+  <div class="hero-overlay"></div>
+  <div class="hero-dots"></div>
+  <div class="container">
+    <div class="hero-grid">
+      <!-- left -->
+      <div class="hero-copy">
+        <span class="badge badge-dark" style="margin-bottom:14px;background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:#fff;border:none">
+          🎁 Phase pilote · 100 % gratuit
+        </span>
+        <span class="badge badge-dark" style="margin-bottom:22px">
+          <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>
+          Ni agence, ni seul · Vendre accompagné
+        </span>
+        <h1 class="h1-display">Leenkey vous donne<br>les clés de <span class="text-grad">votre&nbsp;vente.</span></h1>
+        <p class="lead hero-sub">Vendez seul, tout en étant accompagné à chaque étape. Des outils performants qui facilitent la vente et une assistance au moindre doute.<br><strong>Plus de clarté, moins de stress.</strong></p>
+        <div class="hero-cta-row" style="display:none">
+        </div>
+        <div class="reassure">
+          <div class="reassure-item"><span class="ri-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5a8 8 0 1 0 0 14"/><path d="M3 10h11M3 14h11"/></svg></span>Moins de frais · jusqu'à 70&nbsp;% d'économies</div>
+          <div class="reassure-item"><span class="ri-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h6v6M10 14 21 3M21 14v5a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h5"/></svg></span>Plus de contrôle · vous validez tout</div>
+          <div class="reassure-item"><span class="ri-ic"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87M16 3.13a4 4 0 0 1 0 7.75"/></svg></span>Accompagné à chaque étape</div>
+        </div>
+      </div>
+      <!-- right -->
+      <div class="hero-visual">
+        <div class="estimate-wrap">
+          <img class="estimate-photo" src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80" alt="Maison contemporaine" loading="eager" />
+          <div class="estimate-chip">
+            <span class="ec-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-9 9-5-5-7 7"/><path d="M16 7h6v6"/></svg></span>
+            <div><div class="ec-big">+ 5,2&nbsp;%</div><div class="ec-cap">vs prix agence</div></div>
+          </div>
+          <div class="estimate-card">
+            <div class="ec-top">
+              <div>
+                <span class="badge badge-blue" style="margin-bottom:8px">Votre bien</span>
+                <h4>Maison contemporaine</h4>
+                <div class="ec-loc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Biarritz, 64200</div>
+              </div>
+            </div>
+            <div class="ec-specs">
+              <span class="ec-spec"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><path d="M3 9h18M9 21V9"/></svg>120 m²</span>
+              <span class="ec-spec"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 12h18M3 12V6a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2v6M5 18v-6M19 18v-6"/></svg>4 pièces</span>
+              <span class="ec-spec"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3M2 11h20v7M6 18v2M18 18v2"/></svg>3 chambres</span>
+            </div>
+            <div class="ec-estim">
+              <span class="ec-label">Ma valeur immobilière</span>
+              <div class="ec-price">845 000 €</div>
+            </div>
+            <div class="ec-meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Ma valeur immobilière réalisée en 2 min</div>
+            <a class="btn btn-primary btn-sm ec-btn" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Voir ma valorisation
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+            </a>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</header>
+
+<!-- ===================== LE CONSTAT ===================== -->
+<section class="section constat" data-screen-label="Le constat">
+  <div class="container">
+    <div class="constat-head reveal">
+      <span class="eyebrow">Le constat</span>
+      <h2>Vendre un bien seul, aujourd'hui,<br>c'est encore trop <span class="text-grad">compliqué.</span></h2>
+      <p class="lead">Solitude dans le processus, incertitude, manque de méthode, erreurs, frais élevés si délégation. L'immobilier n'a pas suivi vos usages.</p>
+    </div>
+    <div class="constat-grid reveal" data-d="1">
+      <div class="constat-item"><span class="constat-n">01</span><h4>Complexe</h4><p>Manque d'informations claires, obligation juridique en évolution permanente.</p></div>
+      <div class="constat-item"><span class="constat-n">02</span><h4>Anxiogène</h4><p>Délais à respecter, réalisation des diagnostics obligatoires, disponibilité requise.</p></div>
+      <div class="constat-item"><span class="constat-n">03</span><h4>Coûteux</h4><p>Frais d'honoraires si mandat agence, en moyenne 15&nbsp;000&nbsp;€ prélevés sur le net vendeur.</p></div>
+      <div class="constat-item"><span class="constat-n">04</span><h4>Opaque</h4><p>Manque de visibilité sur le processus, jargon complexe, incertitude sur les prix réels.</p></div>
+    </div>
+    <p class="constat-foot reveal" data-d="2">Leenkey est une plateforme nouvelle génération, au croisement de l'immobilier, de la tech et de l'expérience utilisateur, pensée pour vous redonner le contrôle. <a href="#comment">Voir comment ça marche →</a></p>
+  </div>
+</section>
+
+<!-- ===================== PROOF BAR ===================== -->
+<section class="proof proof-dark" aria-label="Preuves chiffrées">
+  <div class="container">
+    <div class="proof-inner">
+      <div class="proof-item reveal"><div class="proof-num" data-count="1200" data-suffix="+">0</div><div class="proof-cap">biens vendus avec Leenkey</div></div>
+      <div class="proof-item reveal" data-d="1"><div class="proof-num"><span class="u">8,4</span><span class="u"> M€</span></div><div class="proof-cap">de frais d'agence économisés</div></div>
+      <div class="proof-item reveal" data-d="2"><div class="proof-num" data-count="42" data-suffix=" j">0</div><div class="proof-cap">délai moyen de vente</div></div>
+      <div class="proof-item reveal" data-d="3"><div class="proof-num">4,9<span class="u">/5</span></div><div class="proof-cap">satisfaction vendeurs (312 avis)</div></div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMMENT ÇA MARCHE ===================== -->
+<section class="section" id="comment" data-screen-label="Comment ça marche">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Comment ça marche</span>
+      <h2>Quatre étapes. Et vous gardez les clés du début à la fin.</h2>
+      <p class="lead">Leenkey vous informe, guide, conseille et optimise chaque étape. Vous gardez le contrôle, on est présent à la demande.</p>
+    </div>
+    <div class="steps">
+      <div class="step reveal">
+        <span class="steps-connect"></span>
+        <div class="step-n">1</div>
+        <div class="step-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 5a8 8 0 1 0 0 14"/><path d="M3 10h11M3 14h11"/></svg></div>
+        <h4>Analyse du prix de vente</h4>
+        <p>Recevez une analyse fiable, basée sur les ventes réelles de votre secteur. Gratuite et sans engagement.</p>
+        <span class="step-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Un expert valide votre prix</span>
+      </div>
+      <div class="step reveal" data-d="1">
+        <span class="steps-connect"></span>
+        <div class="step-n">2</div>
+        <div class="step-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="4" width="18" height="18" rx="2"/><path d="M16 2v4M8 2v4M3 10h18"/></svg></div>
+        <h4>Préparation à la vente</h4>
+        <p>Programmation de tous les diagnostics, collecte des documents nécessaires : un dossier clair, sans oublis, prêt à transmettre au notaire.</p>
+        <span class="step-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Diagnostics + documents</span>
+      </div>
+      <div class="step reveal" data-d="2">
+        <span class="steps-connect"></span>
+        <div class="step-n">3</div>
+        <div class="step-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></div>
+        <h4>Gérer votre annonce</h4>
+        <p>On rédige, on met en valeur vos photos, publication en exclusivité sur le portail Leenkey pour un maximum de valorisation.</p>
+        <span class="step-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Annonce optimisée</span>
+      </div>
+      <div class="step reveal" data-d="3">
+        <span class="steps-connect"></span>
+        <div class="step-n">4</div>
+        <div class="step-ic"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 15l2 2 4-4"/></svg></div>
+        <h4>Signez en toute sérénité</h4>
+        <p>On vous accompagne dans la négociation, aide à la rédaction et à l'étude de l'offre. Fluidité, rapidité et sécurisation des démarches.</p>
+        <span class="step-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 0 0-4-4H6a4 4 0 0 0-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M22 21v-2a4 4 0 0 0-3-3.87"/></svg>Coordination notaire incluse</span>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FONCTIONNALITÉS ===================== -->
+<section class="section section-dark" id="fonctionnalites" data-screen-label="Fonctionnalités">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Immobilier × Tech × UX</span>
+      <h2>Des outils performants, <span class="text-grad">créés pour vous.</span></h2>
+      <p class="lead">Analyse de prix fiable, diffusion exclusive, messagerie sécurisée et automatisée, suivi en temps réel et une assistance en cas de doute. Tout pour garder les clés de votre vente.</p>
+    </div>
+    <div class="feat-grid">
+      <div class="card card-hover feat-card reveal">
+        <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3v4M12 17v4M5 12H1M23 12h-4M7 7 4 4M20 20l-3-3M7 17l-3 3M20 4l-3 3"/><circle cx="12" cy="12" r="3"/></svg></span>
+        <h4>Ma valeur immobilière en ligne</h4>
+        <p>Une valorisation fiable en 2 minutes, basée sur les ventes réelles de votre quartier et validée par un expert.</p>
+      </div>
+      <div class="card card-hover feat-card reveal" data-d="1">
+        <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M3 12a9 9 0 0 1 9-9 9 9 0 0 1 9 9M3 12a9 9 0 0 0 9 9 9 9 0 0 0 9-9"/></svg></span>
+        <h4>Diffusion en exclusivité</h4>
+        <p>Votre annonce optimisée en exclusivité sur la plateforme Leenkey, pour un maximum de valorisation.</p>
+      </div>
+      <div class="card card-hover feat-card reveal" data-d="2">
+        <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+        <h4>Pilotage des visites</h4>
+        <p>Messagerie, agenda et relances centralisés. Vous filtrez les acheteurs sérieux et gardez la main sur chaque visite.</p>
+      </div>
+      <div class="card card-hover feat-card reveal">
+        <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6M9 13h6M9 17h6"/></svg></span>
+        <h4>Suivi en temps réel</h4>
+        <p>Diagnostics, offres, compromis : un tableau de bord qui anticipe la prochaine étape et vous dit quoi faire, quand.</p>
+      </div>
+      <div class="card card-hover feat-card reveal" data-d="1">
+        <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 0 1-2.18 2 19.79 19.79 0 0 1-8.63-3.07 19.5 19.5 0 0 1-6-6 19.79 19.79 0 0 1-3.07-8.67A2 2 0 0 1 4.11 2h3a2 2 0 0 1 2 1.72c.13.96.36 1.9.7 2.81a2 2 0 0 1-.45 2.11L8.09 9.91a16 16 0 0 0 6 6l1.27-1.27a2 2 0 0 1 2.11-.45c.91.34 1.85.57 2.81.7A2 2 0 0 1 22 16.92z"/></svg></span>
+        <h4>Accompagnement dédié à la demande</h4>
+        <p>Un conseiller dédié, joignable quand vous en avez besoin, pour un doute, une offre ou une signature.</p>
+      </div>
+      <div class="card card-hover feat-card reveal" data-d="2">
+        <span class="feat-icon"><svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/><path d="m9 12 2 2 4-4"/></svg></span>
+        <h4>Sécurité des données</h4>
+        <p>Vos documents et informations sont chiffrés et hébergés en France. Conforme au RGPD, par défaut.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== COMPARATIF ===================== -->
+<section class="section" id="comparatif" data-screen-label="Comparatif">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Position de Leenkey</span>
+      <h2>Bénéficiez d'un support total et gardez votre <span class="text-grad">indépendance.</span></h2>
+      <p class="lead">Pourquoi se lancer seul, sans outils, et finir par se tourner vers une agence en payant des honoraires importants — alors qu'une solution intermédiaire existe&nbsp;?</p>
+    </div>
+    <div class="compare reveal" data-d="1">
+      <!-- feature labels -->
+      <div class="cmp-col feature-col">
+        <div class="cmp-head"><span class="cmp-sub">Sur une vente à 350&nbsp;000&nbsp;€</span></div>
+        <div class="cmp-row">Frais de vente</div>
+        <div class="cmp-row">Accompagnement</div>
+        <div class="cmp-row">Contrôle de la vente</div>
+        <div class="cmp-row">Diffusion &amp; visibilité</div>
+        <div class="cmp-row">Sécurité &amp; cadre juridique</div>
+      </div>
+      <!-- Vente seul -->
+      <div class="cmp-col">
+        <div class="cmp-head"><span class="cmp-logo" style="color:var(--fg-2)">Vente seul</span><span class="cmp-sub">Aucun intermédiaire</span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Frais</span><span class="vt">Minimes</span><span class="vs">Coût des publications d'annonces</span></span></div>
+        <div class="cmp-row"><svg class="ic-no" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M9 15l6-6"/></svg><span class="cmp-val"><span class="mobile-feat">Accompagnement</span><span class="vt">Aucun</span><span class="vs">Vous gérez tout seul</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Contrôle</span><span class="vt">Total</span><span class="vs">Vous décidez de tout</span></span></div>
+        <div class="cmp-row"><svg class="ic-no" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M9 15l6-6"/></svg><span class="cmp-val"><span class="mobile-feat">Diffusion</span><span class="vt">Libre</span><span class="vs">Mais coûteux en multi-diffusion</span></span></div>
+        <div class="cmp-row"><svg class="ic-no" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M9 15l6-6"/></svg><span class="cmp-val"><span class="mobile-feat">Sécurité</span><span class="vt">Aucune</span><span class="vs">Tout repose sur vous</span></span></div>
+      </div>
+      <!-- Leenkey -->
+      <div class="cmp-col leenkey">
+        <div class="cmp-head"><img class="cmp-logo-img" src="assets/leenkey-logo.png" alt="leenkey"><span class="cmp-sub">Forfait fixe, accompagné</span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Frais</span><span class="vt">Forfait fixe</span><span class="vs">De 990&nbsp;€ à 1&nbsp;500&nbsp;€</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Accompagnement</span><span class="vt">Outils + conseillers</span><span class="vs">Guidé étape par étape</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Contrôle</span><span class="vt">100&nbsp;% à vous</span><span class="vs">Vous validez tout</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Diffusion</span><span class="vt">Portail Leenkey</span><span class="vs">Exclusivité optimisée</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Sécurité</span><span class="vt">Encadré &amp; sécurisé</span><span class="vs">Données chiffrées, notaire coordonné</span></span></div>
+      </div>
+      <!-- Agence -->
+      <div class="cmp-col">
+        <div class="cmp-head"><span class="cmp-logo" style="color:var(--fg-2)">Agence</span><span class="cmp-sub">Commission au pourcentage</span></div>
+        <div class="cmp-row"><svg class="ic-no" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M9 15l6-6"/></svg><span class="cmp-val"><span class="mobile-feat">Frais</span><span class="vt">≈ 15&nbsp;000&nbsp;€</span><span class="vs">5&nbsp;% en moyenne du prix</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Accompagnement</span><span class="vt">Complet</span><span class="vs">Mais délégation totale</span></span></div>
+        <div class="cmp-row"><svg class="ic-no" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m9 9 6 6M9 15l6-6"/></svg><span class="cmp-val"><span class="mobile-feat">Contrôle</span><span class="vt">Délégué à l'agent</span><span class="vs">Vous suivez de loin</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Diffusion</span><span class="vt">Multi-portails</span><span class="vs">Incluse</span></span></div>
+        <div class="cmp-row"><svg class="ic-yes" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="m8 12 3 3 5-6"/></svg><span class="cmp-val"><span class="mobile-feat">Sécurité</span><span class="vt">Encadré</span><span class="vs">Mandat d'agence</span></span></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TARIFS ===================== -->
+<section class="section section-dark" id="tarifs" data-screen-label="Tarifs">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:#fff;padding:6px 14px;border-radius:100px">🎁 Phase de lancement · Freemium</span>
+      <h2 style="margin-top:16px">Une formule pour <span class="text-grad">chaque vendeur.</span></h2>
+      <p class="lead">Pendant notre phase pilote, accédez à la version gratuite de Leenkey. Aucun engagement, aucune carte bancaire demandée. Vendez votre bien et économisez réellement.</p>
+    </div>
+    <div style="display:flex; justify-content:center" class="reveal">
+      <div class="pricing-toggle" id="pricingToggle" role="tablist">
+        <button class="active" data-view="forfait" role="tab">Gratuit pendant le lancement</button>
+        <button data-view="economie" role="tab">Mon économie vs agence</button>
+      </div>
+    </div>
+    <div class="pricing-grid reveal" data-d="1" data-view="forfait" id="pricingGrid">
+      <!-- Autonomie (gratuit phase pilote) -->
+      <div class="price-card" style="position:relative">
+        <span class="price-badge" style="background:#10B981;color:#fff;font-weight:700">✓ Disponible gratuitement</span>
+        <div class="price-name">Autonomie</div>
+        <p class="price-desc">Pour piloter votre vente en toute autonomie.</p>
+        <div class="price-amount">
+          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">Gratuit</span>
+        </div>
+        <div class="price-note pa-forfait" style="color:#64748B">Sans engagement · sans CB · TTC</div>
+        <ul class="price-feats">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Analyse et rapport de valeur de vente <strong>illimité</strong></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie de mise en vente avec un conseiller (call 30 min)</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Mise en place du dossier de vente, anticipation des futurs diagnostics</li>
+          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Création de votre espace personnel</li>
+          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Optimisation et diffusion annonce</li>
+          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Coordination notaire</li>
+        </ul>
+        <a class="btn btn-ghost" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Commencer gratuitement</a>
+      </div>
+      <!-- Accompagné (recommandé) -->
+      <div class="price-card featured" style="position:relative;transform:scale(1.04);box-shadow:0 24px 64px -16px rgba(17,86,252,0.25);border:2px solid #3B82F6">
+        <div class="price-name">Accompagné / Autonomie +</div>
+        <p class="price-desc">Un conseiller dédié à vos côtés, du prix à la signature.</p>
+        <div class="price-amount">
+          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">990&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span>
+          <span class="pa-eco" hidden><span class="pa-num">−14 010</span><span class="pa-unit">€ vs agence</span></span>
+        </div>
+        <div class="price-note pa-forfait" style="font-weight:600;color:#1156fc">Forfait fixe TTC · payé au succès</div>
+        <div class="price-note pa-eco" hidden>Économie indicative sur un bien à 350 000 €</div>
+        <ul class="price-feats">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg><strong style="font-weight:600">Tout&nbsp;Autonomie, plus&nbsp;:</strong></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Création de votre espace personnel</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie de mise en vente avec un conseiller dédié en illimité</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Création et optimisation de l'annonce, diffusion en exclusivité</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Messagerie et agenda de visites</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Aide à la négociation</li>
+        </ul>
+        <a class="btn btn-primary" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Choisir Accompagné
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <!-- Sérénité -->
+      <div class="price-card" style="position:relative">
+        <div class="price-name">Sérénité</div>
+        <p class="price-desc">On s'occupe de presque tout, vous gardez la décision.</p>
+        <div class="price-amount">
+          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">1&nbsp;500&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span>
+          <span class="pa-eco" hidden><span class="pa-num">−13 500</span><span class="pa-unit">€ vs agence</span></span>
+        </div>
+        <div class="price-note pa-forfait" style="color:#64748B">Forfait fixe TTC · payé au succès</div>
+        <div class="price-note pa-eco" hidden>Économie indicative sur un bien à 350 000 €</div>
+        <ul class="price-feats">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg><strong style="font-weight:600">Tout&nbsp;Accompagné, plus&nbsp;:</strong></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie avec un conseiller dédié en illimité</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Mise en place du dossier de vente complet</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Anticipation des futurs diagnostics</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Coordination complète du notaire</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Garantie juridique &amp; relecture des actes</li>
+        </ul>
+        <a class="btn btn-ghost" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Choisir Sérénité</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== TÉMOIGNAGES ===================== -->
+<section class="section" id="apropos" data-screen-label="Témoignages">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Ils ont vendu avec Leenkey</span>
+      <h2>4,9 / 5 sur 312 ventes finalisées.</h2>
+    </div>
+    <div class="testi-grid">
+      <div class="testi reveal">
+        <div class="testi-stars">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg>
+        </div>
+        <p class="testi-quote">On a économisé 14&nbsp;200&nbsp;€ de commission. Le conseiller nous a rappelés dans l'heure dès qu'on avait un doute. Franchement, plus jamais une agence.</p>
+        <div class="testi-foot">
+          <div class="testi-avatar">M</div>
+          <div><div class="testi-name">Marie &amp; Julien</div><div class="testi-loc">Lyon · maison 4 pièces · vendue en 39 j</div></div>
+        </div>
+      </div>
+      <div class="testi reveal" data-d="1">
+        <div class="testi-stars">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg>
+        </div>
+        <p class="testi-quote">Mutation à Bordeaux en six semaines. Le suivi des visites en ligne m'a sauvé : tout était centralisé. Vendu en 38 jours.</p>
+        <div class="testi-foot">
+          <div class="testi-avatar v2">K</div>
+          <div><div class="testi-name">Karim</div><div class="testi-loc">Paris 19e · T3 · vendu en 38 j</div></div>
+        </div>
+      </div>
+      <div class="testi reveal" data-d="2">
+        <div class="testi-stars">
+          <svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg><svg width="17" height="17" viewBox="0 0 24 24" fill="currentColor"><path d="m12 2 3.1 6.3 7 1L17 14.3 18.2 21 12 17.8 5.8 21 7 14.3 1.9 9.3l7-1z"/></svg>
+        </div>
+        <p class="testi-quote">Première vente, je n'y connaissais rien. On m'a expliqué chaque terme, du DPE au compromis. Aucune mauvaise surprise.</p>
+        <div class="testi-foot">
+          <div class="testi-avatar v3">S</div>
+          <div><div class="testi-name">Sophie</div><div class="testi-loc">Nantes · T2 · vendu en 45 j</div></div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== FAQ ===================== -->
+<section class="section section-dark" id="faq" data-screen-label="FAQ">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Questions fréquentes</span>
+      <h2>Tout ce que vous vous demandez, sans détour.</h2>
+    </div>
+    <div class="faq reveal" data-d="1" id="faq">
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Combien ça coûte, vraiment&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Pendant notre phase de lancement, Leenkey est <strong>entièrement gratuit</strong>. Aucune commission, aucun forfait, aucun engagement. Profitez-en pour vendre votre bien sans rien dépenser. À l'issue de cette phase pilote, un forfait fixe transparent sera annoncé — toujours sans commission au pourcentage.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Suis-je vraiment accompagné, ou seul face à la plateforme&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Accompagné. Selon votre forfait, un conseiller Leenkey reste joignable à chaque étape : pour valider votre prix, relire une offre, ou répondre à un doute avant la signature. Vous gardez la main, sans jamais rester seul.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Mes données et mes documents sont-ils en sécurité&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Oui. Vos documents sont chiffrés et hébergés en France, conformément au RGPD. Vous seul décidez de ce qui est partagé, et avec qui. Aucune donnée n'est revendue.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Combien de temps pour vendre&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">En moyenne 42 jours entre la mise en ligne et le compromis, contre près de 90 jours sur le marché. Une annonce bien préparée et diffusée en exclusivité fait toute la différence. C'est exactement ce qu'on outille.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Quelle est la différence avec une agence&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Une agence facture une commission au pourcentage et gère la vente à votre place. Leenkey vous donne les mêmes outils (valorisation, diffusion, suivi) pour un forfait fixe, avec un conseiller à la demande. Vous gardez le contrôle et l'économie.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Et si je bloque en cours de route&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Vous n'avancez jamais à l'aveugle. À chaque étape, vous pouvez solliciter votre conseiller, qui vous rappelle généralement sous 24 h. Le jargon est expliqué, les démarches détaillées. C'est le principe même de Leenkey.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ===================== CTA FINAL ===================== -->
+<section class="section cta-final" data-screen-label="CTA final">
+  <div class="cta-dots"></div>
+  <div class="container reveal">
+    <h2 class="h2">Prêt à garder les clés de votre vente&nbsp;?</h2>
+    <p>5 minutes pour connaître la valeur réelle de votre bien. Gratuit, sans engagement.</p>
+    <a class="btn btn-white btn-lg" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Valoriser mon bien gratuitement
+      <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+    </a>
+    <div class="cta-mini"><svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-12V5l-8-3-8 3v5c0 8 8 12 8 12z"/><path d="m9 12 2 2 4-4"/></svg>Réponse sous 24 h par un conseiller · Aucune carte requise</div>
+  </div>
+</section>
+
+<!-- ===================== FOOTER ===================== -->
+
+
+<!-- Tweaks panel mount -->
+
+<!-- thumbnail for bundler -->
+<template id="__bundler_thumbnail">
+  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg"><rect width="100" height="100" fill="#0F1E35"/><g transform="translate(30,30)" fill="none" stroke="#3B82F6" stroke-width="4" stroke-linecap="round" stroke-linejoin="round"><path d="M2 18 L20 2 L38 18"/><path d="M6 16 v22 h28 v-22"/><circle cx="14" cy="28" r="5" stroke="#1156FC"/><path d="M19 28 h14 M30 24 v8" stroke="#1156FC"/></g></svg>
+</template>
+
+<script src="image-slot.js"></script>
+<script src="leenkey.js"></script>
+
+<!-- Tweaks (React island) -->
+
+</body>
+</html>
