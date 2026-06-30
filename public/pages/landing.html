@@ -518,7 +518,7 @@
     <div class="faq reveal" data-d="1" id="faq">
       <div class="faq-item">
         <button class="faq-q" type="button" aria-expanded="false">Combien ça coûte, vraiment&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a"><div class="faq-a-inner">Leenkey propose <strong>trois formules transparentes</strong> à forfait fixe — jamais de commission au pourcentage. La formule <strong>Autonomie est gratuite</strong> pendant notre phase de lancement, et inclut l'analyse de votre bien, un call stratégique de 30 minutes et la mise en place du dossier de vente. Pour aller plus loin, la formule <strong>Accompagné à 990 € TTC</strong> et la formule <strong>Sérénité à 1 500 € TTC</strong> sont payées au succès, uniquement si votre bien est vendu.</div></div>
+        <div class="faq-a"><div class="faq-a-inner">Leenkey propose <strong>trois formules transparentes</strong> à forfait fixe — jamais de commission au pourcentage. La formule <strong>Autonomie est gratuite</strong> pendant notre phase de lancement, et inclut l'analyse de votre bien, un call stratégique de 30 minutes et la mise en place du dossier de vente. Pour aller plus loin, la formule <strong>Accompagné à 990&nbsp;€ TTC</strong> et la formule <strong>Sérénité à 1&nbsp;500&nbsp;€ TTC</strong> sont payées <strong>à la souscription</strong>, en une fois, sans engagement de durée.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q" type="button" aria-expanded="false">Suis-je vraiment accompagné, ou seul face à la plateforme&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
@@ -542,6 +542,68 @@
       </div>
     </div>
   </div>
+</section>
+
+<!-- ===================== CONTACT FORMULAIRE ===================== -->
+<section class="section" id="contact" data-screen-label="Contact" style="background:linear-gradient(180deg,#FFFFFF 0%,#F5F7FB 100%)">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Une question, un projet&nbsp;?</span>
+      <h2>Parlons-en <span class="text-grad">ensemble.</span></h2>
+      <p class="lead">Vendeur curieux, investisseur, partenaire — laissez-nous un message. On vous répond personnellement sous 48&nbsp;h ouvrées.</p>
+    </div>
+    <form id="contact-form" class="reveal" data-d="1" style="max-width:720px;margin:0 auto;background:#fff;border:1px solid #E2E8F0;border-radius:18px;padding:32px;display:flex;flex-direction:column;gap:16px;box-shadow:0 12px 40px -16px rgba(15,30,53,0.08)">
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="cf-motif" style="font-size:13px;font-weight:600;color:#0F172A">Motif de votre demande</label>
+        <select id="cf-motif" name="motif" required style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;color:#0F172A;font-size:14px;font-family:inherit">
+          <option value="">— Choisissez —</option>
+          <option value="Vendeur">🏠 Je veux vendre mon bien (question)</option>
+          <option value="Investisseur">💼 Je souhaite investir dans Leenkey</option>
+          <option value="Partenaire">🤝 Je suis un partenaire (notaire, conseiller…)</option>
+          <option value="Presse">📰 Contact presse / médias</option>
+          <option value="Autre">💬 Autre demande</option>
+        </select>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label for="cf-prenom" style="font-size:13px;font-weight:600;color:#0F172A">Prénom</label>
+          <input id="cf-prenom" name="prenom" type="text" required style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;color:#0F172A;font-size:14px;font-family:inherit" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label for="cf-nom" style="font-size:13px;font-weight:600;color:#0F172A">Nom</label>
+          <input id="cf-nom" name="nom" type="text" required style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;color:#0F172A;font-size:14px;font-family:inherit" />
+        </div>
+      </div>
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label for="cf-email" style="font-size:13px;font-weight:600;color:#0F172A">Email</label>
+          <input id="cf-email" name="email" type="email" required style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;color:#0F172A;font-size:14px;font-family:inherit" />
+        </div>
+        <div style="display:flex;flex-direction:column;gap:6px">
+          <label for="cf-tel" style="font-size:13px;font-weight:600;color:#0F172A">Téléphone <span style="color:#94A3B8;font-weight:400">(optionnel)</span></label>
+          <input id="cf-tel" name="telephone" type="tel" style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;color:#0F172A;font-size:14px;font-family:inherit" />
+        </div>
+      </div>
+      <div style="display:flex;flex-direction:column;gap:6px">
+        <label for="cf-message" style="font-size:13px;font-weight:600;color:#0F172A">Votre message</label>
+        <textarea id="cf-message" name="message" rows="4" required style="background:#F8FAFC;border:1px solid #E2E8F0;border-radius:10px;padding:12px 14px;color:#0F172A;font-size:14px;font-family:inherit;resize:vertical;min-height:100px"></textarea>
+      </div>
+      <button type="submit" style="background:#1156FC;color:#fff;border:none;padding:14px 24px;border-radius:12px;font-weight:700;font-size:15px;cursor:pointer;font-family:var(--font-display);margin-top:6px;box-shadow:0 10px 24px -10px rgba(17,86,252,0.5);display:inline-flex;align-items:center;justify-content:center;gap:8px">Envoyer ma demande
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </button>
+      <p style="font-size:12px;color:#64748B;text-align:center;margin:4px 0 0">Vos données restent confidentielles · Réponse sous 48&nbsp;h ouvrées</p>
+      <div class="form-success" style="display:none;padding:14px 16px;background:#D1FAE5;border:1px solid #10B981;border-radius:10px;color:#065F46;font-weight:600;text-align:center;font-size:14px">✓ Message envoyé ! Nous revenons vers vous sous 48&nbsp;h ouvrées.</div>
+    </form>
+  </div>
+  <style>
+    #contact-form input:focus, #contact-form select:focus, #contact-form textarea:focus {
+      outline: none;
+      border-color: #1156FC !important;
+      background: #fff !important;
+      box-shadow: 0 0 0 3px rgba(17,86,252,0.1);
+    }
+    #contact-form button:hover { transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(17,86,252,0.6); }
+  </style>
 </section>
 
 <!-- ===================== CTA FINAL ===================== -->
