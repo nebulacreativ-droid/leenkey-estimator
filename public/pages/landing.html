@@ -39,6 +39,32 @@
     object-fit: cover !important;
     object-position: center !important;
   }
+  /* ───────────────────────────────────────────────────────
+     Comparatif — alignement horizontal des lignes entre les 4 colonnes
+     ─────────────────────────────────────────────────────── */
+  .compare .cmp-col {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  /* Header (titre de colonne) — hauteur identique partout */
+  .compare .cmp-head {
+    min-height: 96px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  /* Chaque ligne — hauteur fixe pour alignement perfect */
+  .compare .cmp-row {
+    min-height: 84px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+  }
+  /* Colonne labels : texte aligné à gauche et bien centré verticalement */
+  .compare .cmp-col.feature-col .cmp-row {
+    font-weight: 600 !important;
+  }
   /* Fond proptech Leenkey — gradient bleu/violet avec pattern technique */
   .hero {
     background:
