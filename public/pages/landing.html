@@ -43,7 +43,7 @@
      Tarifs — effet pop sur les prix (sur fond dark navy)
      ─────────────────────────────────────────────────────── */
   /* Prix : gradient blanc→bleu lumineux pour ressortir sur le navy */
-  .price-card .pa-forfait {
+  .price-card .price-amount .pa-forfait {
     background: linear-gradient(135deg, #ffffff 0%, #B8D4FF 50%, #6FA0FF 100%) !important;
     -webkit-background-clip: text !important;
     background-clip: text !important;
@@ -54,7 +54,7 @@
     letter-spacing: -1.5px !important;
   }
   /* Le "TTC" reste lisible mais discret en gris clair */
-  .price-card .pa-forfait span {
+  .price-card .price-amount .pa-forfait span {
     background: none !important;
     -webkit-background-clip: initial !important;
     -webkit-text-fill-color: initial !important;
@@ -62,9 +62,10 @@
     text-shadow: none !important;
     font-weight: 600 !important;
   }
-  /* Note de prix : reste bien lisible */
+  /* Note de prix : reste bien lisible, espacement normal */
   .price-card .price-note.pa-forfait {
     color: #B8D4FF !important;
+    letter-spacing: 0 !important;
   }
   /* ───────────────────────────────────────────────────────
      Comparatif — alignement horizontal des lignes entre les 4 colonnes
