@@ -214,7 +214,7 @@ function CGU() {
         <h2>9. Données personnelles</h2>
         <p>
           Les traitements de données personnelles sont décrits en détail dans nos{" "}
-          <a href="/mentions-legales">Mentions Légales</a> et notre Politique de Confidentialité.
+          <a href="/mentions-legales">Mentions légales</a> et notre Politique de Confidentialité.
         </p>
         <p>
           Conformément au RGPD, vous disposez d'un droit d'accès, de rectification, d'effacement,
