@@ -112,12 +112,25 @@
     position: relative;
   }
 
-  /* Proof bar — fond navy avec halo bleu en haut */
+  /* Proof bar — bande bleu Leenkey vif */
   section.proof-dark {
     background:
-      radial-gradient(ellipse 60% 100% at 50% 0%, rgba(17, 86, 252, 0.22) 0%, transparent 70%),
-      linear-gradient(135deg, #0F1E35 0%, #1A2B4A 100%) !important;
+      radial-gradient(ellipse 70% 100% at 50% 0%, rgba(255, 255, 255, 0.12) 0%, transparent 60%),
+      linear-gradient(135deg, #0B3FC4 0%, #1156FC 50%, #0B3FC4 100%) !important;
+    position: relative;
+    overflow: hidden;
   }
+  section.proof-dark::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image: radial-gradient(rgba(255, 255, 255, 0.1) 1.2px, transparent 1.2px);
+    background-size: 28px 28px;
+    pointer-events: none;
+    opacity: 0.5;
+    z-index: 0;
+  }
+  section.proof-dark > * { position: relative; z-index: 1; }
 
   /* "Comment ça marche" — fond blanc avec points discrets bleus */
   section#comment {
