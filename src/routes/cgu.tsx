@@ -137,25 +137,37 @@ function CGU() {
         </p>
 
         <h2>5. Tarifs et paiement</h2>
-        <h3>5.1 Phase pilote</h3>
+        <h3>5.1 Formule Autonomie</h3>
         <p>
-          Durant la phase pilote (jusqu'à nouvel ordre), la formule <strong>Autonomie</strong> est
-          proposée <strong>gratuitement</strong>, sans engagement ni saisie de carte bancaire.
+          La formule <strong>Autonomie</strong> est proposée <strong>gratuitement</strong> durant
+          la phase de lancement, sans engagement ni saisie de carte bancaire. Elle donne accès à
+          l'analyse de valeur du bien, à un call stratégique avec un conseiller (30 minutes) et à
+          la mise en place du dossier de vente.
         </p>
 
         <h3>5.2 Formules payantes</h3>
         <p>
           Les formules <strong>Accompagné</strong> (990&nbsp;€ TTC) et <strong>Sérénité</strong>{" "}
-          (1&nbsp;500&nbsp;€ TTC) sont facturées en forfait fixe TTC, payables{" "}
-          <strong>au succès de la vente</strong> (signature de l'acte authentique). Aucune
-          commission au pourcentage n'est appliquée.
+          (1&nbsp;500&nbsp;€ TTC) sont facturées en forfait fixe TTC, sans commission au
+          pourcentage. Le paiement s'effectue <strong>à la souscription</strong>, dès activation
+          des services associés à la formule choisie (création de l'espace personnel, diffusion de
+          l'annonce, mobilisation du conseiller dédié).
         </p>
 
         <h3>5.3 Modalités de paiement</h3>
         <p>
-          Le paiement s'effectue par virement bancaire ou carte bancaire dans un délai maximum de
-          15 jours après la signature de l'acte authentique. Tout retard de paiement entraînera
-          l'application de pénalités au taux d'intérêt légal majoré.
+          Le règlement s'effectue par carte bancaire ou virement, au moment de la souscription.
+          L'accès aux fonctionnalités payantes est conditionné à la réception effective du
+          paiement. Conformément au Code de la consommation, le Vendeur dispose d'un droit de
+          rétractation de 14 jours à compter de la souscription, sauf s'il a expressément demandé
+          le démarrage immédiat de l'exécution du Service avant l'expiration de ce délai.
+        </p>
+
+        <h3>5.4 Remboursement et garantie</h3>
+        <p>
+          Aucun remboursement n'est dû lorsque le Service a été pleinement exécuté. En cas de
+          non-vente du bien, le Vendeur conserve l'accès à son dossier et à son conseiller pendant
+          12 mois à compter de la souscription, sans frais additionnels.
         </p>
 
         <h2>6. Obligations de l'utilisateur</h2>
