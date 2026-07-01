@@ -34,10 +34,18 @@
     line-height: 1.15 !important;
     letter-spacing: -1.2px !important;
   }
-  /* Photo dans la carte estimation à droite — cover */
+  /* Photo hero à droite — forme ovale/organique côté gauche */
   img.estimate-photo {
     object-fit: cover !important;
     object-position: center !important;
+    border-radius: 140px 24px 24px 140px / 220px 24px 24px 220px !important;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.4) !important;
+  }
+  /* Sur mobile — courbe plus douce pour rester lisible */
+  @media (max-width: 720px) {
+    img.estimate-photo {
+      border-radius: 40px 20px 20px 40px / 60px 20px 20px 60px !important;
+    }
   }
   /* ───────────────────────────────────────────────────────
      Tarifs — effet pop sur les prix (sur fond dark navy)
