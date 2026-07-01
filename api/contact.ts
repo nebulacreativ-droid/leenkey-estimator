@@ -69,14 +69,34 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const sendToClient = body.sendToClient !== false; // par défaut on envoie aussi au client
     const clientEmail = String((data as Record<string, unknown>).email ?? "").trim();
 
+    // Distinction par MOTIF (choix utilisateur dans le formulaire) puis par SOURCE
+    const motif = String((data as Record<string, unknown>).motif ?? "").trim();
+    const prenom = String((data as Record<string, unknown>).prenom ?? "").trim();
+    const nom = String((data as Record<string, unknown>).nom ?? "").trim();
+    const nomComplet = [prenom, nom].filter(Boolean).join(" ") || "Sans nom";
+
+    // Mapping motif → objet explicite + couleur bandeau + emoji
+    const motifConfig: Record<string, { label: string; icon: string; gradient: string }> = {
+      Vendeur: { label: "Question vendeur", icon: "🏠", gradient: "linear-gradient(135deg,#1156FC,#60A5FA)" },
+      Investisseur: { label: "Investisseur", icon: "💼", gradient: "linear-gradient(135deg,#F59E0B,#D97706)" },
+      Partenaire: { label: "Partenaire", icon: "🤝", gradient: "linear-gradient(135deg,#10B981,#059669)" },
+      Presse: { label: "Presse / Médias", icon: "📰", gradient: "linear-gradient(135deg,#8B5CF6,#7C3AED)" },
+      Autre: { label: "Contact divers", icon: "💬", gradient: "linear-gradient(135deg,#64748B,#475569)" },
+    };
+    // Mapping source → fallback si aucun motif
     const sourceLabel: Record<string, string> = {
-      contact: "Contact",
-      investir: "Investisseur",
+      contact: "Formulaire de contact",
+      investir: "Formulaire investir",
       "contact-navbar": "Contact Navbar",
       estimation: "Estimation",
-      "rappel-conseiller": "Demande de contact conseiller",
+      "rappel-conseiller": "Demande conseiller",
     };
-    const subject = `🔑 Nouveau lead Leenkey — ${sourceLabel[source] ?? source}`;
+
+    const motifPick = motifConfig[motif];
+    const headerLabel = motifPick?.label ?? sourceLabel[source] ?? source;
+    const headerIcon = motifPick?.icon ?? "🔑";
+    const headerGradient = motifPick?.gradient ?? "linear-gradient(135deg,#1156FC,#8B5CF6)";
+    const subject = `${headerIcon} Leenkey — ${headerLabel} · ${nomComplet}`;
 
     // Attachments pour Resend
     const attachments = pdfBase64
@@ -88,8 +108,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 <!DOCTYPE html>
 <html><body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,BlinkMacSystemFont,sans-serif;color:#0F172A;">
 <div style="max-width:600px;margin:0 auto;background:#ffffff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
-  <div style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);padding:24px;color:#ffffff;">
-    <h1 style="margin:0;font-size:20px;font-weight:700;">🔑 Nouveau lead Leenkey</h1>
+  <div style="background:${headerGradient};padding:24px;color:#ffffff;">
+    <h1 style="margin:0;font-size:20px;font-weight:700;">${headerIcon} ${escapeHtml(headerLabel)} — ${escapeHtml(nomComplet)}</h1>
     <p style="margin:6px 0 0;opacity:.9;font-size:13px;">Source : <strong>${escapeHtml(source)}</strong> · ${new Date().toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}</p>
   </div>
   <div style="padding:20px;">
@@ -125,12 +145,11 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     // ───── EMAIL 2 : Confirmation au client (avec PDF si fourni) ─────
     if (sendToClient && clientEmail) {
-      const prenom = String((data as Record<string, unknown>).prenom ?? "");
       const htmlClient = `
 <!DOCTYPE html>
 <html><body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,sans-serif;color:#0F172A;">
 <div style="max-width:600px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
-  <div style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);padding:32px 24px;color:#fff;text-align:center;">
+  <div style="background:linear-gradient(135deg,#1156FC,#8B5CF6);padding:32px 24px;color:#fff;text-align:center;">
     <div style="font-size:14px;font-weight:600;opacity:.85;letter-spacing:1.5px;text-transform:uppercase">Leenkey</div>
     <h1 style="margin:8px 0 0;font-size:22px;">Votre demande est bien reçue</h1>
   </div>
