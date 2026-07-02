@@ -34,94 +34,17 @@
     line-height: 1.15 !important;
     letter-spacing: -1.2px !important;
   }
-  /* ══════════════════════════════════════════════════════════
-     HERO — Photo pleine hauteur, moitié droite du viewport
-     Approche : pseudo-element sur .hero (contourne tout container)
-     ══════════════════════════════════════════════════════════ */
-  .estimate-chip { display: none !important; }
-
-  @media (min-width: 980px) {
-    .hero.has-photo {
-      min-height: 720px !important;
-      padding-bottom: 40px !important;
-    }
-    /* Cache l'ancien <img> et le chip — on repasse par ::after */
-    .hero.has-photo img.estimate-photo { display: none !important; }
-    /* .hero-visual devient invisible mais laisse ses enfants remonter au grid */
-    .hero.has-photo .hero-visual { display: contents !important; }
-    .hero.has-photo .estimate-wrap { display: contents !important; }
-    /* Grid → 1 colonne + position:static pour que les enfants absolute
-       ciblent .hero (pleine largeur) au lieu du container centré */
-    .hero.has-photo .hero-grid {
-      grid-template-columns: 1fr !important;
-      position: static !important;
-      z-index: auto !important;
-    }
-    /* Le texte reste au-dessus et à gauche */
-    .hero.has-photo .hero-copy {
-      max-width: 52% !important;
-      position: relative !important;
-      z-index: 5 !important;
-    }
-    /* Photo via ::after sur .hero — indépendante du .container */
-    .hero.has-photo::after {
-      content: '' !important;
-      position: absolute !important;
-      right: 0 !important;
-      left: auto !important;                    /* ← RESET du inset:0 hérité */
-      top: 0 !important;
-      bottom: 0 !important;
-      inset: auto !important;                   /* ← RESET propriété raccourcie hérité */
-      width: 55vw !important;
-      height: auto !important;
-      background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=85') !important;
-      background-size: cover !important;
-      background-position: center !important;
-      background-repeat: no-repeat !important;
-      background-color: transparent !important;
-      border-radius: 60% 0 0 60% / 50% 0 0 50% !important;
-      box-shadow: -30px 0 100px -30px rgba(0, 0, 0, 0.6) !important;
-      z-index: 2 !important;
-      pointer-events: none !important;
-    }
-    /* Réappliquer le right/left/inset après (au cas où) */
-    .hero.has-photo::after {
-      right: 0 !important;
-      left: auto !important;
-      top: 0 !important;
-      bottom: 0 !important;
-      width: 55vw !important;
-    }
-    /* Container reset — pour éviter que .estimate-card se réfère au container */
-    .hero.has-photo .container { position: static !important; }
-    /* Carte estimation — positionnée par rapport à .hero via display:contents */
-    .hero.has-photo .estimate-card {
-      position: absolute !important;
-      right: 48px !important;
-      top: 88px !important;
-      left: auto !important;
-      bottom: auto !important;
-      width: 340px !important;
-      z-index: 6 !important;
-    }
+  /* Photo hero à droite — forme ovale/organique côté gauche */
+  img.estimate-photo {
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: 140px 24px 24px 140px / 220px 24px 24px 220px !important;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.4) !important;
   }
-
-  /* Mobile — layout empilé classique */
-  @media (max-width: 979px) {
+  /* Sur mobile — courbe plus douce pour rester lisible */
+  @media (max-width: 720px) {
     img.estimate-photo {
-      object-fit: cover !important;
-      object-position: center !important;
-      height: 420px !important;
       border-radius: 40px 20px 20px 40px / 60px 20px 20px 60px !important;
-      box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.45) !important;
-    }
-    .estimate-card {
-      right: auto !important;
-      left: 50% !important;
-      transform: translateX(-50%) !important;
-      top: auto !important;
-      bottom: -32px !important;
-      width: min(340px, 90%) !important;
     }
   }
   /* ───────────────────────────────────────────────────────
@@ -271,7 +194,7 @@
       <!-- right -->
       <div class="hero-visual">
         <div class="estimate-wrap">
-          <img class="estimate-photo" src="https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=85" alt="Salon lumineux maison contemporaine" loading="eager" />
+          <img class="estimate-photo" src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80" alt="Maison contemporaine" loading="eager" />
           <div class="estimate-chip">
             <span class="ec-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-9 9-5-5-7 7"/><path d="M16 7h6v6"/></svg></span>
             <div><div class="ec-big">+ 5,2&nbsp;%</div><div class="ec-cap">vs prix agence</div></div>
@@ -279,7 +202,7 @@
           <div class="estimate-card">
             <div class="ec-top">
               <div>
-                <span class="badge badge-blue" style="margin-bottom:8px">À vendre</span>
+                <span class="badge badge-blue" style="margin-bottom:8px">Votre bien</span>
                 <h4>Maison contemporaine</h4>
                 <div class="ec-loc"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M21 10c0 7-9 13-9 13s-9-6-9-13a9 9 0 0 1 18 0z"/><circle cx="12" cy="10" r="3"/></svg>Biarritz, 64200</div>
               </div>
@@ -290,11 +213,11 @@
               <span class="ec-spec"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M2 9V6a2 2 0 0 1 2-2h16a2 2 0 0 1 2 2v3M2 11h20v7M6 18v2M18 18v2"/></svg>3 chambres</span>
             </div>
             <div class="ec-estim">
-              <span class="ec-label">Estimation</span>
-              <div class="ec-price">845&nbsp;000&nbsp;€</div>
+              <span class="ec-label">Ma valeur immobilière</span>
+              <div class="ec-price">845 000 €</div>
             </div>
-            <div class="ec-meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Estimation réalisée en 2&nbsp;min</div>
-            <a class="btn btn-primary btn-sm ec-btn" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Voir mon estimation
+            <div class="ec-meta"><svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>Ma valeur immobilière réalisée en 2 min</div>
+            <a class="btn btn-primary btn-sm ec-btn" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Voir ma valorisation
               <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
             </a>
           </div>
