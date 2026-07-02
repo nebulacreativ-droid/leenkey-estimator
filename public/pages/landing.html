@@ -65,21 +65,35 @@
     }
     /* Photo via ::after sur .hero — indépendante du .container */
     .hero.has-photo::after {
-      content: '';
-      position: absolute;
-      right: 0;
-      top: 0;
-      bottom: 0;
-      width: 55vw;
-      background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=85');
-      background-size: cover;
-      background-position: center;
-      background-repeat: no-repeat;
-      border-radius: 60% 0 0 60% / 50% 0 0 50%;
-      box-shadow: -30px 0 100px -30px rgba(0, 0, 0, 0.6);
-      z-index: 2;
-      pointer-events: none;
+      content: '' !important;
+      position: absolute !important;
+      right: 0 !important;
+      left: auto !important;                    /* ← RESET du inset:0 hérité */
+      top: 0 !important;
+      bottom: 0 !important;
+      inset: auto !important;                   /* ← RESET propriété raccourcie hérité */
+      width: 55vw !important;
+      height: auto !important;
+      background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=85') !important;
+      background-size: cover !important;
+      background-position: center !important;
+      background-repeat: no-repeat !important;
+      background-color: transparent !important;
+      border-radius: 60% 0 0 60% / 50% 0 0 50% !important;
+      box-shadow: -30px 0 100px -30px rgba(0, 0, 0, 0.6) !important;
+      z-index: 2 !important;
+      pointer-events: none !important;
     }
+    /* Réappliquer le right/left/inset après (au cas où) */
+    .hero.has-photo::after {
+      right: 0 !important;
+      left: auto !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      width: 55vw !important;
+    }
+    /* Container reset — pour éviter que .estimate-card se réfère au container */
+    .hero.has-photo .container { position: static !important; }
     /* Carte estimation — positionnée par rapport à .hero via display:contents */
     .hero.has-photo .estimate-card {
       position: absolute !important;
