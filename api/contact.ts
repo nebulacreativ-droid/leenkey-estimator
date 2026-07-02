@@ -157,7 +157,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <p style="font-size:15px;line-height:1.6;color:#0F172A;margin:0 0 20px">Bonjour ${escapeHtml(prenom)},</p>
     <p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 18px">
       Nous avons bien reçu votre demande de contact. Un conseiller Leenkey vous contactera
-      <strong>sous 48 heures ouvrées</strong> pour échanger avec vous sur votre projet de vente.
+      <strong>sous 48 heures, 7 j/7</strong> pour échanger avec vous sur votre projet de vente.
     </p>
     ${pdfBase64 ? `<p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 18px">📎 Vous trouverez également <strong>votre rapport de valorisation complet en pièce jointe</strong> de cet email, à conserver précieusement.</p>` : ""}
     <p style="font-size:14px;line-height:1.7;color:#475569;margin:24px 0 0">À très vite,</p>

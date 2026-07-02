@@ -610,7 +610,7 @@ export function EstimationDashboard({
                         📞 Prendre contact avec un conseiller
                       </h3>
                       <p className="mt-1 text-sm text-sub">
-                        Un conseiller Leenkey vous contactera sous 48h ouvrées.
+                        Un conseiller Leenkey vous contactera sous 48h, 7j/7.
                       </p>
                     </div>
                     <button
