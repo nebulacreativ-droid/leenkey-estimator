@@ -34,35 +34,57 @@
     line-height: 1.15 !important;
     letter-spacing: -1.2px !important;
   }
-  /* Photo hero — intérieur luxe avec grande courbe organique côté gauche */
-  img.estimate-photo {
-    object-fit: cover !important;
-    object-position: center !important;
-    height: clamp(480px, 55vw, 680px) !important;
-    border-radius: 200px 20px 20px 200px / 340px 20px 20px 340px !important;
-    box-shadow: 0 30px 80px -20px rgba(0, 0, 0, 0.55) !important;
-  }
-  /* Cache le chip "+ 5,2 %" (non désiré dans le nouveau design) */
+  /* ══════════════════════════════════════════════════════════
+     HERO — Photo intérieur luxe sur toute la moitié droite
+     ══════════════════════════════════════════════════════════ */
+  /* Cache le chip "+ 5,2 %" */
   .estimate-chip { display: none !important; }
-  /* Carte d'estimation repositionnée en haut à droite */
-  .estimate-card {
-    left: auto !important;
-    right: -24px !important;
-    top: 28px !important;
-    bottom: auto !important;
-    width: min(340px, 90%) !important;
-  }
+
+  /* Desktop uniquement — photo pleine hauteur, moitié droite */
   @media (min-width: 980px) {
-    .estimate-card {
-      right: -32px !important;
-      top: 40px !important;
+    .hero.has-photo { min-height: 720px !important; padding-bottom: 60px !important; }
+    /* Grid → 1 colonne, la photo est détachée en absolute */
+    .hero.has-photo .hero-grid { grid-template-columns: 1fr !important; }
+    /* Le container du texte reste dans son container mais limité en largeur */
+    .hero.has-photo .hero-copy { max-width: 52% !important; }
+    /* Le hero-visual sert de positionneur — plus rien à afficher dedans */
+    .hero.has-photo .hero-visual { position: static !important; }
+    .hero.has-photo .estimate-wrap { position: static !important; }
+    /* La photo sort du container et va jusqu'au bord droit du viewport */
+    .hero.has-photo img.estimate-photo {
+      position: absolute !important;
+      right: 0 !important;
+      top: 0 !important;
+      bottom: 0 !important;
+      width: 52vw !important;
+      height: 100% !important;
+      max-height: none !important;
+      object-fit: cover !important;
+      object-position: center !important;
+      border-radius: 60% 0 0 60% / 50% 0 0 50% !important;
+      box-shadow: -30px 0 80px -20px rgba(0, 0, 0, 0.55) !important;
+      z-index: 2;
+    }
+    /* Carte d'estimation flottante en haut-droite */
+    .hero.has-photo .estimate-card {
+      position: absolute !important;
+      right: 40px !important;
+      top: 60px !important;
+      left: auto !important;
+      bottom: auto !important;
+      width: min(340px, 30vw) !important;
+      z-index: 3;
     }
   }
-  /* Sur mobile — courbe plus douce et carte centrée en bas */
-  @media (max-width: 720px) {
+
+  /* Mobile — layout empilé classique avec courbe plus douce */
+  @media (max-width: 979px) {
     img.estimate-photo {
+      object-fit: cover !important;
+      object-position: center !important;
       height: 420px !important;
       border-radius: 40px 20px 20px 40px / 60px 20px 20px 60px !important;
+      box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.45) !important;
     }
     .estimate-card {
       right: auto !important;
@@ -70,6 +92,7 @@
       transform: translateX(-50%) !important;
       top: auto !important;
       bottom: -32px !important;
+      width: min(340px, 90%) !important;
     }
   }
   /* ───────────────────────────────────────────────────────
