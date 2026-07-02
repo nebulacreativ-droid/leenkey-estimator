@@ -225,8 +225,10 @@ function CGU() {
         <h2>10. Résiliation</h2>
         <p>
           L'Utilisateur peut résilier son compte à tout moment en contactant Leenkey à{" "}
-          <a href="mailto:contact.leenkey@gmail.com">contact.leenkey@gmail.com</a>. Les sommes éventuellement
-          dues au titre d'une vente finalisée avant la résiliation restent exigibles.
+          <a href="mailto:contact.leenkey@gmail.com">contact.leenkey@gmail.com</a>. Les sommes déjà
+          versées au titre d'une formule souscrite restent définitivement acquises à Leenkey
+          lorsque le Service a été pleinement exécuté (voir article&nbsp;5.4). Aucun
+          remboursement au prorata n'est dû après le démarrage effectif de l'accompagnement.
         </p>
         <p>
           Leenkey se réserve le droit de suspendre ou de résilier le compte d'un Utilisateur en
