@@ -35,55 +35,60 @@
     letter-spacing: -1.2px !important;
   }
   /* ══════════════════════════════════════════════════════════
-     HERO — Photo intérieur luxe sur toute la moitié droite du viewport
+     HERO — Photo pleine hauteur, moitié droite du viewport
+     Approche : pseudo-element sur .hero (contourne tout container)
      ══════════════════════════════════════════════════════════ */
   .estimate-chip { display: none !important; }
 
-  /* Desktop uniquement */
   @media (min-width: 980px) {
-    .hero.has-photo { min-height: 700px !important; padding-bottom: 60px !important; }
-
-    /* Nullifie position:relative sur .hero-grid pour que
-       les enfants absolute se positionnent relativement à .hero (pleine largeur) */
+    .hero.has-photo {
+      min-height: 720px !important;
+      padding-bottom: 40px !important;
+    }
+    /* Cache l'ancien <img> et le chip — on repasse par ::after */
+    .hero.has-photo img.estimate-photo { display: none !important; }
+    /* .hero-visual devient invisible mais laisse ses enfants remonter au grid */
+    .hero.has-photo .hero-visual { display: contents !important; }
+    .hero.has-photo .estimate-wrap { display: contents !important; }
+    /* Grid → 1 colonne + position:static pour que les enfants absolute
+       ciblent .hero (pleine largeur) au lieu du container centré */
     .hero.has-photo .hero-grid {
-      position: static !important;
       grid-template-columns: 1fr !important;
+      position: static !important;
       z-index: auto !important;
     }
-    /* Réactive le z-index sur .hero-copy directement */
+    /* Le texte reste au-dessus et à gauche */
     .hero.has-photo .hero-copy {
-      position: relative !important;
-      z-index: 3 !important;
       max-width: 52% !important;
+      position: relative !important;
+      z-index: 5 !important;
     }
-    /* Wrappers rendus transparents pour le positionnement */
-    .hero.has-photo .hero-visual { position: static !important; }
-    .hero.has-photo .estimate-wrap { position: static !important; }
-
-    /* La photo se colle au bord droit du viewport, hauteur pleine du hero */
-    .hero.has-photo img.estimate-photo {
-      position: absolute !important;
-      right: 0 !important;
-      top: 0 !important;
-      bottom: 0 !important;
-      width: 52vw !important;
-      height: 100% !important;
-      max-height: none !important;
-      object-fit: cover !important;
-      object-position: center !important;
-      border-radius: 60% 0 0 60% / 50% 0 0 50% !important;
-      box-shadow: -30px 0 80px -20px rgba(0, 0, 0, 0.55) !important;
-      z-index: 1 !important;
+    /* Photo via ::after sur .hero — indépendante du .container */
+    .hero.has-photo::after {
+      content: '';
+      position: absolute;
+      right: 0;
+      top: 0;
+      bottom: 0;
+      width: 55vw;
+      background-image: url('https://images.unsplash.com/photo-1618221195710-dd6b41faaea6?auto=format&fit=crop&w=1600&q=85');
+      background-size: cover;
+      background-position: center;
+      background-repeat: no-repeat;
+      border-radius: 60% 0 0 60% / 50% 0 0 50%;
+      box-shadow: -30px 0 100px -30px rgba(0, 0, 0, 0.6);
+      z-index: 2;
+      pointer-events: none;
     }
-    /* La carte d'estimation en haut à droite, au-dessus de la photo */
+    /* Carte estimation — positionnée par rapport à .hero via display:contents */
     .hero.has-photo .estimate-card {
       position: absolute !important;
-      right: 40px !important;
-      top: 60px !important;
+      right: 48px !important;
+      top: 88px !important;
       left: auto !important;
       bottom: auto !important;
       width: 340px !important;
-      z-index: 4 !important;
+      z-index: 6 !important;
     }
   }
 
