@@ -146,6 +146,8 @@ export function Footer() {
               <h4>Légal</h4>
               <ul>
                 <li><Link to="/mentions-legales">Mentions légales</Link></li>
+                <li><Link to="/mentions-legales" hash="rgpd">RGPD & données personnelles</Link></li>
+                <li><Link to="/mentions-legales" hash="cookies">Cookies</Link></li>
                 <li><Link to="/cgu">Conditions d'utilisation</Link></li>
                 <li><a href="mailto:contact.leenkey@gmail.com">Contact</a></li>
               </ul>

@@ -86,7 +86,7 @@ function MentionsLegales() {
           interdite sans l'autorisation écrite préalable de Leenkey.
         </p>
 
-        <h2>4. Données personnelles (RGPD)</h2>
+        <h2 id="rgpd">4. Données personnelles (RGPD)</h2>
         <p>
           Les données personnelles collectées sur ce site (nom, prénom, email, téléphone, données
           relatives au bien immobilier) sont traitées par Leenkey en qualité de responsable de
@@ -121,7 +121,7 @@ function MentionsLegales() {
           obligation légale de conservation plus longue (notamment comptable).
         </p>
 
-        <h2>5. Cookies</h2>
+        <h2 id="cookies">5. Cookies</h2>
         <p>
           Le site utilise uniquement des cookies <strong>strictement nécessaires</strong> au bon
           fonctionnement de la plateforme (préférences, session). Aucun cookie publicitaire ou
