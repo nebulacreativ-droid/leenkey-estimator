@@ -355,9 +355,10 @@ h4,.h4 { font-weight:600; font-size:var(--type-h4-size); line-height:var(--type-
 .faq-q { width:100%; display:flex; align-items:center; justify-content:space-between; gap:18px; background:none; border:none; font-family:inherit; text-align:left; cursor:pointer; padding:22px 24px; font-size:16px; font-weight:600; color:var(--color-navy); }
 .faq-q .faq-chev { flex-shrink:0; color:var(--color-blue); transition:transform var(--duration-base) var(--ease-out); }
 .faq-item.open .faq-chev { transform:rotate(180deg); }
-.faq-a { max-height:none; overflow:visible; }
-.faq-q .faq-chev { display:none; }
-.faq-q { cursor:default !important; }
+.faq-a { max-height: none !important; overflow: visible !important; }
+.faq-a-inner { padding: 0 24px 24px !important; display: block !important; }
+.faq-q .faq-chev { display: none !important; }
+.faq-q { cursor: default !important; }
 .faq-a-inner { padding:0 24px 24px; color:var(--fg-2); font-size:14.5px; line-height:1.7; }
 
 /* ---------- CTA final ---------- */
