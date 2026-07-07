@@ -1,4 +1,5 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
+import { useState } from "react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 
 export const Route = createFileRoute("/qui-sommes-nous")({
@@ -6,6 +7,7 @@ export const Route = createFileRoute("/qui-sommes-nous")({
 });
 
 function QuiSommesNousPage() {
+  const [imgError, setImgError] = useState(false);
   return (
     <SiteLayout>
       <style>{`
@@ -362,12 +364,33 @@ function QuiSommesNousPage() {
               </Link>
             </div>
             <div className="lk-qsn-photo-wrap">
-              <img
-                className="lk-qsn-photo"
-                src="/cedric.jpg"
-                alt="Cédric Da Cunha, fondateur de Leenkey"
-                loading="eager"
-              />
+              {!imgError ? (
+                <img
+                  className="lk-qsn-photo"
+                  src="/cedric.jpg"
+                  alt="Cédric Da Cunha, fondateur de Leenkey"
+                  loading="eager"
+                  onError={() => setImgError(true)}
+                />
+              ) : (
+                <div
+                  className="lk-qsn-photo"
+                  style={{
+                    background: "linear-gradient(135deg, #1156FC 0%, #8B5CF6 100%)",
+                    display: "flex",
+                    alignItems: "center",
+                    justifyContent: "center",
+                    color: "#fff",
+                    fontSize: "clamp(80px, 12vw, 140px)",
+                    fontWeight: 800,
+                    letterSpacing: "-4px",
+                    fontFamily: "'Poppins', sans-serif",
+                  }}
+                  aria-label="Photo à venir"
+                >
+                  CD
+                </div>
+              )}
               <div className="lk-qsn-photo-tag">
                 <div className="lk-qsn-photo-tag-dot">CD</div>
                 <div>
