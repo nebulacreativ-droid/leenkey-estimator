@@ -1146,6 +1146,15 @@ Nous cherchons des partenaires qui croient, comme nous, que ce marché mérite m
         }
       }
       #invest-form select option { background: #fff; color: #0F172A; }
+      /* Empêche tout overflow horizontal des champs */
+      #invest-form input,
+      #invest-form select,
+      #invest-form textarea {
+        box-sizing: border-box !important;
+        width: 100% !important;
+        max-width: 100% !important;
+        min-width: 0 !important;
+      }
       #invest-form input:focus, #invest-form select:focus, #invest-form textarea:focus {
         outline: none;
         border-color: #1156FC !important;
@@ -1153,6 +1162,27 @@ Nous cherchons des partenaires qui croient, comme nous, que ce marché mérite m
       }
       #invest-form input::placeholder, #invest-form textarea::placeholder { color: rgba(255,255,255,0.5); }
       #invest-form button:hover { transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(17,86,252,0.7); }
+      /* Mobile — grilles 2-col deviennent 1-col */
+      @media (max-width: 640px) {
+        #invest-form {
+          padding: 22px !important;
+          border-radius: 14px !important;
+        }
+        #invest-form > div[style*="grid-template-columns"] {
+          display: flex !important;
+          flex-direction: column !important;
+          gap: 14px !important;
+        }
+        #invest-form select,
+        #invest-form input,
+        #invest-form textarea {
+          font-size: 15px !important;
+          padding: 12px 12px !important;
+        }
+        #if-motif { font-size: 14px !important; }
+      }
+      /* Sécurité : empêche la section de déborder */
+      #formulaire { overflow-x: hidden; }
     </style>
   </div>
 </section>

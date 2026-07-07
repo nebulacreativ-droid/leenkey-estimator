@@ -610,6 +610,16 @@
     </div>
   </div>
   <style>
+    /* Empêche tout overflow horizontal des champs (box-sizing + largeur pleine) */
+    #contact-form input,
+    #contact-form select,
+    #contact-form textarea {
+      box-sizing: border-box !important;
+      width: 100% !important;
+      max-width: 100% !important;
+      min-width: 0 !important;
+    }
+    /* Focus */
     #contact-form input:focus, #contact-form select:focus, #contact-form textarea:focus {
       outline: none;
       border-color: #1156FC !important;
@@ -617,6 +627,32 @@
       box-shadow: 0 0 0 3px rgba(17,86,252,0.1);
     }
     #contact-form button:hover { transform: translateY(-1px); box-shadow: 0 14px 30px -10px rgba(17,86,252,0.6); }
+    /* Mobile — passe les grilles 2-col en 1-col + réduit padding form */
+    @media (max-width: 640px) {
+      #contact-form {
+        padding: 22px !important;
+        border-radius: 14px !important;
+      }
+      #contact-form > div[style*="grid-template-columns"] {
+        display: flex !important;
+        flex-direction: column !important;
+        gap: 14px !important;
+      }
+      #contact-form select,
+      #contact-form input,
+      #contact-form textarea {
+        font-size: 15px !important;
+        padding: 12px 12px !important;
+      }
+      #contact-form button {
+        padding: 14px 20px !important;
+        font-size: 15px !important;
+      }
+      /* Réduit la police des options select longues */
+      #cf-motif { font-size: 14px !important; }
+    }
+    /* Sécurité globale : empêche la section entière de déborder sur mobile */
+    #contact { overflow-x: hidden; }
   </style>
 </section>
 
