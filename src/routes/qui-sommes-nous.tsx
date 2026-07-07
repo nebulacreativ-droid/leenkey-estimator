@@ -498,7 +498,7 @@ function QuiSommesNousPage() {
                 <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#fff" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"><path d="M3 12h4l3-9 4 18 3-9h4"/></svg>
               </div>
               <h3>Impact mesurable</h3>
-              <p>Notre succès se mesure aux euros économisés par nos clients. Une commission agence évitée est une victoire concrète.</p>
+              <p>Notre succès se mesure à la valeur que nous redonnons aux propriétaires. Chaque vente réalisée avec Leenkey est synonyme d'économies concrètes, d'une meilleure maîtrise du processus et d'une plus grande sérénité tout au long de la vente.</p>
             </div>
           </div>
         </section>
