@@ -354,9 +354,11 @@ function QuiSommesNousPage() {
                 Rendre la vente immobilière <span className="grad">enfin simple, humaine et transparente.</span>
               </h1>
               <p className="lead">
-                Fondée par Cédric Da Cunha, Leenkey est née d'un constat simple :
-                vendre son bien en France reste trop complexe, trop opaque et beaucoup trop cher.
-                Nous construisons la plateforme qui remet le propriétaire au centre du jeu.
+                Fondée par Cédric Da Cunha, Leenkey est née d'un constat simple&nbsp;:
+                vendre son bien immobilier en France reste trop complexe, trop opaque et souvent
+                trop coûteux. Nous construisons une nouvelle façon de vendre, où l'intelligence
+                artificielle accompagne chaque propriétaire pour lui permettre de vendre en toute
+                autonomie, sans jamais être seul.
               </p>
               <Link to="/investir" className="lk-qsn-hero-cta">
                 Découvrir notre vision
@@ -430,28 +432,32 @@ function QuiSommesNousPage() {
             <span className="lk-eyebrow">L'histoire</span>
             <h2>Pourquoi j'ai lancé <span className="grad">Leenkey.</span></h2>
             <p>
-              Après <strong>plus de quinze années dans l'immobilier</strong>, j'ai vu défiler des
-              centaines de dossiers de vente. Toujours le même schéma&nbsp;: des propriétaires
-              perdus dans la paperasse, des honoraires d'agence qui grignotent une part énorme
-              du prix final, et une expérience client aux antipodes des standards d'aujourd'hui.
+              Après <strong>plus de quinze années dans l'immobilier</strong>, j'ai accompagné des
+              centaines de propriétaires dans leur projet de vente. J'ai constaté la même
+              difficulté, encore et encore&nbsp;: vendre un bien reste un parcours complexe,
+              stressant et souvent coûteux. Beaucoup renoncent à vendre seuls, non par manque de
+              motivation, mais parce qu'ils manquent d'accompagnement.
             </p>
             <p>
-              J'ai voulu construire un modèle qui remet le propriétaire au cœur du processus,
-              tout en gardant l'exigence d'un accompagnement humain sérieux — pas un chatbot
-              perdu, pas un formulaire de contact fantôme. Un vrai conseiller, à votre écoute,
-              accompagné des meilleurs outils technologiques.
+              C'est de ce constat qu'est née Leenkey.
+            </p>
+            <p>
+              Mon ambition est simple&nbsp;: permettre à chaque propriétaire de vendre son bien en
+              toute autonomie, sans jamais être seul. Grâce à une plateforme pilotée par
+              l'<strong>intelligence artificielle</strong>, Leenkey accompagne chaque étape de la
+              vente, de l'analyse de la valeur du bien jusqu'à la signature chez le notaire, avec
+              un accompagnement disponible <strong>24 h/24 et 7 j/7</strong>.
+            </p>
+            <p>
+              Je suis convaincu qu'un propriétaire ne devrait pas avoir à céder plusieurs milliers
+              d'euros de commission pour bénéficier d'un accompagnement de qualité. Il mérite de
+              comprendre chaque étape, de garder le contrôle de sa vente et de profiter des
+              meilleurs outils technologiques dans un cadre simple, transparent et accessible.
             </p>
             <div className="lk-qsn-story-highlight">
-              « Le propriétaire mérite mieux qu'un pourcentage sur le prix de son bien.
-              Il mérite de la clarté, un vrai suivi, et de conserver la valeur qu'il a construite. »
+              Leenkey est née de cette conviction&nbsp;: redonner aux propriétaires les clés de
+              leur vente.
             </div>
-            <p>
-              Leenkey, c'est cette conviction traduite en plateforme&nbsp;: une <strong>IA d'analyse
-              de valeur fiable</strong>, un <strong>copilote conversationnel 24/7</strong>, une
-              <strong> automatisation bout-en-bout</strong> des tâches administratives, et surtout un
-              <strong> forfait fixe transparent</strong>, connu avant de commencer. Pas de commission
-              opaque, pas de mauvaise surprise.
-            </p>
           </div>
         </section>
 
