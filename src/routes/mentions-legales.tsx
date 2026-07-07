@@ -73,7 +73,14 @@ function MentionsLegales() {
           <p>Site : <a href="https://vercel.com" target="_blank" rel="noopener noreferrer">vercel.com</a></p>
         </div>
 
-        <h2>3. Propriété intellectuelle</h2>
+        <h2>3. Conception et développement</h2>
+        <div className="lk-legal-block">
+          <p>
+            Site conçu et développé par <strong>Nebula Creativ</strong>.
+          </p>
+        </div>
+
+        <h2>4. Propriété intellectuelle</h2>
         <p>
           L'ensemble du contenu du site <strong>leenkey.fr</strong> (textes, graphismes, logos,
           images, vidéos, icônes, code source) est la propriété exclusive de Leenkey ou de ses
@@ -86,7 +93,7 @@ function MentionsLegales() {
           interdite sans l'autorisation écrite préalable de Leenkey.
         </p>
 
-        <h2 id="rgpd">4. Données personnelles (RGPD)</h2>
+        <h2 id="rgpd">5. Données personnelles (RGPD)</h2>
         <p>
           Les données personnelles collectées sur ce site (nom, prénom, email, téléphone, données
           relatives au bien immobilier) sont traitées par Leenkey en qualité de responsable de
@@ -121,14 +128,14 @@ function MentionsLegales() {
           obligation légale de conservation plus longue (notamment comptable).
         </p>
 
-        <h2 id="cookies">5. Cookies</h2>
+        <h2 id="cookies">6. Cookies</h2>
         <p>
           Le site utilise uniquement des cookies <strong>strictement nécessaires</strong> au bon
           fonctionnement de la plateforme (préférences, session). Aucun cookie publicitaire ou
           de traçage tiers n'est utilisé sans votre consentement préalable.
         </p>
 
-        <h2>6. Limitation de responsabilité</h2>
+        <h2>7. Limitation de responsabilité</h2>
         <p>
           Les rapports de valorisation fournis par Leenkey constituent une{" "}
           <strong>analyse automatisée</strong> à titre informatif uniquement, basée sur les
@@ -141,13 +148,13 @@ function MentionsLegales() {
           immobilier agréé ou un notaire.
         </p>
 
-        <h2>7. Droit applicable</h2>
+        <h2>8. Droit applicable</h2>
         <p>
           Les présentes mentions légales sont régies par le droit français. Tout litige relatif à
           l'utilisation du site relève de la compétence exclusive des tribunaux de Paris.
         </p>
 
-        <h2>8. Contact</h2>
+        <h2>9. Contact</h2>
         <p>
           Pour toute question relative à ces mentions légales, contactez-nous à{" "}
           <a href="mailto:contact.leenkey@gmail.com">contact.leenkey@gmail.com</a>.
