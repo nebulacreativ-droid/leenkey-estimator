@@ -7,6 +7,22 @@ import "./styles.css";
 
 const router = getRouter();
 
+// GA4 : envoie un page_view à chaque changement de route TanStack (SPA)
+declare global {
+  interface Window {
+    gtag?: (...args: unknown[]) => void;
+  }
+}
+router.subscribe("onResolved", ({ toLocation }) => {
+  if (typeof window.gtag === "function") {
+    window.gtag("event", "page_view", {
+      page_path: toLocation.pathname + toLocation.search,
+      page_location: window.location.href,
+      page_title: document.title,
+    });
+  }
+});
+
 createRoot(document.getElementById("root")!).render(
   <StrictMode>
     <RouterProvider router={router} />
