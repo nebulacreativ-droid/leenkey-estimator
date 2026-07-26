@@ -58,10 +58,13 @@ function MentionsLegales() {
 
         <h2>1. Éditeur du site</h2>
         <div className="lk-legal-block">
-          <p><strong>LEENKEY</strong></p>
-          <p>Société par actions simplifiée (SAS à associé unique) au capital de 1&nbsp;000&nbsp;€</p>
-          <p>Immatriculée au RCS d'Évry sous le numéro <strong>107&nbsp;616&nbsp;211</strong></p>
+          <p>Dénomination sociale : <strong>LEENKEY</strong></p>
+          <p>Forme juridique : Société par actions simplifiée à associé unique (SAS)</p>
+          <p>Capital social : 1&nbsp;000,00&nbsp;€</p>
           <p>Siège social : 36&nbsp;Rue Pierre Brossolette, 91360 Épinay-sur-Orge, France</p>
+          <p>SIREN : 107&nbsp;616&nbsp;211</p>
+          <p>RCS : <strong>107&nbsp;616&nbsp;211 R.C.S. Évry</strong></p>
+          <p>N° de TVA intracommunautaire : FR53&nbsp;107&nbsp;616&nbsp;211</p>
           <p>Président et directeur de la publication : <strong>Cédric Da Cunha</strong></p>
           <p>Email : <a href="mailto:contact.leenkey@gmail.com">contact.leenkey@gmail.com</a></p>
           <p>Téléphone : +33 6 13 84 54 51</p>
