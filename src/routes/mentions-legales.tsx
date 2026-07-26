@@ -54,16 +54,17 @@ function MentionsLegales() {
         `}</style>
 
         <h1>Mentions légales</h1>
-        <p className="lk-legal-update">Dernière mise à jour : 28 juin 2026</p>
+        <p className="lk-legal-update">Dernière mise à jour : 23 juillet 2026</p>
 
         <h2>1. Éditeur du site</h2>
         <div className="lk-legal-block">
-          <p><strong>Leenkey</strong></p>
-          <p>Entrepreneur individuel : Cédric Da Cunha</p>
-          <p>Adresse : à compléter (Île-de-France, France)</p>
+          <p><strong>LEENKEY</strong></p>
+          <p>Société par actions simplifiée (SAS à associé unique) au capital de 1&nbsp;000&nbsp;€</p>
+          <p>Immatriculée au RCS d'Évry sous le numéro <strong>107&nbsp;616&nbsp;211</strong></p>
+          <p>Siège social : 36&nbsp;Rue Pierre Brossolette, 91360 Épinay-sur-Orge, France</p>
+          <p>Président et directeur de la publication : <strong>Cédric Da Cunha</strong></p>
           <p>Email : <a href="mailto:contact.leenkey@gmail.com">contact.leenkey@gmail.com</a></p>
           <p>Téléphone : +33 6 13 84 54 51</p>
-          <p>Directeur de la publication : Cédric Da Cunha</p>
         </div>
 
         <h2>2. Hébergement</h2>

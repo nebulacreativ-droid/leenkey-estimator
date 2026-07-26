@@ -96,7 +96,7 @@ function CGU() {
 
         <h2>2. Définitions</h2>
         <ul>
-          <li><strong>Leenkey</strong> : éditeur du Site, fournisseur des services décrits ci-dessous</li>
+          <li><strong>Leenkey</strong> : LEENKEY, société par actions simplifiée au capital de 1&nbsp;000&nbsp;€, immatriculée au RCS d'Évry sous le numéro 107&nbsp;616&nbsp;211, dont le siège social est situé 36&nbsp;Rue Pierre Brossolette, 91360 Épinay-sur-Orge — éditeur du Site et fournisseur des services décrits ci-dessous</li>
           <li><strong>Utilisateur</strong> : toute personne physique ou morale accédant au Site</li>
           <li><strong>Vendeur</strong> : Utilisateur souhaitant valoriser ou vendre un bien immobilier via la plateforme</li>
           <li><strong>Rapport de valorisation</strong> : document automatisé d'analyse de la valeur d'un bien immobilier</li>
