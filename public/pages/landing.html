@@ -50,6 +50,24 @@
   /* Chip "+5,2 %" toujours au premier plan (au-dessus de la carte estimation) */
   .estimate-chip { z-index: 6 !important; }
   .estimate-card { z-index: 5 !important; }
+  /* Étapes "Comment ça marche" — désactive les micro-animations parasites
+     sur mobile/tactile (pop, rotation, hover collant) qui gênent la lecture */
+  @media (max-width: 900px), (hover: none) {
+    .step .step-n,
+    .step .step-ic,
+    .reveal.in .step-n,
+    .reveal.in .step-ic,
+    .reveal.in .feat-icon {
+      animation: none !important;
+      transition: none !important;
+      transform: none !important;
+    }
+    .step:hover .step-n,
+    .step:hover .step-ic {
+      transform: none !important;
+      box-shadow: var(--shadow-cta) !important;
+    }
+  }
   /* Toggle tarifs — scrollable + compact sur mobile (ne coupe plus l'écran) */
   @media (max-width: 640px) {
     #tarifs .reveal:has(.pricing-toggle) {
