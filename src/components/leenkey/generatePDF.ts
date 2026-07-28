@@ -473,16 +473,20 @@ export async function generateReportPDF(data: PDFData): Promise<Blob> {
     doc.text("Generee par IA - base sur les caracteristiques de votre bien", M, y);
     y += 6;
 
-    setColor(C.bgLight, "fill");
-    const textHeight = Math.max(20, doc.getTextDimensions(aiAnalyse, { maxWidth: PW - 2 * M - 12 }).h + 8);
-    doc.roundedRect(M, y, PW - 2 * M, textHeight, 3, 3, "F");
-
-    setColor(C.navySoft, "text");
+    // ⚠️ Mesurer avec LA MÊME taille de police que le rendu (10),
+    // sinon la hauteur du cadre est sous-estimée et le texte déborde.
     doc.setFontSize(10);
     doc.setFont("helvetica", "normal");
     const lines = doc.splitTextToSize(safe(aiAnalyse), PW - 2 * M - 12);
-    doc.text(lines, M + 6, y + 6);
-    y += textHeight + 10;
+    const lineHeight = doc.getTextDimensions("Ag").h * 1.25;
+    const textHeight = Math.max(20, lines.length * lineHeight + 10);
+
+    setColor(C.bgLight, "fill");
+    doc.roundedRect(M, y, PW - 2 * M, textHeight, 3, 3, "F");
+
+    setColor(C.navySoft, "text");
+    doc.text(lines, M + 6, y + 7);
+    y += textHeight + 12;
   }
 
   // Facteurs avec barres
