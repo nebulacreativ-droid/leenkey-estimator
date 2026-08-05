@@ -16,6 +16,15 @@ import {
   type StepErrors,
 } from "./steps";
 import {
+  ImmeubleStep1,
+  ImmeubleStep2,
+  ImmeubleStep3,
+  ImmeubleStep4,
+  ImmeubleStep5,
+  ImmeubleStep6,
+  ImmeubleStep7,
+} from "./steps-immeuble";
+import {
   LocalStep1,
   LocalStep2,
   LocalStep3,
@@ -226,9 +235,41 @@ const PARCOURS_LOCAL: FlowStep[] = [
   COORDONNEES,
 ];
 
+/* ---------- Parcours immeuble ---------- */
+
+const PARCOURS_IMMEUBLE: FlowStep[] = [
+  CHOIX_TYPE,
+  LOCALISATION,
+  {
+    label: "L'immeuble",
+    render: (p) => <ImmeubleStep1 {...p} />,
+    validate: (f) => {
+      const e: StepErrors = {};
+      if (!f.immeuble_type) e.immeuble_type = "Sélectionnez un type d'immeuble";
+      if (!f.surface_totale_immeuble) e.surface_totale_immeuble = "Surface totale requise";
+      return e;
+    },
+  },
+  {
+    label: "Composition",
+    render: (p) => <ImmeubleStep2 {...p} />,
+    // Sans lot déclaré, ni le revenu ni le taux d'occupation ne sont calculables.
+    validate: (f) => (f.lots.length ? {} : { lots: "Déclarez au moins un lot" }),
+  },
+  { label: "Situation locative", render: (p) => <ImmeubleStep3 {...p} /> },
+  { label: "Charges", render: (p) => <ImmeubleStep4 {...p} /> },
+  { label: "État technique", render: (p) => <ImmeubleStep5 {...p} /> },
+  { label: "Potentiel", render: (p) => <ImmeubleStep6 {...p} /> },
+  { label: "Urbanisme", render: (p) => <ImmeubleStep7 {...p} /> },
+  PROJET,
+  DOCUMENTS,
+  COORDONNEES,
+];
+
 const PARCOURS: Partial<Record<BienType, FlowStep[]>> = {
   terrain: PARCOURS_TERRAIN,
   local_commercial: PARCOURS_LOCAL,
+  immeuble: PARCOURS_IMMEUBLE,
 };
 
 /** Parcours applicable au type sélectionné (généraliste par défaut). */

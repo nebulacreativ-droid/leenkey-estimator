@@ -10,6 +10,19 @@ export type EtatGeneral = "excellent" | "bon" | "moyen" | "a_renover";
 
 export type DpeLetter = "A" | "B" | "C" | "D" | "E" | "F" | "G" | "inconnu";
 
+/** Un lot d'un immeuble de rapport : logement, commerce ou annexe. */
+export interface Lot {
+  id: string;
+  typologie: string; // Studio, T1… T5+, Local commercial, Garage, Parking, Cave, Box, Grenier
+  surface: number | null;
+  loyer_hc: number | null; // € / mois, hors charges
+  charges: number | null; // € / mois
+  bail_debut: string;
+  bail_duree_restante: string | null;
+  dpe: DpeLetter | null;
+  statut: "occupe" | "libre";
+}
+
 export interface LeenkeyForm {
   // 1
   type: BienType | null;
@@ -91,6 +104,35 @@ export interface LeenkeyForm {
   local_commodites: string[]; // sanitaires, cuisine, fibre
   local_potentiel: string[];
   potentiel_transformation: string[];
+
+  // ---- Parcours IMMEUBLE ----
+  immeuble_type: string | null; // rapport, mixte, commercial, bureaux, petit collectif, autre
+  immeuble_niveaux: number | null;
+  surface_totale_immeuble: number | null;
+  surface_habitable_immeuble: number | null;
+  surface_commerciale: number | null;
+  surface_communs: number | null;
+  lots: Lot[];
+  // Charges annuelles du propriétaire (€)
+  charge_taxe_fonciere: number | null;
+  charge_assurance: number | null;
+  charge_entretien: number | null;
+  charge_electricite_communs: number | null;
+  charge_eau: number | null;
+  charge_syndic: number | null;
+  charge_maintenance: number | null;
+  charge_autres: number | null;
+  /** État de chaque poste technique : "Bon" | "Moyen" | "À refaire". */
+  etat_technique: Record<string, string>;
+  travaux_recents: string[];
+  potentiel_developpement: string[];
+  // Urbanisme (saisie manuelle ; récupération automatique prévue dans un second temps)
+  urba_zonage: string | null;
+  urba_hauteur: number | null;
+  urba_emprise: number | null;
+  urba_stationnement: string | null;
+  urba_servitudes: string[];
+  urba_risques: string[];
 
   // 5
   exterieur: string[];
@@ -217,6 +259,30 @@ export const initialForm: LeenkeyForm = {
   local_commodites: [],
   local_potentiel: [],
   potentiel_transformation: [],
+  immeuble_type: null,
+  immeuble_niveaux: null,
+  surface_totale_immeuble: null,
+  surface_habitable_immeuble: null,
+  surface_commerciale: null,
+  surface_communs: null,
+  lots: [],
+  charge_taxe_fonciere: null,
+  charge_assurance: null,
+  charge_entretien: null,
+  charge_electricite_communs: null,
+  charge_eau: null,
+  charge_syndic: null,
+  charge_maintenance: null,
+  charge_autres: null,
+  etat_technique: {},
+  travaux_recents: [],
+  potentiel_developpement: [],
+  urba_zonage: null,
+  urba_hauteur: null,
+  urba_emprise: null,
+  urba_stationnement: null,
+  urba_servitudes: [],
+  urba_risques: [],
   exterieur: [],
   etat: null,
   prestations: [],

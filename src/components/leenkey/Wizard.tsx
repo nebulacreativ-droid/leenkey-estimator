@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { getFlow } from "./flows";
+import { statsLocatives, totalCharges } from "./immeuble-calc";
 import { StepPositionContext } from "./step-position";
 import { initialForm, type LeenkeyForm } from "./types";
 import { EstimationDashboard } from "./Dashboard";
@@ -116,6 +117,42 @@ function buildPayload(form: LeenkeyForm) {
         commodites: form.local_commodites,
         potentiel: form.local_potentiel,
         transformations_possibles: form.potentiel_transformation,
+      },
+    }),
+    ...(form.type === "immeuble" && {
+      immeuble: {
+        nature: form.immeuble_type,
+        annee_construction: form.annee_construction,
+        niveaux: form.immeuble_niveaux,
+        surface_totale: form.surface_totale_immeuble,
+        surface_habitable: form.surface_habitable_immeuble,
+        surface_commerciale: form.surface_commerciale,
+        surface_communs: form.surface_communs,
+        surface_terrain: form.surface_terrain,
+        lots: form.lots,
+        stats_locatives: statsLocatives(form.lots),
+        charges_annuelles: {
+          taxe_fonciere: form.charge_taxe_fonciere,
+          assurance: form.charge_assurance,
+          entretien: form.charge_entretien,
+          electricite_communs: form.charge_electricite_communs,
+          eau: form.charge_eau,
+          syndic: form.charge_syndic,
+          maintenance: form.charge_maintenance,
+          autres: form.charge_autres,
+          total: totalCharges(form),
+        },
+        etat_technique: form.etat_technique,
+        travaux_recents: form.travaux_recents,
+        potentiel_developpement: form.potentiel_developpement,
+        urbanisme: {
+          zonage: form.urba_zonage,
+          hauteur_autorisee_m: form.urba_hauteur,
+          emprise_sol_pct: form.urba_emprise,
+          stationnement: form.urba_stationnement,
+          servitudes: form.urba_servitudes,
+          risques: form.urba_risques,
+        },
       },
     }),
     exterieur: form.exterieur,
@@ -319,7 +356,11 @@ export function LeenkeyWizard() {
         type: form.type,
         // Appartement : l'habitable peut être vide, la Carrez fait foi.
         // Local commercial : c'est la surface totale qui sert de référence.
-        surface: form.surface_habitable ?? form.surface_carrez ?? form.surface_totale,
+        surface:
+          form.surface_habitable ??
+          form.surface_carrez ??
+          form.surface_totale ??
+          form.surface_totale_immeuble,
       }),
     })
       .then((r) => (r.ok ? r.json() : null))

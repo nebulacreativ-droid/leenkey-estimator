@@ -1,4 +1,5 @@
 import type { LeenkeyForm } from "./types";
+import { POSTES_TECHNIQUES, statsLocatives, totalCharges } from "./immeuble-calc";
 
 export interface FactorImpact {
   label: string;
@@ -103,7 +104,31 @@ function basePrixM2(form: LeenkeyForm): number {
 
 function tension(form: LeenkeyForm): "faible" | "moderee" | "forte" {
   const dept = (form.departement || form.code_postal || "").slice(0, 2);
-  return TENSION_DEPT[dept] ?? "faible";
+  const connue = TENSION_DEPT[dept];
+  if (connue) return connue;
+  // La table ne couvre que 10 départements sur 101 : partout ailleurs elle
+  // renvoyait "faible", y compris à Rennes, Montpellier ou Annecy. À défaut,
+  // le niveau de prix est le meilleur indicateur disponible — un marché cher
+  // est un marché où la demande excède l'offre.
+  const prix = basePrixM2(form);
+  if (prix >= 5000) return "forte";
+  if (prix >= 3300) return "moderee";
+  return "faible";
+}
+
+/**
+ * Taux de capitalisation attendu par un investisseur, déduit du niveau de prix
+ * local. Un marché cher est un marché à faible rendement : un immeuble se
+ * négocie autour de 3,5 % à Paris et de 9 % en zone rurale.
+ */
+function tauxCapitalisation(prixM2: number): number {
+  if (prixM2 >= 8000) return 0.035;
+  if (prixM2 >= 6000) return 0.04;
+  if (prixM2 >= 4500) return 0.0475;
+  if (prixM2 >= 3500) return 0.055;
+  if (prixM2 >= 2500) return 0.065;
+  if (prixM2 >= 1500) return 0.075;
+  return 0.09;
 }
 
 // "terrain" ne figure plus ici : il a son propre modèle (computeTerrainEstimation).
@@ -981,12 +1006,285 @@ function computeLocalEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): E
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* IMMEUBLE                                                            */
+/* ------------------------------------------------------------------ */
+
+/** Décote appliquée à une vente en bloc : un immeuble entier vaut moins que la somme de ses lots. */
+const DECOTE_BLOC = 0.22;
+
+/** Coût relatif de la reprise de chaque poste technique. */
+const POSTE_MALUS: Record<string, number> = {
+  Toiture: 0.06,
+  Façade: 0.05,
+  Électricité: 0.04,
+  "Parties communes": 0.02,
+  Plomberie: 0.03,
+  Chauffage: 0.03,
+  "Colonnes (eau, gaz, évacuation)": 0.03,
+  Isolation: 0.03,
+  Fenêtres: 0.03,
+};
+const TRAVAUX_MALUS_MAX = 0.25;
+
+const IMMEUBLE_POTENTIEL_BONUS: Record<string, { bonus: number; label: string }> = {
+  surelevation: { bonus: 0.1, label: "surélévation" },
+  division: { bonus: 0.08, label: "division de lots" },
+  nouveaux_lots: { bonus: 0.07, label: "création de lots" },
+  construction_arriere: { bonus: 0.06, label: "construction en fond de parcelle" },
+  combles: { bonus: 0.05, label: "combles aménageables" },
+  extension: { bonus: 0.05, label: "extension" },
+  changement_destination: { bonus: 0.04, label: "changement de destination" },
+  commercial_transformable: { bonus: 0.04, label: "commercial transformable" },
+  sous_sol: { bonus: 0.03, label: "sous-sol exploitable" },
+};
+
+function computeImmeubleEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
+  const stats = statsLocatives(form.lots);
+  const charges = totalCharges(form);
+  const revenuNet = stats.revenusAnnuels - charges;
+  const surface = form.surface_totale_immeuble || form.surface_habitable_immeuble || 0;
+
+  // ── Travaux : chaque poste à reprendre est une décote directe ──
+  let travauxMalus = 0;
+  const postesARefaire: string[] = [];
+  for (const poste of POSTES_TECHNIQUES) {
+    const etat = form.etat_technique[poste];
+    const malus = POSTE_MALUS[poste] ?? 0.03;
+    // Un poste repris récemment ne peut pas être compté comme à refaire.
+    if (form.travaux_recents.includes(poste)) continue;
+    if (etat === "À refaire") {
+      travauxMalus += malus;
+      postesARefaire.push(poste.toLowerCase());
+    } else if (etat === "Moyen") {
+      travauxMalus += malus / 2;
+    }
+  }
+  travauxMalus = Math.min(travauxMalus, TRAVAUX_MALUS_MAX);
+  const travauxMult = 1 - travauxMalus;
+
+  // ── Potentiel de développement ──
+  let potentielMult = 1;
+  const potentielLabels: string[] = [];
+  for (const p of form.potentiel_developpement) {
+    const e = IMMEUBLE_POTENTIEL_BONUS[p];
+    if (e) {
+      potentielMult += e.bonus;
+      potentielLabels.push(e.label);
+    }
+  }
+
+  // ── DPE du parc : depuis 2025 un logement G ne peut plus être loué ──
+  const lotsAvecDpe = form.lots.filter((l) => l.dpe && l.dpe !== "inconnu");
+  const passoires = lotsAvecDpe.filter((l) => l.dpe === "F" || l.dpe === "G").length;
+  const partPassoires = lotsAvecDpe.length ? passoires / lotsAvecDpe.length : 0;
+  const dpeMult = 1 - partPassoires * 0.1;
+
+  const prixM2Lot =
+    dvfPrixM2 && dvfPrixM2 > 0
+      ? Math.round(dvfPrixM2 * 0.7 + basePrixM2(form) * 0.3)
+      : basePrixM2(form);
+
+  // ── Méthode 1 : capitalisation du revenu net ──
+  let taux = tauxCapitalisation(prixM2Lot);
+  // La vacance est un risque : l'acquéreur exige un rendement plus élevé.
+  if (stats.nbLots > 0 && stats.tauxOccupation < 80) {
+    taux += ((80 - stats.tauxOccupation) / 100) * 0.02;
+  }
+  if (travauxMalus > 0.12) taux += 0.005;
+  taux = Math.max(0.03, taux);
+  const valeurRendement = revenuNet > 0 ? (revenuNet / taux) * potentielMult * dpeMult : 0;
+
+  // ── Méthode 2 : valeur à la découpe, moins la décote de bloc ──
+  const surfaceHab = form.surface_habitable_immeuble ?? 0;
+  const surfaceCom = form.surface_commerciale ?? 0;
+  const surfaceValorisee = surfaceHab + surfaceCom > 0 ? surfaceHab + surfaceCom * 0.95 : surface;
+  const valeurDecoupe = surfaceValorisee * prixM2Lot;
+  // Un immeuble vide ne produit rien pendant sa commercialisation, et la raison
+  // de la vacance inquiète l'acquéreur : la valeur patrimoniale en tient compte
+  // elle aussi, sans quoi vider un immeuble le rendrait gratuitement plus cher.
+  const occupationMult = stats.nbLots ? 0.92 + 0.08 * (stats.tauxOccupation / 100) : 1;
+  const valeurBloc =
+    valeurDecoupe * (1 - DECOTE_BLOC) * travauxMult * potentielMult * dpeMult * occupationMult;
+
+  // Un immeuble loué se vend à son rendement ; sans revenu, seule la valeur
+  // patrimoniale existe.
+  const loue = revenuNet > 0;
+  const valeur = loue ? valeurRendement * 0.65 + valeurBloc * 0.35 : valeurBloc;
+
+  const prixEstime = Math.max(0, Math.round(valeur / 1000) * 1000);
+  const prixM2Final = surface > 0 ? Math.round(prixEstime / surface) : 0;
+  const prixM2Marche = prixM2Lot;
+  const deltaMarche = Math.round(((prixM2Final - prixM2Marche) / prixM2Marche) * 100);
+
+  const facteurs: FactorImpact[] = [];
+  if (loue) {
+    facteurs.push({
+      label: "Rendement locatif",
+      impact: 0,
+      detail: `${stats.revenusAnnuels.toLocaleString("fr-FR")} € de loyers − ${charges.toLocaleString("fr-FR")} € de charges = ${revenuNet.toLocaleString("fr-FR")} € nets, capitalisés à ${(taux * 100).toFixed(2)} %`,
+    });
+  } else {
+    facteurs.push({
+      label: "Rendement locatif",
+      impact: 0,
+      detail: "Aucun revenu net déclaré — l'immeuble est valorisé sur sa seule valeur patrimoniale",
+    });
+  }
+  facteurs.push(
+    {
+      label: "Occupation",
+      impact: Math.round((occupationMult - 1) * 100),
+      detail: `${stats.nbOccupes}/${stats.nbLots} lots loués — ${stats.tauxOccupation} % d'occupation${
+        stats.potentielVacance
+          ? ` · ${stats.potentielVacance.toLocaleString("fr-FR")} € de loyers annuels à récupérer`
+          : ""
+      }`,
+    },
+    {
+      label: "État technique",
+      impact: -Math.round(travauxMalus * 100),
+      detail: postesARefaire.length
+        ? `À reprendre : ${postesARefaire.join(", ")}`
+        : "Aucun poste majeur à reprendre",
+    },
+    {
+      label: "Potentiel de développement",
+      impact: Math.round((potentielMult - 1) * 100),
+      detail: potentielLabels.length ? potentielLabels.join(", ") : "Aucun potentiel déclaré",
+    },
+    {
+      label: "Vente en bloc",
+      impact: -Math.round(DECOTE_BLOC * 100),
+      detail: `Un immeuble entier se négocie sous la somme de ses lots · valeur à la découpe estimée ${(Math.round(valeurDecoupe / 1000) * 1000).toLocaleString("fr-FR")} €`,
+    },
+  );
+  // Les deux méthodes doivent converger. Un écart marqué signifie que les
+  // loyers en place sont décalés du marché : c'est le principal levier de
+  // négociation d'un immeuble de rapport, il doit être dit.
+  if (loue && valeurBloc > 0) {
+    const ecart = (valeurRendement - valeurBloc) / valeurBloc;
+    if (Math.abs(ecart) > 0.3) {
+      facteurs.push({
+        label: "Loyers en place vs marché",
+        impact: Math.round(ecart * 100),
+        detail:
+          ecart < 0
+            ? `Les loyers actuels valorisent l'immeuble ${Math.abs(Math.round(ecart * 100))} % sous sa valeur patrimoniale : ils sont en dessous du marché. Les remettre à niveau au fil des relocations est le premier levier de valeur.`
+            : `Les loyers actuels valorisent l'immeuble ${Math.round(ecart * 100)} % au-dessus de sa valeur patrimoniale. Un acquéreur vérifiera qu'ils sont tenables dans la durée.`,
+      });
+    }
+  }
+  if (lotsAvecDpe.length && passoires) {
+    facteurs.push({
+      label: "Performance énergétique du parc",
+      impact: -Math.round(partPassoires * 10),
+      detail: `${passoires} lot${passoires > 1 ? "s" : ""} en DPE F ou G sur ${lotsAvecDpe.length} renseignés — location interdite pour les G depuis 2025`,
+    });
+  }
+
+  const champsClés: Array<keyof LeenkeyForm> = [
+    "adresse",
+    "code_postal",
+    "immeuble_type",
+    "surface_totale_immeuble",
+    "surface_habitable_immeuble",
+    "charge_taxe_fonciere",
+  ];
+  let complet = champsClés.filter((k) => {
+    const v = form[k];
+    return v !== null && v !== "" && v !== undefined;
+  }).length;
+  if (form.lots.length) complet += 1;
+  if (stats.revenusAnnuels > 0) complet += 1;
+  const fiabiliteScore = Math.round((complet / (champsClés.length + 2)) * 100);
+  const fiabilite: EstimationResult["fiabilite"] =
+    fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
+
+  let rangePct = 0.03;
+  if (fiabilite === "elevee") rangePct = 0.02;
+  else if (fiabilite === "moyenne") rangePct = 0.025;
+  const tensionMarche = tension(form);
+  if (tensionMarche === "forte") rangePct *= 0.85;
+  rangePct = Math.min(rangePct, 0.03);
+
+  let score = 45;
+  score += Math.round((stats.tauxOccupation - 70) / 3);
+  score -= Math.round(travauxMalus * 120);
+  score += Math.round((potentielMult - 1) * 120);
+  score -= Math.round(partPassoires * 15);
+  score = Math.max(0, Math.min(100, score));
+
+  let delaiBase: [number, number] = [120, 210];
+  if (loue && stats.tauxOccupation >= 90) delaiBase = [75, 150];
+  if (travauxMalus > 0.15) delaiBase = [delaiBase[0] + 30, delaiBase[1] + 60];
+
+  const recommandations: Recommendation[] = [];
+  if (stats.potentielVacance > 0) {
+    recommandations.push({
+      title: "Relouer les lots vacants avant la vente",
+      description: `Les lots libres représentent ${stats.potentielVacance.toLocaleString("fr-FR")} € de loyers annuels. Un immeuble plein se vend sur un rendement constaté, pas sur une promesse.`,
+      uplift: `+${(Math.round(((stats.potentielVacance / taux) * 0.65) / 1000) * 1000).toLocaleString("fr-FR")} € environ`,
+    });
+  }
+  if (postesARefaire.length) {
+    recommandations.push({
+      title: `Chiffrer les travaux : ${postesARefaire.slice(0, 3).join(", ")}`,
+      description:
+        "Un devis d'entreprise vaut mieux qu'une estimation d'acquéreur : sans chiffrage, l'acheteur retient toujours l'hypothèse haute.",
+      uplift: `+${Math.round(travauxMalus * 50)} % de la décote évitée`,
+    });
+  }
+  if (passoires) {
+    recommandations.push({
+      title: "Traiter les lots en DPE F et G",
+      description:
+        "Les logements classés G ne sont plus louables depuis 2025, les F suivront. Un acquéreur déduit le coût de la rénovation, souvent plus large que son coût réel.",
+      uplift: "+5 à 10%",
+    });
+  }
+  if (!form.potentiel_developpement.length) {
+    recommandations.push({
+      title: "Faire étudier le potentiel du PLU",
+      description:
+        "Surélévation, division, combles : un potentiel documenté élargit la clientèle aux marchands de biens et fait monter les offres.",
+      uplift: "+5 à 15%",
+    });
+  }
+  if (recommandations.length < 3) {
+    recommandations.push({
+      title: "Préparer le dossier investisseur",
+      description:
+        "Baux, quittances, taxe foncière, charges détaillées, DPE de chaque lot et diagnostics communs : c'est ce qu'un acquéreur demandera avant toute offre.",
+    });
+  }
+
+  return {
+    prixEstime,
+    prixBas: Math.round((prixEstime * (1 - rangePct)) / 1000) * 1000,
+    prixHaut: Math.round((prixEstime * (1 + rangePct)) / 1000) * 1000,
+    prixM2: prixM2Final,
+    prixM2Marche,
+    deltaMarche,
+    surface,
+    fiabilite,
+    fiabiliteScore,
+    scoreAttractivite: score,
+    delaiVente: `${delaiBase[0]}–${delaiBase[1]} jours`,
+    tensionMarche,
+    facteurs,
+    recommandations: recommandations.slice(0, 3),
+  };
+}
+
 export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
   // Un terrain n'a ni surface habitable, ni DPE, ni prestations : il a son
   // propre modèle, fondé sur la constructibilité et la viabilisation.
   if (form.type === "terrain") return computeTerrainEstimation(form);
   // Un local commercial se valorise à l'emplacement et au rendement locatif.
   if (form.type === "local_commercial") return computeLocalEstimation(form, dvfPrixM2);
+  // Un immeuble de rapport se valorise à son revenu net, lot par lot.
+  if (form.type === "immeuble") return computeImmeubleEstimation(form, dvfPrixM2);
 
   const surface = form.surface_habitable || form.surface_carrez || 60;
 
