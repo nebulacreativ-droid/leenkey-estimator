@@ -70,6 +70,8 @@ export interface LeenkeyForm {
     gare: string | null;
     bus: string | null;
     centre_ville: string | null;
+    grande_ville: string | null;
+    aeroport: string | null;
   };
   situation_terrain: string | null; // lotissement, centre-ville, hameau, zone isolée
   contraintes_terrain: string[];
@@ -133,6 +135,23 @@ export interface LeenkeyForm {
   urba_stationnement: string | null;
   urba_servitudes: string[];
   urba_risques: string[];
+
+  // ---- Parcours ATYPIQUE ----
+  atypique_type: string | null; // château, loft, ferme, gîte…
+  nb_batiments: number | null;
+  surface_dependances: number | null;
+  classement: string[]; // monument historique, site protégé…
+  caracteres_exceptionnels: string[];
+  cadre: string | null;
+  calme: string | null;
+  attractivite_touristique: string | null;
+  qualite_paysagere: string | null;
+  potentiel_atypique: string[];
+  contraintes_atypique: string[];
+  travaux_budget: number | null; // € — reste à faire, estimé par le vendeur
+  cout_entretien_annuel: number | null;
+  revenus_existants: number | null; // € / an — gîte, location saisonnière…
+  charges_atypique: number | null;
 
   // 5
   exterieur: string[];
@@ -227,6 +246,8 @@ export const initialForm: LeenkeyForm = {
     gare: null,
     bus: null,
     centre_ville: null,
+    grande_ville: null,
+    aeroport: null,
   },
   situation_terrain: null,
   contraintes_terrain: [],
@@ -283,6 +304,21 @@ export const initialForm: LeenkeyForm = {
   urba_stationnement: null,
   urba_servitudes: [],
   urba_risques: [],
+  atypique_type: null,
+  nb_batiments: null,
+  surface_dependances: null,
+  classement: [],
+  caracteres_exceptionnels: [],
+  cadre: null,
+  calme: null,
+  attractivite_touristique: null,
+  qualite_paysagere: null,
+  potentiel_atypique: [],
+  contraintes_atypique: [],
+  travaux_budget: null,
+  cout_entretien_annuel: null,
+  revenus_existants: null,
+  charges_atypique: null,
   exterieur: [],
   etat: null,
   prestations: [],

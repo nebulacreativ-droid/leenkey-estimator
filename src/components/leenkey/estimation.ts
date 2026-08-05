@@ -30,29 +30,148 @@ export interface EstimationResult {
   recommandations: Recommendation[];
 }
 
-// Prix moyen au m² mocké par dept (FR)
+/**
+ * Prix moyen du m² résidentiel par département (€/m²).
+ *
+ * ⚠️ Ordres de grandeur, à recalibrer sur DVF.
+ *
+ * La table précédente ne couvrait que 20 départements et renvoyait 3 500 €/m²
+ * pour les 81 autres : un bien dans la Creuse (~950 €/m² réels) était calculé
+ * sur une base 3,7 fois trop élevée, et un bien en Haute-Savoie sur une base
+ * trop basse. C'était la première cause d'estimations très au-dessus ou
+ * très en dessous du marché.
+ */
 const PRIX_DEPT: Record<string, number> = {
-  "75": 10500,
-  "92": 8200,
-  "93": 4200,
-  "94": 5400,
-  "78": 4600,
-  "77": 3200,
-  "91": 3400,
-  "95": 3300,
-  "69": 5200,
-  "13": 3700,
-  "33": 4800,
-  "31": 3900,
-  "44": 4200,
-  "67": 3400,
-  "59": 3100,
+  "01": 2600,
+  "02": 1300,
+  "03": 1250,
+  "04": 2300,
+  "05": 2700,
   "06": 5500,
-  "34": 3500,
-  "35": 3700,
-  "76": 2700,
-  "83": 4200,
-  "06_nice": 5100,
+  "07": 1900,
+  "08": 1100,
+  "09": 1450,
+  "10": 1700,
+  "11": 1850,
+  "12": 1450,
+  "13": 3700,
+  "14": 2500,
+  "15": 1200,
+  "16": 1500,
+  "17": 2900,
+  "18": 1300,
+  "19": 1300,
+  "21": 2400,
+  "22": 2100,
+  "23": 950,
+  "24": 1700,
+  "25": 2000,
+  "26": 2400,
+  "27": 1900,
+  "28": 1900,
+  "29": 2300,
+  "30": 2400,
+  "31": 3300,
+  "32": 1600,
+  "33": 3900,
+  "34": 3300,
+  "35": 3000,
+  "36": 1100,
+  "37": 2500,
+  "38": 2700,
+  "39": 1600,
+  "40": 3000,
+  "41": 1700,
+  "42": 1700,
+  "43": 1500,
+  "44": 3600,
+  "45": 2100,
+  "46": 1600,
+  "47": 1500,
+  "48": 1350,
+  "49": 2400,
+  "50": 1800,
+  "51": 2100,
+  "52": 1000,
+  "53": 1500,
+  "54": 2000,
+  "55": 1100,
+  "56": 3000,
+  "57": 2000,
+  "58": 1100,
+  "59": 2500,
+  "60": 2300,
+  "61": 1300,
+  "62": 2000,
+  "63": 2200,
+  "64": 3300,
+  "65": 1600,
+  "66": 2400,
+  "67": 3000,
+  "68": 2500,
+  "69": 4300,
+  "70": 1200,
+  "71": 1500,
+  "72": 1800,
+  "73": 3600,
+  "74": 4800,
+  "75": 9800,
+  "76": 2300,
+  "77": 3000,
+  "78": 4400,
+  "79": 1500,
+  "80": 1800,
+  "81": 1700,
+  "82": 1700,
+  "83": 4000,
+  "84": 2600,
+  "85": 2800,
+  "86": 1700,
+  "87": 1500,
+  "88": 1300,
+  "89": 1500,
+  "90": 1700,
+  "91": 3200,
+  "92": 6800,
+  "93": 3800,
+  "94": 4700,
+  "95": 3200,
+  "2A": 3900,
+  "2B": 3200,
+  "971": 2400,
+  "972": 2500,
+  "973": 2200,
+  "974": 2900,
+  "976": 2000,
+};
+/** Repli quand le code postal est absent ou illisible. */
+const PRIX_DEPT_DEFAUT = 1800;
+
+/**
+ * Paris par arrondissement : l'écart entre le 6e et le 19e dépasse 70 %,
+ * une moyenne parisienne unique n'a aucun sens.
+ */
+const PRIX_PARIS: Record<string, number> = {
+  "75001": 13500,
+  "75002": 12000,
+  "75003": 13000,
+  "75004": 14000,
+  "75005": 12500,
+  "75006": 15500,
+  "75007": 15000,
+  "75008": 13000,
+  "75009": 11000,
+  "75010": 10000,
+  "75011": 10500,
+  "75012": 9800,
+  "75013": 9500,
+  "75014": 10500,
+  "75015": 10500,
+  "75016": 12000,
+  "75017": 11000,
+  "75018": 9500,
+  "75019": 8500,
+  "75020": 9000,
 };
 
 const PRIX_VILLE: Record<string, number> = {
@@ -95,11 +214,16 @@ function normalize(s: string) {
 }
 
 function basePrixM2(form: LeenkeyForm): number {
+  const cp = (form.code_postal || "").trim();
+  if (PRIX_PARIS[cp]) return PRIX_PARIS[cp];
   const v = normalize(form.ville || "");
   if (v && PRIX_VILLE[v]) return PRIX_VILLE[v];
-  const dept = (form.departement || form.code_postal || "").slice(0, 2);
-  if (PRIX_DEPT[dept]) return PRIX_DEPT[dept];
-  return 3500;
+  const source = (form.departement || cp).trim();
+  // DOM : code à 3 chiffres (971xx…). Corse : 20xxx, sans distinction 2A/2B
+  // dans le code postal.
+  if (PRIX_DEPT[source.slice(0, 3)]) return PRIX_DEPT[source.slice(0, 3)];
+  if (source.startsWith("20")) return PRIX_DEPT["2A"];
+  return PRIX_DEPT[source.slice(0, 2)] ?? PRIX_DEPT_DEFAUT;
 }
 
 function tension(form: LeenkeyForm): "faible" | "moderee" | "forte" {
@@ -1277,6 +1401,420 @@ function computeImmeubleEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* BIEN ATYPIQUE                                                       */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Rapport entre le prix du m² du bien et celui du résidentiel local.
+ *
+ * Un château se vend très en dessous du m² local (surfaces immenses, charges
+ * lourdes, clientèle étroite) ; un loft ou une maison d'architecte au-dessus.
+ */
+const ATYPIQUE_TYPE_MULT: Record<string, { mult: number; label: string }> = {
+  architecte: { mult: 1.25, label: "Maison d'architecte" },
+  loft: { mult: 1.15, label: "Loft" },
+  gite: { mult: 0.85, label: "Gîte / chambres d'hôtes" },
+  autre: { mult: 0.85, label: "Bien atypique" },
+  longere: { mult: 0.8, label: "Longère" },
+  moulin: { mult: 0.7, label: "Moulin" },
+  manoir: { mult: 0.65, label: "Manoir / demeure de caractère" },
+  ferme: { mult: 0.6, label: "Corps de ferme" },
+  religieux: { mult: 0.6, label: "Bâtiment religieux converti" },
+  chateau: { mult: 0.45, label: "Château" },
+  grange: { mult: 0.4, label: "Grange à réhabiliter" },
+};
+
+const CARACTERE_POIDS: Record<string, number> = {
+  vue_exceptionnelle: 0.03,
+  parc: 0.02,
+  architecture_remarquable: 0.02,
+  piscine: 0.015,
+  etang: 0.015,
+  grands_volumes: 0.012,
+  hauteur_plafond: 0.012,
+  jardin_remarquable: 0.012,
+  riviere: 0.01,
+  foret: 0.01,
+  chapelle: 0.01,
+  ecuries: 0.01,
+  cheminees_monumentales: 0.01,
+  escalier_honneur: 0.01,
+  cave_voutee: 0.008,
+  charpente_ancienne: 0.008,
+  parquets_anciens: 0.008,
+  pierre_taille: 0.008,
+  colombages: 0.008,
+  verriere: 0.008,
+  orangerie: 0.008,
+  logement_gardien: 0.008,
+  spa: 0.008,
+  cave_vin: 0.006,
+  ascenseur: 0.006,
+  domotique_hdg: 0.006,
+  atelier: 0.006,
+  pigeonnier: 0.006,
+  tomettes: 0.005,
+  terres_agricoles: 0.005,
+  heliport: 0.005,
+};
+const CARACTERE_CAP = 0.2;
+
+/**
+ * Postes techniques d'un bien d'exception et coût relatif de leur reprise.
+ * Source unique : le formulaire lit cette table pour construire ses questions,
+ * de sorte qu'un poste renommé ne puisse pas rendre son malus inopérant.
+ */
+const ATYPIQUE_POSTE_MALUS: Record<string, number> = {
+  "Structure / gros œuvre": 0.08,
+  Toiture: 0.07,
+  Façade: 0.05,
+  "Réseaux (eau, électricité)": 0.04,
+  Chauffage: 0.03,
+  Isolation: 0.03,
+  Menuiseries: 0.03,
+};
+
+export const POSTES_ATYPIQUE = Object.keys(ATYPIQUE_POSTE_MALUS);
+
+const CADRE_MULT: Record<string, number> = {
+  "Bord de mer": 1.12,
+  "Centre-ville": 1.08,
+  Montagne: 1.05,
+  "Bourg / petite ville": 1.02,
+  Village: 1,
+  "Périphérie de ville": 1,
+  "Pleine campagne": 0.95,
+};
+
+const ATYPIQUE_POTENTIEL_BONUS: Record<string, { bonus: number; label: string }> = {
+  evenementiel: { bonus: 0.07, label: "événementiel" },
+  gites: { bonus: 0.06, label: "création de gîtes" },
+  division: { bonus: 0.06, label: "division possible" },
+  chambres_hotes: { bonus: 0.05, label: "chambres d'hôtes" },
+  rehabilitation: { bonus: 0.05, label: "réhabilitation de dépendances" },
+  locatif_saisonnier: { bonus: 0.05, label: "location saisonnière" },
+  equestre: { bonus: 0.04, label: "activité équestre" },
+  changement_destination: { bonus: 0.03, label: "changement de destination" },
+  exploitation_agricole: { bonus: 0.03, label: "exploitation agricole" },
+};
+const ATYPIQUE_POTENTIEL_CAP = 0.25;
+
+const ATYPIQUE_CONTRAINTE_MALUS: Record<string, { malus: number; label: string }> = {
+  risques_naturels: { malus: 0.06, label: "risques naturels" },
+  contraintes_exploitation: { malus: 0.06, label: "contraintes d'exploitation" },
+  abf: { malus: 0.05, label: "avis ABF obligatoire" },
+  droit_passage: { malus: 0.04, label: "droit de passage" },
+  natura2000: { malus: 0.04, label: "Natura 2000" },
+  obligation_ouverture: { malus: 0.04, label: "obligation d'ouverture au public" },
+  servitudes: { malus: 0.03, label: "servitudes" },
+};
+
+/**
+ * Surface pondérée d'un bien d'exception.
+ *
+ * Au-delà d'une surface de résidence courante, chaque mètre carré
+ * supplémentaire se vend beaucoup moins cher : il coûte à chauffer et à
+ * entretenir sans élargir la clientèle. Sans ce palier, un château de 900 m²
+ * ressortirait à neuf fois le prix d'une maison de 100 m².
+ */
+function surfacePondereeAtypique(surface: number): number {
+  const palier1 = Math.min(surface, 200);
+  const palier2 = Math.min(Math.max(surface - 200, 0), 300) * 0.55;
+  const palier3 = Math.max(surface - 500, 0) * 0.3;
+  return palier1 + palier2 + palier3;
+}
+
+function computeAtypiqueEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
+  const typeEntry = ATYPIQUE_TYPE_MULT[form.atypique_type ?? "autre"] ?? ATYPIQUE_TYPE_MULT.autre;
+  const surface = form.surface_habitable || 0;
+  const dependances = form.surface_dependances ?? 0;
+
+  const baseResidentiel =
+    dvfPrixM2 && dvfPrixM2 > 0
+      ? Math.round(dvfPrixM2 * 0.7 + basePrixM2(form) * 0.3)
+      : basePrixM2(form);
+  const prixM2Marche = Math.round(baseResidentiel * typeEntry.mult);
+
+  // ── Caractères exceptionnels ──
+  let caractereSomme = 0;
+  for (const c of form.caracteres_exceptionnels) {
+    caractereSomme += CARACTERE_POIDS[c] ?? 0.005;
+  }
+  const caractereMult = 1 + Math.min(caractereSomme, CARACTERE_CAP);
+
+  // ── État technique ──
+  let travauxMalus = 0;
+  const postesARefaire: string[] = [];
+  for (const [poste, malus] of Object.entries(ATYPIQUE_POSTE_MALUS)) {
+    if (form.travaux_recents.includes(poste)) continue;
+    const etat = form.etat_technique[poste];
+    if (etat === "À refaire") {
+      travauxMalus += malus;
+      postesARefaire.push(poste.toLowerCase());
+    } else if (etat === "Moyen") {
+      travauxMalus += malus / 2;
+    }
+  }
+  travauxMalus = Math.min(travauxMalus, 0.3);
+  // Quand le vendeur chiffre les travaux, ce montant fait foi : la décote au
+  // pourcentage n'est plus là que pour le risque résiduel, sans quoi les
+  // travaux seraient comptés deux fois.
+  const budgetTravaux = form.travaux_budget ?? 0;
+  const malusApplique = budgetTravaux > 0 ? travauxMalus / 2 : travauxMalus;
+  const travauxMult = 1 - malusApplique;
+
+  // ── Environnement ──
+  const cadreMult = CADRE_MULT[form.cadre ?? "Village"] ?? 1;
+  const envMult =
+    1 +
+    (NIVEAU_BONUS[form.calme ?? "Moyen"] ?? 0) +
+    (NIVEAU_BONUS[form.qualite_paysagere ?? "Moyen"] ?? 0) +
+    (NIVEAU_BONUS[form.attractivite_touristique ?? "Moyen"] ?? 0) * 0.5;
+
+  // L'acquéreur d'un bien d'exception vient souvent de loin : le temps de
+  // trajet depuis une grande ville ou une gare compte davantage qu'ailleurs.
+  let accesMult = 1;
+  if (form.distances.grande_ville === "< 10 min") accesMult += 0.05;
+  else if (form.distances.grande_ville === "> 1 h") accesMult -= 0.08;
+  if (form.distances.gare === "< 10 min") accesMult += 0.03;
+  else if (form.distances.gare === "> 1 h") accesMult -= 0.03;
+
+  // ── Potentiel et contraintes ──
+  let potentielSomme = 0;
+  const potentielLabels: string[] = [];
+  for (const p of form.potentiel_atypique) {
+    const e = ATYPIQUE_POTENTIEL_BONUS[p];
+    if (e) {
+      potentielSomme += e.bonus;
+      potentielLabels.push(e.label);
+    }
+  }
+  const potentielMult = 1 + Math.min(potentielSomme, ATYPIQUE_POTENTIEL_CAP);
+
+  let contrainteSomme = 0;
+  const contrainteLabels: string[] = [];
+  for (const c of form.contraintes_atypique) {
+    const e = ATYPIQUE_CONTRAINTE_MALUS[c];
+    if (e) {
+      contrainteSomme += e.malus;
+      contrainteLabels.push(e.label);
+    }
+  }
+  const contrainteMult = 1 - Math.min(contrainteSomme, 0.25);
+
+  // Le classement Monument Historique ouvre des avantages fiscaux et du
+  // prestige, mais restreint les travaux : l'effet net reste modeste.
+  let classementMult = 1;
+  if (form.classement.includes("monument_historique")) classementMult += 0.03;
+  if (form.classement.includes("label_fondation")) classementMult += 0.01;
+
+  const globalMult =
+    caractereMult *
+    travauxMult *
+    cadreMult *
+    envMult *
+    accesMult *
+    potentielMult *
+    contrainteMult *
+    classementMult;
+
+  const prixM2 = Math.round(prixM2Marche * globalMult);
+
+  // Bâti principal, avec paliers de surface.
+  const valeurBati = prixM2 * surfacePondereeAtypique(surface);
+  // Les dépendances sont du volume brut : une fraction du prix du bâti.
+  const valeurDependances = prixM2 * 0.15 * dependances;
+  // Le parc au-delà du jardin d'agrément se valorise en terre, pas en terrain
+  // à bâtir : 25 hectares de bois ne valent pas 25 hectares de lotissement.
+  const terrain = form.surface_terrain ?? 0;
+  const valeurParc = Math.max(0, terrain - 2000) * basePrixM2Terrain(form) * 0.08;
+
+  const valeurPatrimoniale = valeurBati + valeurDependances + valeurParc;
+
+  // ── Exploitation existante ──
+  // Un bien qui s'autofinance intéresse une clientèle d'exploitants, pas
+  // seulement de résidents. On capitalise l'excédent à un taux élevé :
+  // l'activité est plus risquée et moins liquide qu'un bail classique.
+  const revenus = form.revenus_existants ?? 0;
+  const coutAnnuel =
+    (form.charges_atypique ?? 0) + (form.cout_entretien_annuel ?? 0) + (form.taxe_fonciere ?? 0);
+  const excedent = revenus - coutAnnuel;
+  const valeurExploitation = excedent > 0 ? excedent / 0.09 : 0;
+
+  const valeurAvantTravaux =
+    valeurExploitation > 0
+      ? valeurPatrimoniale * 0.75 + valeurExploitation * 0.25
+      : valeurPatrimoniale;
+
+  const prixEstime = Math.max(0, Math.round((valeurAvantTravaux - budgetTravaux) / 1000) * 1000);
+  const prixM2Final = surface > 0 ? Math.round(prixEstime / surface) : 0;
+  const deltaMarche = Math.round(((prixM2Final - prixM2Marche) / prixM2Marche) * 100);
+
+  const facteurs: FactorImpact[] = [
+    {
+      label: "Nature du bien",
+      impact: Math.round((typeEntry.mult - 1) * 100),
+      detail: `${typeEntry.label} · référence ${prixM2Marche.toLocaleString("fr-FR")} €/m²`,
+    },
+    {
+      label: "Caractères exceptionnels",
+      impact: Math.round((caractereMult - 1) * 100),
+      detail: `${form.caracteres_exceptionnels.length} élément${form.caracteres_exceptionnels.length > 1 ? "s" : ""} d'exception déclaré${form.caracteres_exceptionnels.length > 1 ? "s" : ""}`,
+    },
+    {
+      label: "État & travaux",
+      impact: -Math.round(malusApplique * 100),
+      detail: budgetTravaux
+        ? `${budgetTravaux.toLocaleString("fr-FR")} € de travaux déduits directement${postesARefaire.length ? ` · à reprendre : ${postesARefaire.join(", ")}` : ""}`
+        : postesARefaire.length
+          ? `À reprendre : ${postesARefaire.join(", ")}`
+          : "Aucun poste majeur à reprendre",
+    },
+    {
+      label: "Cadre & environnement",
+      impact: Math.round((cadreMult * envMult - 1) * 100),
+      detail: form.cadre ?? "Cadre non renseigné",
+    },
+    {
+      label: "Accessibilité",
+      impact: Math.round((accesMult - 1) * 100),
+      detail: form.distances.grande_ville
+        ? `Grande ville à ${form.distances.grande_ville}`
+        : "Non renseignée",
+    },
+    {
+      label: "Potentiel d'exploitation",
+      impact: Math.round((potentielMult - 1) * 100),
+      detail: potentielLabels.length ? potentielLabels.join(", ") : "Usage résidentiel seul",
+    },
+    {
+      label: "Contraintes",
+      impact: -Math.round(Math.min(contrainteSomme, 0.25) * 100),
+      detail: contrainteLabels.length ? contrainteLabels.join(", ") : "Aucune déclarée",
+    },
+  ];
+
+  if (surface > 200) {
+    facteurs.push({
+      label: "Effet de surface",
+      impact: -Math.round((1 - surfacePondereeAtypique(surface) / surface) * 100),
+      detail: `Au-delà de 200 m², chaque mètre carré supplémentaire se valorise moins : il coûte à entretenir sans élargir la clientèle`,
+    });
+  }
+  if (valeurExploitation > 0) {
+    facteurs.push({
+      label: "Exploitation en place",
+      impact: 0,
+      detail: `${revenus.toLocaleString("fr-FR")} € de revenus − ${coutAnnuel.toLocaleString("fr-FR")} € de coûts = ${excedent.toLocaleString("fr-FR")} € d'excédent annuel — le bien s'autofinance, ce qui élargit nettement la clientèle`,
+    });
+  } else if (coutAnnuel > 0) {
+    facteurs.push({
+      label: "Coût de détention",
+      impact: 0,
+      detail: `${coutAnnuel.toLocaleString("fr-FR")} € par an d'entretien, taxe foncière et charges — un acquéreur l'intègre dans son budget`,
+    });
+  }
+
+  const champsClés: Array<keyof LeenkeyForm> = [
+    "adresse",
+    "code_postal",
+    "atypique_type",
+    "surface_habitable",
+    "annee_construction",
+    "cadre",
+  ];
+  let complet = champsClés.filter((k) => {
+    const v = form[k];
+    return v !== null && v !== "" && v !== undefined;
+  }).length;
+  if (form.caracteres_exceptionnels.length) complet += 1;
+  if (Object.keys(form.etat_technique).length) complet += 1;
+  const fiabiliteScore = Math.round((complet / (champsClés.length + 2)) * 100);
+  const fiabilite: EstimationResult["fiabilite"] =
+    fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
+
+  let rangePct = 0.03;
+  if (fiabilite === "elevee") rangePct = 0.02;
+  else if (fiabilite === "moyenne") rangePct = 0.025;
+  const tensionMarche = tension(form);
+  if (tensionMarche === "forte") rangePct *= 0.85;
+  rangePct = Math.min(rangePct, 0.03);
+
+  let score = 50;
+  score += Math.round((caractereMult - 1) * 150);
+  score += Math.round((potentielMult - 1) * 100);
+  score -= Math.round(malusApplique * 120);
+  score -= Math.round(Math.min(contrainteSomme, 0.25) * 80);
+  if (excedent > 0) score += 8;
+  score = Math.max(0, Math.min(100, score));
+
+  // Un bien d'exception se vend lentement : la clientèle est nationale, voire
+  // internationale, et se compte en dizaines d'acquéreurs, pas en centaines.
+  let delaiBase: [number, number] = [180, 360];
+  if (form.atypique_type === "chateau") delaiBase = [300, 540];
+  else if (form.atypique_type === "loft" || form.atypique_type === "architecte")
+    delaiBase = [90, 180];
+  if (form.classement.includes("monument_historique"))
+    delaiBase = [delaiBase[0] + 60, delaiBase[1] + 90];
+  if (excedent > 0) delaiBase = [Math.round(delaiBase[0] * 0.8), Math.round(delaiBase[1] * 0.8)];
+
+  const recommandations: Recommendation[] = [];
+  if (postesARefaire.length && !budgetTravaux) {
+    recommandations.push({
+      title: "Chiffrer les travaux avant la mise en vente",
+      description: `Des postes majeurs sont à reprendre (${postesARefaire.slice(0, 3).join(", ")}). Sans devis, l'acquéreur retiendra toujours l'hypothèse haute et la déduira de son offre.`,
+      uplift: "+5 à 12%",
+    });
+  }
+  if (!form.potentiel_atypique.length) {
+    recommandations.push({
+      title: "Faire étudier le potentiel d'exploitation",
+      description:
+        "Gîtes, chambres d'hôtes, événementiel : un bien capable de générer des revenus s'adresse à une clientèle bien plus large qu'une simple résidence secondaire.",
+      uplift: "+8 à 15%",
+    });
+  }
+  if (excedent <= 0 && coutAnnuel > 0) {
+    recommandations.push({
+      title: "Documenter le coût réel de détention",
+      description: `Entretien, taxe foncière et charges représentent ${coutAnnuel.toLocaleString("fr-FR")} € par an. Un budget présenté et maîtrisé rassure ; un budget flou fait fuir.`,
+    });
+  }
+  if (form.caracteres_exceptionnels.length < 5) {
+    recommandations.push({
+      title: "Faire réaliser un reportage photo professionnel",
+      description:
+        "Sur ce type de bien, la vente se joue sur l'émotion et une clientèle éloignée. Photos, drone et visite virtuelle ne sont pas un supplément, ce sont l'outil de vente principal.",
+      uplift: "+3 à 8%",
+    });
+  }
+  if (recommandations.length < 3) {
+    recommandations.push({
+      title: "Constituer le dossier historique et technique",
+      description:
+        "Plans, historique du bien, factures de travaux, diagnostics, arrêté de classement : sur un bien d'exception, le dossier fait partie du produit.",
+    });
+  }
+
+  return {
+    prixEstime,
+    prixBas: Math.round((prixEstime * (1 - rangePct)) / 1000) * 1000,
+    prixHaut: Math.round((prixEstime * (1 + rangePct)) / 1000) * 1000,
+    prixM2: prixM2Final,
+    prixM2Marche,
+    deltaMarche,
+    surface,
+    fiabilite,
+    fiabiliteScore,
+    scoreAttractivite: score,
+    delaiVente: `${delaiBase[0]}–${delaiBase[1]} jours`,
+    tensionMarche,
+    facteurs,
+    recommandations: recommandations.slice(0, 3),
+  };
+}
+
 export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
   // Un terrain n'a ni surface habitable, ni DPE, ni prestations : il a son
   // propre modèle, fondé sur la constructibilité et la viabilisation.
@@ -1285,6 +1823,9 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
   if (form.type === "local_commercial") return computeLocalEstimation(form, dvfPrixM2);
   // Un immeuble de rapport se valorise à son revenu net, lot par lot.
   if (form.type === "immeuble") return computeImmeubleEstimation(form, dvfPrixM2);
+  // Un bien d'exception n'a presque pas de comparables : caractères, état réel
+  // et potentiel d'exploitation priment sur le prix au mètre carré.
+  if (form.type === "atypique") return computeAtypiqueEstimation(form, dvfPrixM2);
 
   const surface = form.surface_habitable || form.surface_carrez || 60;
 

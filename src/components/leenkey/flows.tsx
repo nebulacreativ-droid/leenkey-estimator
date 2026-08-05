@@ -16,6 +16,15 @@ import {
   type StepErrors,
 } from "./steps";
 import {
+  AtypiqueStep1,
+  AtypiqueStep2,
+  AtypiqueStep3,
+  AtypiqueStep4,
+  AtypiqueStep5,
+  AtypiqueStep6,
+  AtypiqueStep7,
+} from "./steps-atypique";
+import {
   ImmeubleStep1,
   ImmeubleStep2,
   ImmeubleStep3,
@@ -266,10 +275,37 @@ const PARCOURS_IMMEUBLE: FlowStep[] = [
   COORDONNEES,
 ];
 
+/* ---------- Parcours bien atypique ---------- */
+
+const PARCOURS_ATYPIQUE: FlowStep[] = [
+  CHOIX_TYPE,
+  LOCALISATION,
+  {
+    label: "Le bien",
+    render: (p) => <AtypiqueStep1 {...p} />,
+    validate: (f) => {
+      const e: StepErrors = {};
+      if (!f.atypique_type) e.atypique_type = "Sélectionnez un type de bien";
+      if (!f.surface_habitable) e.surface_habitable = "Surface habitable requise";
+      return e;
+    },
+  },
+  { label: "Caractères exceptionnels", render: (p) => <AtypiqueStep2 {...p} /> },
+  { label: "État général", render: (p) => <AtypiqueStep3 {...p} /> },
+  { label: "Environnement", render: (p) => <AtypiqueStep4 {...p} /> },
+  { label: "Potentiel", render: (p) => <AtypiqueStep5 {...p} /> },
+  { label: "Contraintes", render: (p) => <AtypiqueStep6 {...p} /> },
+  { label: "Données financières", render: (p) => <AtypiqueStep7 {...p} /> },
+  PROJET,
+  DOCUMENTS,
+  COORDONNEES,
+];
+
 const PARCOURS: Partial<Record<BienType, FlowStep[]>> = {
   terrain: PARCOURS_TERRAIN,
   local_commercial: PARCOURS_LOCAL,
   immeuble: PARCOURS_IMMEUBLE,
+  atypique: PARCOURS_ATYPIQUE,
 };
 
 /** Parcours applicable au type sélectionné (généraliste par défaut). */
