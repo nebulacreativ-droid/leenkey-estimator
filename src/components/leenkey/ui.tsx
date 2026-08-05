@@ -162,8 +162,11 @@ export function Stepper({
 }) {
   return (
     <div className="flex flex-wrap gap-2">
-      {options.map((opt, idx) => {
-        const numeric = typeof opt === "number" ? opt : idx;
+      {options.map((opt) => {
+        // La valeur vient du libellé, pas de l'index : "8+" → 8, "RDC" → 0.
+        // (avec l'index, "8+" en position 7 valait 7 et s'allumait avec le bouton "7")
+        const parsed = typeof opt === "number" ? opt : Number.parseInt(opt, 10);
+        const numeric = Number.isNaN(parsed) ? 0 : parsed;
         const active = value === numeric;
         return (
           <button

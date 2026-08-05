@@ -205,10 +205,65 @@ export function Step2({ form, set, errors }: P) {
 /* ============ STEP 3 — Surface ============ */
 export function Step3({ form, set, errors }: P) {
   const t = form.type;
+  const isAppart = t === "appartement";
   const showHabitable = t !== "terrain";
   const showTerrain = t === "maison" || t === "terrain";
-  const showCarrez = t === "appartement";
+  const showCarrez = isAppart;
   const showShob = t === "terrain" || t === "local_commercial";
+
+  // Pour un appartement, la surface de référence est la loi Carrez (la seule
+  // opposable lors de la vente) : elle passe en champ principal requis et la
+  // surface habitable devient secondaire.
+  const habitableField = showHabitable && (
+    <Field
+      key="habitable"
+      label="Surface habitable"
+      hint={isAppart ? "m² — optionnel, si différente de la loi Carrez" : "m²"}
+      required={!isAppart}
+      error={errors?.surface_habitable}
+    >
+      <div className="space-y-3">
+        <TextInput
+          type="number"
+          min={9}
+          max={2000}
+          value={form.surface_habitable ?? ""}
+          onChange={(e) =>
+            set({ surface_habitable: e.target.value ? Number(e.target.value) : null })
+          }
+          placeholder="65"
+        />
+        <input
+          type="range"
+          min={9}
+          max={500}
+          value={form.surface_habitable ?? 9}
+          onChange={(e) => set({ surface_habitable: Number(e.target.value) })}
+          className="w-full accent-primary"
+        />
+      </div>
+    </Field>
+  );
+
+  const carrezField = showCarrez && (
+    <Field
+      key="carrez"
+      label="Surface loi Carrez"
+      hint="surface officielle hors espaces sous 1m80 (m²)"
+      required
+      error={errors?.surface_carrez}
+    >
+      <TextInput
+        type="number"
+        min={0}
+        value={form.surface_carrez ?? ""}
+        onChange={(e) =>
+          set({ surface_carrez: e.target.value ? Number(e.target.value) : null })
+        }
+        placeholder="63"
+      />
+    </Field>
+  );
 
   return (
     <div className="space-y-8">
@@ -219,30 +274,7 @@ export function Step3({ form, set, errors }: P) {
         title="Quelle est la superficie de votre bien ?"
       />
       <div className="grid gap-6 md:grid-cols-2">
-        {showHabitable && (
-          <Field label="Surface habitable" hint="m²" required error={errors?.surface_habitable}>
-            <div className="space-y-3">
-              <TextInput
-                type="number"
-                min={9}
-                max={2000}
-                value={form.surface_habitable ?? ""}
-                onChange={(e) =>
-                  set({ surface_habitable: e.target.value ? Number(e.target.value) : null })
-                }
-                placeholder="65"
-              />
-              <input
-                type="range"
-                min={9}
-                max={500}
-                value={form.surface_habitable ?? 9}
-                onChange={(e) => set({ surface_habitable: Number(e.target.value) })}
-                className="w-full accent-primary"
-              />
-            </div>
-          </Field>
-        )}
+        {isAppart ? [carrezField, habitableField] : habitableField}
         {showTerrain && (
           <Field label="Surface du terrain" hint="m² — 0 si pas de jardin" required error={errors?.surface_terrain}>
             <TextInput
@@ -267,22 +299,6 @@ export function Step3({ form, set, errors }: P) {
             placeholder="0"
           />
         </Field>
-        {showCarrez && (
-          <Field
-            label="Surface loi Carrez"
-            hint="surface officielle hors espaces sous 1m80 (m²)"
-          >
-            <TextInput
-              type="number"
-              min={0}
-              value={form.surface_carrez ?? ""}
-              onChange={(e) =>
-                set({ surface_carrez: e.target.value ? Number(e.target.value) : null })
-              }
-              placeholder="63"
-            />
-          </Field>
-        )}
         {showShob && (
           <Field label="SHOB / Surface plancher" hint="m²">
             <TextInput
@@ -407,6 +423,7 @@ const EXT_COMMON = [
   { v: "parking", i: "🅿️", l: "Parking / Place" },
   { v: "garage", i: "🚗", l: "Garage fermé (1 voiture)" },
   { v: "garage_double", i: "🚗", l: "Garage double" },
+  { v: "box", i: "🚙", l: "Box fermé" },
   { v: "cave", i: "🏠", l: "Cave / Sous-sol" },
   { v: "grenier", i: "📦", l: "Grenier / Combles" },
   { v: "dependance", i: "🏡", l: "Dépendance / Annexe" },
@@ -652,6 +669,7 @@ const CHAUFFAGE_OPTS = [
   "Réseau de chaleur urbain",
   "Autre",
 ];
+const CHAUFFAGE_MODES = ["Individuel", "Collectif", "Je ne sais pas"];
 const EAU_CHAUDE_OPTS = [
   "Chauffe-eau électrique",
   "Chauffe-eau gaz",
@@ -769,6 +787,16 @@ export function Step8({ form, set }: P) {
             value={form.chauffage}
             onChange={(v) => set({ chauffage: v })}
             options={CHAUFFAGE_OPTS}
+          />
+        </Field>
+        <Field
+          label="Chauffage individuel ou collectif ?"
+          hint="un chauffage collectif limite la maîtrise des charges et pèse sur la valeur"
+        >
+          <PillGroup
+            value={form.chauffage_mode}
+            onChange={(v) => set({ chauffage_mode: v })}
+            options={CHAUFFAGE_MODES}
           />
         </Field>
         <Field label="Production d'eau chaude">

@@ -15,6 +15,7 @@ BIEN À ESTIMER :
 - Type : ${bien.type}
 - Adresse : ${bien.adresse}, ${bien.code_postal} ${bien.ville}
 - Surface habitable : ${bien.surface_habitable ?? "NC"} m²
+- Surface loi Carrez : ${bien.surface_carrez ?? "NC"} m²
 - Surface terrain : ${bien.surface_terrain ?? "NC"} m²
 - Pièces : ${bien.pieces} | Chambres : ${bien.chambres} | SDB : ${bien.salles_bain}
 - Cuisine : ${bien.cuisine}
@@ -28,7 +29,7 @@ BIEN À ESTIMER :
 
 ÉNERGIE :
 - DPE : ${energie.dpe ?? "NC"} | GES : ${energie.ges ?? "NC"}
-- Chauffage : ${energie.chauffage ?? "NC"}
+- Chauffage : ${energie.chauffage ?? "NC"}${energie.chauffage_mode ? ` (${energie.chauffage_mode})` : ""}
 - Année construction : ${energie.annee_construction ?? "NC"}
 - Dernière rénovation énergétique : ${energie.derniere_renovation ?? "NC"}
 

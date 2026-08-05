@@ -85,6 +85,7 @@ function buildPayload(form: LeenkeyForm) {
       dpe: form.dpe,
       ges: form.ges,
       chauffage: form.chauffage,
+      chauffage_mode: form.chauffage_mode,
       eau_chaude: form.eau_chaude,
       annee_construction: form.annee_construction,
       derniere_renovation_energetique: form.derniere_renovation,
@@ -132,8 +133,12 @@ function validateStep(step: number, f: LeenkeyForm): Errors {
       if (!f.adresse) e.adresse = "L'adresse est requise";
       break;
     case 3:
-      if (f.type !== "terrain" && !f.surface_habitable)
+      // Appartement : la loi Carrez est la surface de référence, l'habitable est optionnelle.
+      if (f.type === "appartement") {
+        if (!f.surface_carrez) e.surface_carrez = "Surface loi Carrez requise";
+      } else if (f.type !== "terrain" && !f.surface_habitable) {
         e.surface_habitable = "Surface requise";
+      }
       if ((f.type === "maison" || f.type === "terrain") && f.surface_terrain === null)
         e.surface_terrain = "Surface terrain requise (0 si aucun)";
       break;
@@ -312,7 +317,8 @@ export function LeenkeyWizard() {
         codePostal: form.code_postal,
         ville: form.ville,
         type: form.type,
-        surface: form.surface_habitable,
+        // Appartement : l'habitable peut être vide, la Carrez fait foi.
+        surface: form.surface_habitable ?? form.surface_carrez,
       }),
     })
       .then((r) => (r.ok ? r.json() : null))

@@ -51,6 +51,7 @@ export interface LeenkeyForm {
   dpe: DpeLetter | null;
   ges: DpeLetter | null;
   chauffage: string | null;
+  chauffage_mode: string | null; // individuel | collectif
   eau_chaude: string | null;
   annee_construction: string | null;
   derniere_renovation: string | null;
@@ -118,6 +119,7 @@ export const initialForm: LeenkeyForm = {
   dpe: null,
   ges: null,
   chauffage: null,
+  chauffage_mode: null,
   eau_chaude: null,
   annee_construction: null,
   derniere_renovation: null,
