@@ -1,7 +1,7 @@
 import { cn } from "@/lib/utils";
 import { computeEstimation, formatEUR, type EstimationResult } from "./estimation";
 import type { LeenkeyForm } from "./types";
-import type { DvfResult } from "./Wizard";
+import { prixM2Dvf, type DvfResult } from "./dvf";
 import { useState } from "react";
 import { downloadReportPDF, generateReportPDFBase64 } from "./generatePDF";
 
@@ -39,7 +39,10 @@ const typeLabel: Record<string, string> = {
 const fiabiliteLabel = {
   elevee: { txt: "Fiabilité élevée", cls: "bg-success/15 text-success border-success/30" },
   moyenne: { txt: "Fiabilité moyenne", cls: "bg-amber-100 text-amber-700 border-amber-200" },
-  faible: { txt: "Fiabilité faible", cls: "bg-destructive/10 text-destructive border-destructive/30" },
+  faible: {
+    txt: "Fiabilité faible",
+    cls: "bg-destructive/10 text-destructive border-destructive/30",
+  },
 };
 
 const tensionLabel = {
@@ -61,8 +64,8 @@ export function EstimationDashboard({
   dvfData?: DvfResult | null;
   onRestart: () => void;
 }) {
-  // Si on a des données DVF dispo, on les utilise pour affiner l'estimation
-  const dvfPrixM2 = dvfData?.available ? dvfData.stats.prixM2Pondere : null;
+  // Même règle que le wizard : sans échantillon fiable, DVF ne pilote rien.
+  const dvfPrixM2 = prixM2Dvf(dvfData);
   const r: EstimationResult = computeEstimation(form, dvfPrixM2);
 
   // État pour le bouton "Recevoir par email"
@@ -213,7 +216,11 @@ export function EstimationDashboard({
                 {formatEUR(r.prixEstime)}
               </div>
               <div className="mt-2 text-sub text-sm">
-                Précision <span className="font-semibold text-navy">±{Math.round(((r.prixHaut - r.prixEstime) / r.prixEstime) * 100)}%</span> · Fourchette resserrée selon votre profil
+                Précision{" "}
+                <span className="font-semibold text-navy">
+                  ±{Math.round(((r.prixHaut - r.prixEstime) / r.prixEstime) * 100)}%
+                </span>{" "}
+                · Fourchette resserrée selon votre profil
               </div>
 
               {/* Barre de fourchette visuelle */}
@@ -263,7 +270,11 @@ export function EstimationDashboard({
                   <div
                     className={cn(
                       "h-full rounded-full transition-all duration-700",
-                      r.fiabilite === "elevee" ? "bg-success" : r.fiabilite === "moyenne" ? "bg-amber-500" : "bg-destructive",
+                      r.fiabilite === "elevee"
+                        ? "bg-success"
+                        : r.fiabilite === "moyenne"
+                          ? "bg-amber-500"
+                          : "bg-destructive",
                     )}
                     style={{ width: `${r.fiabiliteScore}%` }}
                   />
@@ -318,7 +329,7 @@ export function EstimationDashboard({
               <Row k="Chambres" v={form.chambres ?? "—"} />
               <Row k="Salles de bain" v={form.salles_bain ?? "—"} />
               {form.type === "appartement" && (
-                <Row k="Étage" v={form.dernier_etage ? "Dernier" : form.etage ?? "—"} />
+                <Row k="Étage" v={form.dernier_etage ? "Dernier" : (form.etage ?? "—")} />
               )}
               <Row k="DPE" v={form.dpe ?? "—"} />
               <Row k="État" v={form.etat ?? "—"} />
@@ -346,7 +357,9 @@ export function EstimationDashboard({
           {aiAnalyse && (
             <Card className="fade-up lg:col-span-3" delay="0.18s">
               <div className="mb-3 flex items-center gap-2">
-                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-sm">✦</span>
+                <span className="flex h-7 w-7 items-center justify-center rounded-full bg-primary/10 text-sm">
+                  ✦
+                </span>
                 <h2 className="font-display text-lg font-bold text-navy">Analyse du marché</h2>
                 <span className="ml-auto rounded-full bg-primary/10 px-2.5 py-0.5 text-xs font-semibold text-primary">
                   Alimenté par IA
@@ -372,15 +385,17 @@ export function EstimationDashboard({
               </div>
 
               <div className="mb-4 rounded-[10px] border border-amber-200 bg-amber-50 p-3 text-xs text-amber-900">
-                <strong>⚠️ Données historiques</strong> · Les ventes ci-dessous proviennent de la base DVF
-                officielle (DGFiP). Elles sont publiées avec un délai d'environ 6 mois. Le marché peut
-                avoir évolué depuis. Notre analyse tient compte de cette ancienneté.
+                <strong>⚠️ Données historiques</strong> · Les ventes ci-dessous proviennent de la
+                base DVF officielle (DGFiP). Elles sont publiées avec un délai d'environ 6 mois. Le
+                marché peut avoir évolué depuis. Notre analyse tient compte de cette ancienneté.
               </div>
 
               {/* Stats résumées */}
               <div className="mb-5 grid grid-cols-2 gap-3 sm:grid-cols-4">
                 <div className="rounded-[12px] bg-sky/40 p-3">
-                  <div className="text-xs font-semibold uppercase text-sub">Comparables trouvés</div>
+                  <div className="text-xs font-semibold uppercase text-sub">
+                    Comparables trouvés
+                  </div>
                   <div className="mt-1 font-display text-xl font-bold text-navy">
                     {dvfData.nbComparables}
                   </div>
@@ -481,9 +496,7 @@ export function EstimationDashboard({
                 <div className="mb-2 inline-flex h-9 w-9 items-center justify-center rounded-full bg-primary/10 text-primary">
                   💡
                 </div>
-                <h3 className="font-display text-base font-semibold text-navy">
-                  {rec.title}
-                </h3>
+                <h3 className="font-display text-base font-semibold text-navy">{rec.title}</h3>
                 <p className="mt-1.5 text-sm text-sub">{rec.description}</p>
                 {rec.uplift && (
                   <div className="mt-3 inline-flex rounded-full bg-success/10 px-2.5 py-0.5 text-xs font-semibold text-success">
@@ -496,13 +509,20 @@ export function EstimationDashboard({
         </section>
 
         {/* Prochaines étapes */}
-        <section className="fade-up mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2" style={{ animationDelay: "0.3s" }}>
+        <section
+          className="fade-up mt-6 grid grid-cols-1 gap-6 lg:grid-cols-2"
+          style={{ animationDelay: "0.3s" }}
+        >
           <Card>
             <h2 className="mb-4 font-display text-lg font-bold text-navy">Prochaines étapes</h2>
             <ol className="space-y-3">
               {[
                 { i: "✅", l: "Rapport généré", done: true },
-                { i: "📧", l: `Rapport détaillé envoyé à ${form.email || "votre email"}`, done: false },
+                {
+                  i: "📧",
+                  l: `Rapport détaillé envoyé à ${form.email || "votre email"}`,
+                  done: false,
+                },
                 { i: "📞", l: "Appel avec un conseiller Leenkey", done: false },
                 { i: "🏷️", l: "Mise en vente sans agence", done: false },
               ].map((it, i) => (
@@ -552,9 +572,9 @@ export function EstimationDashboard({
                     emailStatus === "sent"
                       ? "border-success bg-success/10 text-success cursor-default"
                       : emailStatus === "error"
-                      ? "border-destructive bg-destructive/10 text-destructive"
-                      : "border-primary bg-primary/5 text-primary hover:bg-primary/10",
-                    emailStatus === "sending" && "opacity-60 cursor-wait"
+                        ? "border-destructive bg-destructive/10 text-destructive"
+                        : "border-primary bg-primary/5 text-primary hover:bg-primary/10",
+                    emailStatus === "sending" && "opacity-60 cursor-wait",
                   )}
                 >
                   {emailStatus === "sending" && "⏳ Envoi en cours…"}
@@ -654,7 +674,8 @@ export function EstimationDashboard({
 
                     <div>
                       <label className="mb-2 block font-display text-sm font-semibold text-navy">
-                        Votre message <span className="font-normal text-sub text-xs">(optionnel)</span>
+                        Votre message{" "}
+                        <span className="font-normal text-sub text-xs">(optionnel)</span>
                       </label>
                       <textarea
                         value={contactMsg}
@@ -667,7 +688,8 @@ export function EstimationDashboard({
 
                     {contactStatus === "error" && (
                       <div className="rounded-[8px] bg-destructive/10 p-3 text-sm text-destructive">
-                        Erreur d'envoi, réessayez ou contactez-nous directement à contact.leenkey@gmail.com
+                        Erreur d'envoi, réessayez ou contactez-nous directement à
+                        contact.leenkey@gmail.com
                       </div>
                     )}
 
@@ -684,7 +706,9 @@ export function EstimationDashboard({
                         disabled={contactStatus === "sending"}
                         className={cn(
                           "flex-[2] rounded-[10px] bg-primary px-4 py-3 font-display text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-8px_rgba(17,86,252,0.5)] transition",
-                          contactStatus === "sending" ? "opacity-60 cursor-wait" : "hover:translate-y-[-1px]"
+                          contactStatus === "sending"
+                            ? "opacity-60 cursor-wait"
+                            : "hover:translate-y-[-1px]",
                         )}
                       >
                         {contactStatus === "sending" ? "⏳ Envoi…" : "📨 Envoyer ma demande"}
@@ -704,12 +728,13 @@ export function EstimationDashboard({
             <h3 className="font-display text-sm font-bold text-amber-900">Avertissement légal</h3>
           </div>
           <p className="text-xs leading-relaxed text-amber-900">
-            Ce document constitue une <strong>analyse automatisée</strong> basée sur les informations renseignées
-            et les données de marché disponibles. Il est fourni <strong>à titre informatif uniquement</strong> et ne
-            constitue ni une expertise immobilière ni une estimation réalisée par un professionnel habilité au sens de la loi
-            Hoguet. Les valeurs indiquées sont des ordres de grandeur basés sur des modèles statistiques et peuvent
-            différer significativement du prix réel de vente. Pour une évaluation officielle opposable, consultez un
-            expert immobilier agréé ou un notaire.
+            Ce document constitue une <strong>analyse automatisée</strong> basée sur les
+            informations renseignées et les données de marché disponibles. Il est fourni{" "}
+            <strong>à titre informatif uniquement</strong> et ne constitue ni une expertise
+            immobilière ni une estimation réalisée par un professionnel habilité au sens de la loi
+            Hoguet. Les valeurs indiquées sont des ordres de grandeur basés sur des modèles
+            statistiques et peuvent différer significativement du prix réel de vente. Pour une
+            évaluation officielle opposable, consultez un expert immobilier agréé ou un notaire.
           </p>
         </div>
       </main>
@@ -766,15 +791,24 @@ function Kpi({
           {sub && <div className="mt-1 text-xs text-sub">{sub}</div>}
         </div>
         {icon && (
-          <div className={cn("flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg", iconBg, iconColor)}>
+          <div
+            className={cn(
+              "flex h-10 w-10 shrink-0 items-center justify-center rounded-xl text-lg",
+              iconBg,
+              iconColor,
+            )}
+          >
             {icon}
           </div>
         )}
       </div>
       {/* Trait décoratif bas */}
-      <div className={cn("absolute bottom-0 left-0 h-1 w-full opacity-50",
-        tone === "pos" ? "bg-success" : tone === "neg" ? "bg-destructive" : "bg-primary",
-      )} />
+      <div
+        className={cn(
+          "absolute bottom-0 left-0 h-1 w-full opacity-50",
+          tone === "pos" ? "bg-success" : tone === "neg" ? "bg-destructive" : "bg-primary",
+        )}
+      />
     </div>
   );
 }
@@ -795,7 +829,12 @@ function FactorBar({ f }: { f: { label: string; impact: number; detail: string }
     <div>
       <div className="mb-1 flex items-baseline justify-between text-sm">
         <span className="font-semibold text-navy">{f.label}</span>
-        <span className={cn("font-display text-sm font-bold", pos ? "text-success" : "text-destructive")}>
+        <span
+          className={cn(
+            "font-display text-sm font-bold",
+            pos ? "text-success" : "text-destructive",
+          )}
+        >
           {pos ? "+" : ""}
           {f.impact}%
         </span>

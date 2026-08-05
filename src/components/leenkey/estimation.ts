@@ -241,6 +241,22 @@ function tension(form: LeenkeyForm): "faible" | "moderee" | "forte" {
 }
 
 /**
+ * Mélange le prix au m² issu de DVF avec la table de référence.
+ *
+ * DVF pèse 70 % car ce sont de vraies transactions, la table compensant le
+ * délai de publication d'environ six mois. Mais un échantillon local peut
+ * rester aberrant même après nettoyage — un code postal où seuls des biens
+ * d'exception se sont vendus, par exemple. Au-delà d'un écart d'un facteur 2,5
+ * dans un sens ou dans l'autre, on ne fait plus confiance à l'échantillon.
+ */
+function melangeAvecDvf(dvfPrixM2: number | null | undefined, prixTable: number): number {
+  if (!dvfPrixM2 || dvfPrixM2 <= 0) return prixTable;
+  const ratio = dvfPrixM2 / prixTable;
+  if (ratio < 0.4 || ratio > 2.5) return prixTable;
+  return Math.round(dvfPrixM2 * 0.7 + prixTable * 0.3);
+}
+
+/**
  * Taux de capitalisation attendu par un investisseur, déduit du niveau de prix
  * local. Un marché cher est un marché à faible rendement : un immeuble se
  * négocie autour de 3,5 % à Paris et de 9 % en zone rurale.
@@ -878,10 +894,7 @@ function computeLocalEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): E
       : totale;
 
   // Base résidentielle du secteur, convertie en prix commercial.
-  const baseResidentiel =
-    dvfPrixM2 && dvfPrixM2 > 0
-      ? Math.round(dvfPrixM2 * 0.7 + basePrixM2(form) * 0.3)
-      : basePrixM2(form);
+  const baseResidentiel = melangeAvecDvf(dvfPrixM2, basePrixM2(form));
   const prixM2Marche = Math.round(baseResidentiel * emplacement.prixMult);
 
   const etatEntry = ETAT_MULT[form.etat ?? "bon"] ?? ETAT_MULT.bon;
@@ -1204,10 +1217,7 @@ function computeImmeubleEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   const partPassoires = lotsAvecDpe.length ? passoires / lotsAvecDpe.length : 0;
   const dpeMult = 1 - partPassoires * 0.1;
 
-  const prixM2Lot =
-    dvfPrixM2 && dvfPrixM2 > 0
-      ? Math.round(dvfPrixM2 * 0.7 + basePrixM2(form) * 0.3)
-      : basePrixM2(form);
+  const prixM2Lot = melangeAvecDvf(dvfPrixM2, basePrixM2(form));
 
   // ── Méthode 1 : capitalisation du revenu net ──
   let taux = tauxCapitalisation(prixM2Lot);
@@ -1530,10 +1540,7 @@ function computeAtypiqueEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   const surface = form.surface_habitable || 0;
   const dependances = form.surface_dependances ?? 0;
 
-  const baseResidentiel =
-    dvfPrixM2 && dvfPrixM2 > 0
-      ? Math.round(dvfPrixM2 * 0.7 + basePrixM2(form) * 0.3)
-      : basePrixM2(form);
+  const baseResidentiel = melangeAvecDvf(dvfPrixM2, basePrixM2(form));
   const prixM2Marche = Math.round(baseResidentiel * typeEntry.mult);
 
   // ── Caractères exceptionnels ──
@@ -1829,12 +1836,8 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
 
   const surface = form.surface_habitable || form.surface_carrez || 60;
 
-  // Prix moyen marché = mix entre table statique et DVF (si dispo)
-  // DVF a 70% de poids car ce sont de vraies données, mais on garde 30% de la table
-  // (qui peut compenser le délai DVF en estimant la tendance actuelle).
   const prixM2Table = basePrixM2(form);
-  const prixM2Marche =
-    dvfPrixM2 && dvfPrixM2 > 0 ? Math.round(dvfPrixM2 * 0.7 + prixM2Table * 0.3) : prixM2Table;
+  const prixM2Marche = melangeAvecDvf(dvfPrixM2, prixM2Table);
 
   // Multiplicateurs
   const typeMult = TYPE_MULT[form.type ?? "maison"] ?? 1;

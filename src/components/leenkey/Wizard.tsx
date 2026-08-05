@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import { computeEstimation } from "./estimation";
+import { prixM2Dvf, type DvfResult } from "./dvf";
 import { getFlow } from "./flows";
 import { statsLocatives, totalCharges } from "./immeuble-calc";
 import { StepPositionContext } from "./step-position";
@@ -7,32 +8,7 @@ import { initialForm, type LeenkeyForm } from "./types";
 import { EstimationDashboard } from "./Dashboard";
 import { cn } from "@/lib/utils";
 
-// Format des données DVF retournées par /api/dvf-comparables
-export interface DvfComparable {
-  date: string;
-  prix: number;
-  prixM2: number;
-  surface: number;
-  pieces: number;
-  type: string;
-  adresse: string;
-  ville: string;
-  monthsAgo: number;
-}
-export interface DvfResult {
-  available: boolean;
-  codePostal: string;
-  nbComparables: number;
-  stats: {
-    prixM2Pondere: number;
-    prixM2Median: number;
-    prixM2Min: number;
-    prixM2Max: number;
-  };
-  dateLaPlusRecente: string | null;
-  comparables: DvfComparable[];
-  disclaimer: string;
-}
+export type { DvfComparable, DvfResult } from "./dvf";
 
 const STORAGE_KEY = "leenkey_form_v1";
 const DASHBOARD_KEY = "leenkey_dashboard_v1";
@@ -392,7 +368,7 @@ export function LeenkeyWizard() {
     // Chiffre unique de référence : c'est lui qui s'affiche à l'écran, dans le
     // PDF et dans les emails. Le Dashboard le recalcule à l'identique — le
     // modèle est déterministe, mêmes entrées, même sortie.
-    const dvfPrixM2 = dvfResult?.available ? dvfResult.stats.prixM2Pondere : null;
+    const dvfPrixM2 = prixM2Dvf(dvfResult);
     const estimation = computeEstimation(form, dvfPrixM2);
 
     const payload = {

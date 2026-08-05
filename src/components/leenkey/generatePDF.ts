@@ -1,7 +1,7 @@
 import jsPDF from "jspdf";
 import type { LeenkeyForm } from "./types";
 import type { EstimationResult } from "./estimation";
-import type { DvfResult } from "./Wizard";
+import type { DvfResult } from "./dvf";
 
 // ─── Palette Leenkey ───
 const C = {
