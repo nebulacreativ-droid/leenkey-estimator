@@ -51,9 +51,19 @@ const BIEN_OPTIONS: { value: BienType; icon: string; label: string; desc: string
   { value: "maison", icon: "🏠", label: "Maison", desc: "Individuelle, mitoyenne, de ville" },
   { value: "appartement", icon: "🏢", label: "Appartement", desc: "Du studio au penthouse" },
   { value: "terrain", icon: "🏗", label: "Terrain", desc: "Constructible, agricole, loisirs" },
-  { value: "local_commercial", icon: "🏬", label: "Local commercial", desc: "Boutique, bureau, atelier" },
+  {
+    value: "local_commercial",
+    icon: "🏬",
+    label: "Local commercial",
+    desc: "Boutique, bureau, atelier",
+  },
   { value: "immeuble", icon: "🏘", label: "Immeuble", desc: "Immeuble de rapport complet" },
-  { value: "atypique", icon: "🏖", label: "Bien atypique", desc: "Loft, château, corps de ferme..." },
+  {
+    value: "atypique",
+    icon: "🏖",
+    label: "Bien atypique",
+    desc: "Loft, château, corps de ferme...",
+  },
 ];
 
 export function Step1({ form, set, errors }: P) {
@@ -108,9 +118,7 @@ export function Step2({ form, set, errors }: P) {
       return;
     }
     timer.current = setTimeout(() => {
-      fetch(
-        `https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=6`,
-      )
+      fetch(`https://api-adresse.data.gouv.fr/search/?q=${encodeURIComponent(query)}&limit=6`)
         .then((r) => r.json())
         .then((d) => {
           setResults(d.features ?? []);
@@ -194,8 +202,8 @@ export function Step2({ form, set, errors }: P) {
         <p className="flex items-start gap-2 rounded-[10px] bg-sky/60 p-4 text-sm text-sub">
           <span>🔒</span>
           <span>
-            Votre adresse est utilisée uniquement pour calculer votre rapport de valorisation. Elle ne sera
-            jamais partagée sans votre accord explicite.
+            Votre adresse est utilisée uniquement pour calculer votre rapport de valorisation. Elle
+            ne sera jamais partagée sans votre accord explicite.
           </span>
         </p>
       </div>
@@ -258,9 +266,7 @@ export function Step3({ form, set, errors }: P) {
         type="number"
         min={0}
         value={form.surface_carrez ?? ""}
-        onChange={(e) =>
-          set({ surface_carrez: e.target.value ? Number(e.target.value) : null })
-        }
+        onChange={(e) => set({ surface_carrez: e.target.value ? Number(e.target.value) : null })}
         placeholder="63"
       />
     </Field>
@@ -277,7 +283,12 @@ export function Step3({ form, set, errors }: P) {
       <div className="grid gap-6 md:grid-cols-2">
         {isAppart ? [carrezField, habitableField] : habitableField}
         {showTerrain && (
-          <Field label="Surface du terrain" hint="m² — 0 si pas de jardin" required error={errors?.surface_terrain}>
+          <Field
+            label="Surface du terrain"
+            hint="m² — 0 si pas de jardin"
+            required
+            error={errors?.surface_terrain}
+          >
             <TextInput
               type="number"
               min={0}
@@ -331,7 +342,12 @@ export function Step4({ form, set, errors }: P) {
         title="Comment est composé votre bien ?"
       />
       <div className="space-y-6">
-        <Field label="Nombre de pièces principales" hint="salon, séjour, chambres — hors cuisine et SDB" required error={errors?.pieces}>
+        <Field
+          label="Nombre de pièces principales"
+          hint="salon, séjour, chambres — hors cuisine et SDB"
+          required
+          error={errors?.pieces}
+        >
           <Stepper
             value={form.pieces}
             onChange={(v) => set({ pieces: v })}
@@ -345,7 +361,12 @@ export function Step4({ form, set, errors }: P) {
             options={[0, 1, 2, 3, 4, 5, "6+"]}
           />
         </Field>
-        <Field label="Nombre de salles de bain" hint="salle d'eau avec douche incluse" required error={errors?.salles_bain}>
+        <Field
+          label="Nombre de salles de bain"
+          hint="salle d'eau avec douche incluse"
+          required
+          error={errors?.salles_bain}
+        >
           <Stepper
             value={form.salles_bain}
             onChange={(v) => set({ salles_bain: v })}
@@ -402,7 +423,12 @@ export function Step4({ form, set, errors }: P) {
         )}
 
         {isMaison && (
-          <Field label="Nombre de niveaux" hint="plain-pied = 1 niveau" required error={errors?.niveaux}>
+          <Field
+            label="Nombre de niveaux"
+            hint="plain-pied = 1 niveau"
+            required
+            error={errors?.niveaux}
+          >
             <Stepper
               value={form.niveaux}
               onChange={(v) => set({ niveaux: v })}
@@ -546,7 +572,11 @@ export function Step6({ form, set, errors }: P) {
 }
 
 /* ============ STEP 7 — Prestations ============ */
-const PRESTATIONS: { section: string; items: { v: string; l: string }[] }[] = [
+/** `only` restreint une prestation à certains types de bien (absent = tous). */
+const PRESTATIONS: {
+  section: string;
+  items: { v: string; l: string; only?: BienType[] }[];
+}[] = [
   {
     section: "🏗 Structure & confort",
     items: [
@@ -606,8 +636,10 @@ const PRESTATIONS: { section: string; items: { v: string; l: string }[] }[] = [
       { v: "vue_degagee", l: "Vue dégagée / Vue mer / Vue monument" },
       { v: "lumineux", l: "Lumineux / Exposition Sud ou Ouest" },
       { v: "calme", l: "Calme / Pas de vis-à-vis" },
-      { v: "immeuble_recent", l: "Immeuble récent (< 15 ans)" },
-      { v: "residence_securisee", l: "Résidence sécurisée / Fermée" },
+      // Notions propres à la copropriété : elles n'ont pas de sens sur une maison.
+      { v: "immeuble_recent", l: "Immeuble récent (< 15 ans)", only: ["appartement", "immeuble"] },
+      { v: "residence_securisee", l: "Résidence sécurisée / Fermée", only: ["appartement"] },
+      { v: "construction_recente", l: "Construction récente (< 15 ans)", only: ["maison"] },
       { v: "quartier_recherche", l: "Quartier recherché / Secteur prisé" },
     ],
   },
@@ -634,14 +666,16 @@ export function Step7({ form, set }: P) {
           <div key={s.section}>
             <SectionTitle>{s.section}</SectionTitle>
             <div className="mt-3 grid gap-2 sm:grid-cols-2">
-              {s.items.map((it) => (
-                <ToggleCard
-                  key={it.v}
-                  selected={form.prestations.includes(it.v)}
-                  onClick={() => toggle(it.v)}
-                  title={it.l}
-                />
-              ))}
+              {s.items
+                .filter((it) => !it.only || (form.type && it.only.includes(form.type)))
+                .map((it) => (
+                  <ToggleCard
+                    key={it.v}
+                    selected={form.prestations.includes(it.v)}
+                    onClick={() => toggle(it.v)}
+                    title={it.l}
+                  />
+                ))}
             </div>
           </div>
         ))}
@@ -688,12 +722,7 @@ const ANNEES = [
   "2011-2020",
   "Après 2020",
 ];
-const RENOV = [
-  "Jamais",
-  "Il y a plus de 10 ans",
-  "Il y a 5 à 10 ans",
-  "Il y a moins de 5 ans",
-];
+const RENOV = ["Jamais", "Il y a plus de 10 ans", "Il y a 5 à 10 ans", "Il y a moins de 5 ans"];
 
 function DpeRow({
   value,
@@ -712,9 +741,7 @@ function DpeRow({
           style={{ backgroundColor: d.bg }}
           className={cn(
             "h-12 w-12 rounded-[10px] font-display text-lg font-bold text-white transition",
-            value === d.v
-              ? "scale-110 ring-4 ring-primary/40"
-              : "opacity-70 hover:opacity-100",
+            value === d.v ? "scale-110 ring-4 ring-primary/40" : "opacity-70 hover:opacity-100",
           )}
         >
           {d.v}
@@ -795,8 +822,8 @@ export function Step8({ form, set }: P) {
           <span>💡</span>
           <span>
             Depuis 2025, les logements classés G ne peuvent plus être mis en location. Un DPE
-            défavorable impacte directement le nombre d'acheteurs potentiels et votre prix de
-            vente. Leenkey peut vous orienter vers des aides à la rénovation.
+            défavorable impacte directement le nombre d'acheteurs potentiels et votre prix de vente.
+            Leenkey peut vous orienter vers des aides à la rénovation.
           </span>
         </p>
       </div>
@@ -830,8 +857,7 @@ const CONTRAINTES = [
 ];
 
 export function Step9({ form, set, errors }: P) {
-  const isLoc =
-    form.occupation?.startsWith("Occupé par un locataire") ?? false;
+  const isLoc = form.occupation?.startsWith("Occupé par un locataire") ?? false;
   const toggleContrainte = (c: string) => {
     if (c === "aucune") {
       set({ contraintes: form.contraintes.includes("aucune") ? [] : ["aucune"] });
@@ -1178,8 +1204,8 @@ export function Step11({ form, set }: P) {
         />
         <p className="rounded-[12px] border-2 border-sky-mid bg-sky/50 p-4 text-sm text-navy">
           🔒 Ces documents sont traités de façon confidentielle et ne sont utilisés que pour
-          améliorer la précision de votre rapport de valorisation. Aucun document ne sera partagé sans
-          votre accord.
+          améliorer la précision de votre rapport de valorisation. Aucun document ne sera partagé
+          sans votre accord.
         </p>
       </div>
     </div>
@@ -1264,11 +1290,7 @@ export function Step12({
           />
         </Field>
         <Field label="Comment avez-vous connu Leenkey ?">
-          <PillGroup
-            value={form.source}
-            onChange={(v) => set({ source: v })}
-            options={SOURCES}
-          />
+          <PillGroup value={form.source} onChange={(v) => set({ source: v })} options={SOURCES} />
         </Field>
         <Field label="Disponibilités pour un appel">
           <div className="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
@@ -1288,7 +1310,7 @@ export function Step12({
           <label
             className={cn(
               "flex cursor-pointer items-start gap-3 text-sm transition-colors",
-              errors.rgpd && "lk-field-error rounded-md p-2 -m-2"
+              errors.rgpd && "lk-field-error rounded-md p-2 -m-2",
             )}
           >
             <input
@@ -1297,7 +1319,7 @@ export function Step12({
               onChange={(e) => set({ rgpd: e.target.checked })}
               className={cn(
                 "mt-1 h-5 w-5 accent-primary",
-                errors.rgpd && "ring-2 ring-destructive ring-offset-1 rounded"
+                errors.rgpd && "ring-2 ring-destructive ring-offset-1 rounded",
               )}
             />
             <span className="text-sub">
@@ -1314,8 +1336,19 @@ export function Step12({
           </label>
           {errors.rgpd && (
             <p className="flex items-center gap-1.5 text-xs font-medium text-destructive -mt-2 ml-8">
-              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-                <circle cx="12" cy="12" r="10" /><line x1="12" y1="8" x2="12" y2="12" /><line x1="12" y1="16" x2="12.01" y2="16" />
+              <svg
+                width="14"
+                height="14"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                strokeWidth="2"
+                strokeLinecap="round"
+                strokeLinejoin="round"
+              >
+                <circle cx="12" cy="12" r="10" />
+                <line x1="12" y1="8" x2="12" y2="12" />
+                <line x1="12" y1="16" x2="12.01" y2="16" />
               </svg>
               {errors.rgpd}
             </p>
@@ -1333,8 +1366,8 @@ export function Step12({
               <span className="font-semibold text-navy">
                 Je souhaite être contacté par téléphone par un conseiller Leenkey
               </span>{" "}
-              pour échanger sur mon projet de vente et découvrir les services proposés
-              (offres Accompagné et Sérénité).
+              pour échanger sur mon projet de vente et découvrir les services proposés (offres
+              Accompagné et Sérénité).
             </span>
           </label>
         </div>

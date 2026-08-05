@@ -122,6 +122,60 @@ const ETAT_MULT: Record<string, { mult: number; label: string }> = {
   a_renover: { mult: 0.82, label: "À rénover" },
 };
 
+/**
+ * Poids de chaque prestation dans le prix.
+ *
+ * ⚠️ L'ancienne liste ne correspondait à presque rien : sur les 34 prestations
+ * du formulaire, elle n'en reconnaissait que 3 (alarme, domotique, fibre).
+ * "parking", "cave" et "ascenseur" sont dans `exterieur`, pas dans
+ * `prestations`, et "cheminee" / "climatisation" n'existent nulle part. Une
+ * page entière de questions ne pesait donc que +3 % au maximum : un bien avec
+ * PAC, photovoltaïque, ITE, plancher chauffant et vue mer était valorisé comme
+ * un bien nu.
+ */
+const PRESTATION_POIDS: Record<string, number> = {
+  // Fort impact — équipements coûteux à installer
+  pac: 0.015,
+  photovoltaique: 0.015,
+  ite: 0.015,
+  plancher_chauffant: 0.012,
+  clim_reversible: 0.012,
+  vue_degagee: 0.015,
+  ilot: 0.01,
+  // Impact moyen
+  cuisine_equipee: 0.008,
+  sdb_renovee: 0.008,
+  douche_italienne: 0.008,
+  plan_pierre: 0.008,
+  chaudiere_recente: 0.008,
+  chauffe_eau_solaire: 0.008,
+  double_vitrage: 0.008,
+  parquet: 0.008,
+  calme: 0.008,
+  lumineux: 0.008,
+  quartier_recherche: 0.008,
+  immeuble_recent: 0.008,
+  construction_recente: 0.008,
+  residence_securisee: 0.008,
+  // Impact faible — confort, sans effet structurel sur le prix
+  volets_elec: 0.004,
+  pergola: 0.004,
+  carrelage_pierre: 0.004,
+  moulures: 0.004,
+  dressing: 0.004,
+  placards: 0.004,
+  cuisine_semi: 0.004,
+  baignoire_ilot: 0.004,
+  double_vasque: 0.004,
+  poele_bois: 0.004,
+  fibre: 0.004,
+  domotique: 0.004,
+  alarme: 0.004,
+  portail_motorise: 0.004,
+};
+/** Plafond global : un bien tout équipé vaut ~12 % de plus qu'un bien nu, pas le double. */
+const PRESTATION_CAP = 0.12;
+
 const DPE_MULT: Record<string, { mult: number; label: string }> = {
   A: { mult: 1.06, label: "DPE A — très performant" },
   B: { mult: 1.04, label: "DPE B — performant" },
@@ -637,24 +691,16 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
   }
 
   // Prestations
-  let prestMult = 1;
-  const prestPremium = [
-    "cheminee",
-    "parking",
-    "cave",
-    "ascenseur",
-    "climatisation",
-    "alarme",
-    "domotique",
-    "fibre",
-  ];
+  let prestSomme = 0;
   let prestCount = 0;
   for (const p of form.prestations) {
-    if (prestPremium.includes(p)) {
-      prestMult += 0.01;
+    const poids = PRESTATION_POIDS[p];
+    if (poids) {
+      prestSomme += poids;
       prestCount += 1;
     }
   }
+  const prestMult = 1 + Math.min(prestSomme, PRESTATION_CAP);
 
   // Étage / dernier étage
   let etageMult = 1;
