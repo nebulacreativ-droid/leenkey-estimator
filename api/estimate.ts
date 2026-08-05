@@ -1,15 +1,16 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
-function buildPrompt(payload: Record<string, unknown>): string {
-  const bien = payload.bien as Record<string, unknown> ?? {};
-  const etat = payload.etat as Record<string, unknown> ?? {};
-  const energie = payload.energie as Record<string, unknown> ?? {};
-  const exterieur = payload.exterieur as string[] ?? [];
-  const situation = payload.situation as Record<string, unknown> ?? {};
-  const projet = payload.projet as Record<string, unknown> ?? {};
+export function buildPrompt(payload: Record<string, unknown>): string {
+  const bien = (payload.bien as Record<string, unknown>) ?? {};
+  const etat = (payload.etat as Record<string, unknown>) ?? {};
+  const energie = (payload.energie as Record<string, unknown>) ?? {};
+  const exterieur = (payload.exterieur as string[]) ?? [];
+  const situation = (payload.situation as Record<string, unknown>) ?? {};
+  const projet = (payload.projet as Record<string, unknown>) ?? {};
 
   return `Tu es un expert en estimation immobilière française avec 20 ans d'expérience.
-Analyse ce bien et génère une estimation précise basée sur les données du marché actuel.
+La valorisation de ce bien a déjà été calculée. Ton rôle est de l'expliquer au
+propriétaire, dans une analyse écrite — pas de produire un prix.
 
 BIEN À ESTIMER :
 - Type : ${bien.type}
@@ -45,29 +46,82 @@ PROJET VENDEUR :
 - Prix souhaité : ${projet.prix_souhaite ? `${projet.prix_souhaite} €` : "NC"}
 - Estimation préalable : ${projet.estimation_prealable ?? "Non"}
 
+${renderSpecifique(payload)}${renderEstimation(payload)}
 Réponds UNIQUEMENT en JSON valide, sans markdown ni backticks :
 {
-  "prix_median": 350000,
-  "prix_bas": 325000,
-  "prix_haut": 380000,
-  "prix_m2": 4200,
-  "prix_m2_marche": 4000,
-  "delta_marche": 5,
-  "delai_vente": "45-65 jours",
-  "tension_marche": "moderee",
-  "fiabilite": "elevee",
-  "analyse": "Analyse détaillée de 4-5 phrases professionnelles et factuelles expliquant l'estimation, le contexte du marché local, les facteurs clés qui influencent le prix, et les perspectives de vente.",
-  "recommandations": [
-    { "titre": "Titre de la recommandation", "description": "Description actionnable.", "uplift": "+3 à 5%" }
-  ]
+  "analyse": "4 à 5 phrases professionnelles et factuelles."
 }
 
-Règles :
-- tension_marche: "faible" | "moderee" | "forte"
-- fiabilite: "elevee" | "moyenne" | "faible"
-- Prix en euros entiers
-- 2 à 3 recommandations maximum
-- uplift est optionnel`;
+Règles impératives :
+- Tu ne produis AUCUN prix. La valorisation est déjà calculée et te sert de
+  donnée d'entrée : ton rôle est de l'expliquer, pas de la refaire.
+- Ne cite aucun montant qui contredirait les chiffres ci-dessus.
+- Appuie-toi sur les facteurs listés et, s'ils existent, sur les comparables
+  DVF : explique le contexte du marché local, ce qui tire ce bien vers le haut
+  ou vers le bas, et les perspectives de vente.
+- Ton factuel et sobre, adressé au propriétaire, sans superlatif commercial.`;
+}
+
+/**
+ * Bloc de données propre au type de bien.
+ *
+ * Le prompt ne décrivait que des champs résidentiels (pièces, chambres,
+ * cuisine) : sur un terrain, un local, un immeuble ou un bien atypique, ils
+ * sont tous vides et l'analyse était rédigée à l'aveugle.
+ */
+function renderSpecifique(payload: Record<string, unknown>): string {
+  const blocs: [string, string][] = [
+    ["terrain", "LE TERRAIN"],
+    ["local", "LE LOCAL COMMERCIAL"],
+    ["immeuble", "L'IMMEUBLE"],
+    ["atypique", "LE BIEN D'EXCEPTION"],
+  ];
+  for (const [cle, titre] of blocs) {
+    const bloc = payload[cle];
+    if (bloc) return `\n${titre} :\n${JSON.stringify(bloc, null, 2)}\n`;
+  }
+  return "";
+}
+
+/**
+ * Contexte chiffré transmis à Claude.
+ *
+ * Il ne calcule plus la valorisation : elle vient du moteur d'estimation, qui
+ * est déterministe et auditable. Auparavant les deux coexistaient — l'écran et
+ * le PDF affichaient le moteur, les emails affichaient le prix inventé par le
+ * modèle, sans qu'aucun des deux ne connaisse l'autre.
+ */
+function renderEstimation(payload: Record<string, unknown>): string {
+  const e = payload.estimation as Record<string, unknown> | undefined;
+  if (!e) return "";
+  const eur = (v: unknown) => Number(v ?? 0).toLocaleString("fr-FR");
+  const facteurs = Array.isArray(e.facteurs)
+    ? (e.facteurs as { label: string; impact: number; detail: string }[])
+        .map((f) => `  - ${f.label} : ${f.impact > 0 ? "+" : ""}${f.impact}% — ${f.detail}`)
+        .join("\n")
+    : "";
+
+  const dvf = payload.comparables_dvf as Record<string, unknown> | null | undefined;
+  const blocDvf = dvf
+    ? `
+COMPARABLES DVF (ventes réelles, source DGFiP, publiées avec ~6 mois de délai) :
+- ${dvf.nb} ventes comparables dans le code postal
+- Médiane ${eur(dvf.prix_m2_median)} €/m² · fourchette ${eur(dvf.prix_m2_min)} – ${eur(dvf.prix_m2_max)} €/m²
+`
+    : `
+COMPARABLES DVF : aucune vente comparable exploitable sur ce code postal.
+`;
+
+  return `
+VALORISATION CALCULÉE (elle fait foi, ne la recalcule pas) :
+- Valeur retenue : ${eur(e.prix_estime)} €
+- Fourchette : ${eur(e.prix_bas)} € – ${eur(e.prix_haut)} €
+- ${eur(e.prix_m2)} €/m² pour ${e.surface} m², contre ${eur(e.prix_m2_marche)} €/m² de référence sur le secteur (${e.delta_marche}%)
+- Délai de vente estimé : ${e.delai_vente} · tension du marché : ${e.tension_marche} · fiabilité de l'estimation : ${e.fiabilite}
+
+FACTEURS RETENUS PAR LE MODÈLE :
+${facteurs}
+${blocDvf}`;
 }
 
 export default async function handler(req: VercelRequest, res: VercelResponse) {
@@ -79,57 +133,65 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
   if (req.method === "OPTIONS") return res.status(200).end();
   if (req.method !== "POST") return res.status(405).json({ error: "Method not allowed" });
 
+  const payload = req.body as Record<string, unknown>;
+  const ref = `EST-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
+
+  // L'analyse rédigée est un confort ; le lead est la valeur. Une panne de
+  // l'API IA ne doit donc jamais empêcher l'envoi des emails — auparavant elle
+  // renvoyait 502 et le prospect était perdu.
+  const analyse = await genererAnalyse(payload).catch((e) => {
+    console.error("Analyse IA indisponible (non bloquant):", e);
+    return undefined;
+  });
+
+  // Non bloquant : on n'attend pas l'envoi pour répondre au client.
+  sendLeadEmail({ payload, analyse, ref }).catch((e) =>
+    console.error("sendLeadEmail failed (non-blocking):", e),
+  );
+
+  return res.status(200).json({ ref, analyse });
+}
+
+/** Demande à Claude la seule analyse rédigée. Renvoie undefined en cas d'échec. */
+async function genererAnalyse(payload: Record<string, unknown>): Promise<string | undefined> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
     console.error("ANTHROPIC_API_KEY manquante");
-    return res.status(500).json({ error: "Configuration serveur manquante" });
+    return undefined;
   }
 
+  const response = await fetch("https://api.anthropic.com/v1/messages", {
+    method: "POST",
+    headers: {
+      "x-api-key": apiKey,
+      "anthropic-version": "2023-06-01",
+      "content-type": "application/json",
+    },
+    body: JSON.stringify({
+      model: "claude-sonnet-4-5",
+      max_tokens: 1024,
+      // Déterministe : deux estimations identiques doivent produire la même
+      // analyse. Par défaut la température est à 1, ce qui faisait varier le
+      // texte — et, quand le modèle produisait encore les prix, les montants.
+      temperature: 0,
+      messages: [{ role: "user", content: buildPrompt(payload) }],
+    }),
+  });
+
+  if (!response.ok) {
+    console.error("Erreur Anthropic API:", await response.text());
+    return undefined;
+  }
+
+  const data = (await response.json()) as {
+    content: Array<{ type: string; text: string }>;
+  };
+  const clean = (data.content[0]?.text ?? "").replace(/```json|```/g, "").trim();
   try {
-    const payload = req.body as Record<string, unknown>;
-    const prompt = buildPrompt(payload);
-
-    const response = await fetch("https://api.anthropic.com/v1/messages", {
-      method: "POST",
-      headers: {
-        "x-api-key": apiKey,
-        "anthropic-version": "2023-06-01",
-        "content-type": "application/json",
-      },
-      body: JSON.stringify({
-        model: "claude-sonnet-4-5",
-        max_tokens: 1024,
-        messages: [{ role: "user", content: prompt }],
-      }),
-    });
-
-    if (!response.ok) {
-      const err = await response.text();
-      console.error("Erreur Anthropic API:", err);
-      return res.status(502).json({ error: "Erreur API IA" });
-    }
-
-    const data = (await response.json()) as {
-      content: Array<{ type: string; text: string }>;
-    };
-
-    const text = data.content[0]?.text?.trim() ?? "";
-
-    // Nettoyage JSON (au cas où)
-    const clean = text.replace(/```json|```/g, "").trim();
-    const result = JSON.parse(clean) as Record<string, unknown>;
-
-    const ref = `EST-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
-
-    // Envoi email lead (non-bloquant — on n'attend pas la fin pour répondre au client)
-    sendLeadEmail({ payload, result, ref }).catch((e) =>
-      console.error("sendLeadEmail failed (non-blocking):", e)
-    );
-
-    return res.status(200).json({ ...result, ref });
-  } catch (error) {
-    console.error("Erreur estimation:", error);
-    return res.status(500).json({ error: "Estimation indisponible" });
+    return (JSON.parse(clean) as { analyse?: string }).analyse;
+  } catch {
+    // Le modèle a répondu en texte libre plutôt qu'en JSON : c'est exploitable.
+    return clean || undefined;
   }
 }
 
@@ -138,15 +200,30 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 // ──────────────────────────────────────────────────────────────────
 async function sendLeadEmail({
   payload,
-  result,
+  analyse,
   ref,
 }: {
   payload: Record<string, unknown>;
-  result: Record<string, unknown>;
+  analyse?: string;
   ref: string;
 }) {
   const apiKey = process.env.RESEND_API_KEY;
   if (!apiKey) return;
+
+  // Les montants viennent du moteur d'estimation, pas du modèle : c'est le même
+  // chiffre que celui affiché à l'écran et dans le PDF.
+  // Nombres bruts formatés : les gabarits ajoutent eux-mêmes « € » et « €/m² ».
+  const est = (payload.estimation as Record<string, unknown>) ?? {};
+  const nb = (v: unknown) =>
+    v === null || v === undefined ? "—" : Number(v).toLocaleString("fr-FR");
+  const result = {
+    prix_median: nb(est.prix_estime),
+    prix_bas: nb(est.prix_bas),
+    prix_haut: nb(est.prix_haut),
+    prix_m2: nb(est.prix_m2),
+    delai_vente: est.delai_vente ?? "—",
+    analyse,
+  };
 
   const ADMIN_EMAIL = "contact.leenkey@gmail.com";
   const FROM_EMAIL = "Leenkey <noreply@leenkey.fr>";
@@ -197,7 +274,7 @@ async function sendLeadEmail({
     <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;background:#F8FAFC;border-radius:8px;overflow:hidden;">
       <tr><td style="padding:10px 12px;color:#64748B;width:35%;border-bottom:1px solid #E2E8F0;">Type</td><td style="padding:10px 12px;font-weight:600;border-bottom:1px solid #E2E8F0;">${esc(bien.type)}</td></tr>
       <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Adresse</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.adresse)}, ${esc(bien.code_postal)} ${esc(bien.ville)}</td></tr>
-      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Surface</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.surface_habitable)} m²</td></tr>
+      <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Surface</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(est.surface ?? bien.surface_habitable)} m²</td></tr>
       <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Pièces / chambres</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.pieces)} pièces · ${esc(bien.chambres)} chambres</td></tr>
       ${bien.etage !== undefined && bien.etage !== null && bien.etage !== "" ? `<tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">Étage</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(bien.etage)}${bien.dernier_etage ? " (dernier)" : ""}</td></tr>` : ""}
       <tr><td style="padding:10px 12px;color:#64748B;border-bottom:1px solid #E2E8F0;">État</td><td style="padding:10px 12px;border-bottom:1px solid #E2E8F0;">${esc(etat.general)}</td></tr>
@@ -254,14 +331,14 @@ async function sendLeadEmail({
       <div style="font-size:13px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:1px">Valeur estimée</div>
       <div style="font-size:38px;font-weight:800;color:#1156FC;margin:8px 0">${esc(result.prix_median)} €</div>
       <div style="font-size:14px;color:#64748B">Fourchette : ${esc(result.prix_bas)} € — ${esc(result.prix_haut)} €</div>
-      <div style="font-size:14px;color:#64748B;margin-top:4px">${esc(result.prix_m2)} €/m² · ${esc(bien.surface_habitable)} m²</div>
+      <div style="font-size:14px;color:#64748B;margin-top:4px">${esc(result.prix_m2)} €/m² · ${esc(est.surface ?? bien.surface_habitable)} m²</div>
     </div>
 
     <h2 style="font-size:16px;color:#1156FC;margin:0 0 12px">🏡 Votre bien</h2>
     <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px">
       <tr><td style="padding:6px 8px;color:#64748B">Type</td><td style="padding:6px 8px;text-align:right;font-weight:600">${esc(bien.type)}</td></tr>
       <tr><td style="padding:6px 8px;color:#64748B">Adresse</td><td style="padding:6px 8px;text-align:right">${esc(bien.adresse)}, ${esc(bien.code_postal)} ${esc(bien.ville)}</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B">Surface</td><td style="padding:6px 8px;text-align:right">${esc(bien.surface_habitable)} m²</td></tr>
+      <tr><td style="padding:6px 8px;color:#64748B">Surface</td><td style="padding:6px 8px;text-align:right">${esc(est.surface ?? bien.surface_habitable)} m²</td></tr>
       <tr><td style="padding:6px 8px;color:#64748B">Délai de vente estimé</td><td style="padding:6px 8px;text-align:right;font-weight:600">${esc(result.delai_vente)}</td></tr>
     </table>
 

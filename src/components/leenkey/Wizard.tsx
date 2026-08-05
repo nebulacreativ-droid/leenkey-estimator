@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
+import { computeEstimation } from "./estimation";
 import { getFlow } from "./flows";
 import { statsLocatives, totalCharges } from "./immeuble-calc";
 import { StepPositionContext } from "./step-position";
@@ -364,18 +365,12 @@ export function LeenkeyWizard() {
 
   const submit = async () => {
     setSubmitting(true);
-    const payload = buildPayload(form);
 
-    // Lance les 2 APIs en parallèle (Claude estimate + DVF comparables)
-    const estimatePromise = fetch("/api/estimate", {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify(payload),
-    })
-      .then((r) => (r.ok ? r.json() : null))
-      .catch(() => null);
-
-    const dvfPromise = fetch("/api/dvf-comparables", {
+    // Les DVF d'abord : ils entrent dans le calcul de l'estimation, qui doit
+    // être arrêtée avant d'appeler Claude. Les deux appels étaient parallèles,
+    // ce qui obligeait Claude à produire son propre prix — d'où deux chiffres
+    // différents entre l'écran et les emails.
+    const dvfResult = (await fetch("/api/dvf-comparables", {
       method: "POST",
       headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
@@ -392,20 +387,55 @@ export function LeenkeyWizard() {
       }),
     })
       .then((r) => (r.ok ? r.json() : null))
-      .catch(() => null);
+      .catch(() => null)) as DvfResult | null;
 
-    const [estimateResult, dvfResult] = await Promise.all([estimatePromise, dvfPromise]);
+    // Chiffre unique de référence : c'est lui qui s'affiche à l'écran, dans le
+    // PDF et dans les emails. Le Dashboard le recalcule à l'identique — le
+    // modèle est déterministe, mêmes entrées, même sortie.
+    const dvfPrixM2 = dvfResult?.available ? dvfResult.stats.prixM2Pondere : null;
+    const estimation = computeEstimation(form, dvfPrixM2);
+
+    const payload = {
+      ...buildPayload(form),
+      estimation: {
+        prix_estime: estimation.prixEstime,
+        prix_bas: estimation.prixBas,
+        prix_haut: estimation.prixHaut,
+        prix_m2: estimation.prixM2,
+        prix_m2_marche: estimation.prixM2Marche,
+        delta_marche: estimation.deltaMarche,
+        surface: estimation.surface,
+        delai_vente: estimation.delaiVente,
+        tension_marche: estimation.tensionMarche,
+        fiabilite: estimation.fiabilite,
+        score_attractivite: estimation.scoreAttractivite,
+        facteurs: estimation.facteurs,
+      },
+      comparables_dvf: dvfResult?.available
+        ? {
+            nb: dvfResult.nbComparables,
+            prix_m2_median: dvfResult.stats.prixM2Median,
+            prix_m2_pondere: dvfResult.stats.prixM2Pondere,
+            prix_m2_min: dvfResult.stats.prixM2Min,
+            prix_m2_max: dvfResult.stats.prixM2Max,
+          }
+        : null,
+    };
+
+    const estimateResult = (await fetch("/api/estimate", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify(payload),
+    })
+      .then((r) => (r.ok ? r.json() : null))
+      .catch(() => null)) as { ref?: string; analyse?: string } | null;
 
     const ref =
-      (estimateResult as { ref?: string } | null)?.ref ??
+      estimateResult?.ref ??
       `EST-${new Date().getFullYear()}-${Math.floor(Math.random() * 90000 + 10000)}`;
-    const aiAnalyse = (estimateResult as { analyse?: string } | null)?.analyse;
+    const aiAnalyse = estimateResult?.analyse;
 
-    setSubmitted({
-      ref,
-      aiAnalyse,
-      dvfData: dvfResult as DvfResult | null,
-    });
+    setSubmitted({ ref, aiAnalyse, dvfData: dvfResult });
 
     try {
       localStorage.removeItem(STORAGE_KEY);
