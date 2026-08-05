@@ -77,6 +77,18 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 
     const codePostal = String(body.codePostal).trim();
     const type = body.type ?? "maison";
+
+    // Un terrain n'a pas de surface bâtie : les mutations DVF exploitées ici
+    // (filtrées sur surface_reelle_bati) ne le concernent pas. Sans ce garde-fou,
+    // le terrain récupérait les comparables Maison/Appartement du code postal et
+    // se retrouvait valorisé au prix du m² bâti.
+    if (type === "terrain") {
+      return res.status(200).json({
+        available: false,
+        message: "Comparables DVF non disponibles pour les terrains",
+        comparables: [],
+      });
+    }
     const surface = body.surface ?? 0;
     const acceptedTypes = TYPE_MAPPING[type] ?? ["Maison", "Appartement"];
 

@@ -2,6 +2,7 @@ import { useEffect, useRef, useState } from "react";
 import {
   Field,
   OptionCard,
+  PillGroup,
   SectionTitle,
   StepHeader,
   Stepper,
@@ -13,7 +14,7 @@ import { cn } from "@/lib/utils";
 
 type SetForm = (patch: Partial<LeenkeyForm>) => void;
 export type StepErrors = Partial<Record<keyof LeenkeyForm, string>>;
-interface P {
+export interface P {
   form: LeenkeyForm;
   set: SetForm;
   errors?: StepErrors;
@@ -731,36 +732,6 @@ function DpeRow({
       >
         Je ne sais pas
       </button>
-    </div>
-  );
-}
-
-function PillGroup({
-  value,
-  onChange,
-  options,
-}: {
-  value: string | null;
-  onChange: (v: string) => void;
-  options: string[];
-}) {
-  return (
-    <div className="flex flex-wrap gap-2">
-      {options.map((o) => (
-        <button
-          key={o}
-          type="button"
-          onClick={() => onChange(o)}
-          className={cn(
-            "rounded-full border-2 px-4 py-2 text-sm font-medium transition",
-            value === o
-              ? "border-primary bg-primary text-primary-foreground"
-              : "border-border bg-card text-navy hover:border-primary/60 hover:bg-sky/50",
-          )}
-        >
-          {o}
-        </button>
-      ))}
     </div>
   );
 }

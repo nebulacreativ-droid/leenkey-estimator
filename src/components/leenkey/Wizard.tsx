@@ -1,19 +1,7 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
-import {
-  Step1,
-  Step10,
-  Step11,
-  Step12,
-  Step2,
-  Step3,
-  Step4,
-  Step5,
-  Step6,
-  Step7,
-  Step8,
-  Step9,
-} from "./steps";
-import { initialForm, STEP_LABELS, type LeenkeyForm } from "./types";
+import { getFlow } from "./flows";
+import { StepPositionContext } from "./step-position";
+import { initialForm, type LeenkeyForm } from "./types";
 import { EstimationDashboard } from "./Dashboard";
 import { cn } from "@/lib/utils";
 
@@ -46,7 +34,6 @@ export interface DvfResult {
 
 const STORAGE_KEY = "leenkey_form_v1";
 const DASHBOARD_KEY = "leenkey_dashboard_v1";
-const TOTAL = 12;
 
 type Errors = Partial<Record<keyof LeenkeyForm, string>>;
 
@@ -79,6 +66,26 @@ function buildPayload(form: LeenkeyForm) {
       nb_etages_batiment: form.nb_etages_batiment,
       niveaux: form.niveaux,
     },
+    ...(form.type === "terrain" && {
+      terrain: {
+        nature: form.terrain_type,
+        constructible: form.constructible,
+        zonage_plu: form.zonage_plu,
+        emprise_sol_pct: form.emprise_sol,
+        hauteur_autorisee_m: form.hauteur_autorisee,
+        niveaux_autorises: form.niveaux_autorises,
+        facade_m: form.facade,
+        profondeur_m: form.profondeur,
+        viabilisation: form.viabilisation,
+        topographie: form.topographie,
+        orientation: form.orientation,
+        vue: form.vue,
+        distances: form.distances,
+        situation: form.situation_terrain,
+        contraintes: form.contraintes_terrain,
+        potentiel_foncier: form.potentiel_foncier,
+      },
+    }),
     exterieur: form.exterieur,
     etat: { general: form.etat, prestations: form.prestations },
     energie: {
@@ -121,55 +128,6 @@ function buildPayload(form: LeenkeyForm) {
       contact_conseiller: form.contact_conseiller,
     },
   };
-}
-
-function validateStep(step: number, f: LeenkeyForm): Errors {
-  const e: Errors = {};
-  switch (step) {
-    case 1:
-      if (!f.type) e.type = "Sélectionnez un type de bien";
-      break;
-    case 2:
-      if (!f.adresse) e.adresse = "L'adresse est requise";
-      break;
-    case 3:
-      // Appartement : la loi Carrez est la surface de référence, l'habitable est optionnelle.
-      if (f.type === "appartement") {
-        if (!f.surface_carrez) e.surface_carrez = "Surface loi Carrez requise";
-      } else if (f.type !== "terrain" && !f.surface_habitable) {
-        e.surface_habitable = "Surface requise";
-      }
-      if ((f.type === "maison" || f.type === "terrain") && f.surface_terrain === null)
-        e.surface_terrain = "Surface terrain requise (0 si aucun)";
-      break;
-    case 4:
-      if (!f.pieces) e.pieces = "Requis";
-      if (f.chambres === null) e.chambres = "Requis";
-      if (f.salles_bain === null) e.salles_bain = "Requis";
-      if (!f.cuisine) e.cuisine = "Requis";
-      if (f.type === "appartement" && f.etage === null) e.etage = "Requis";
-      if (f.type === "maison" && !f.niveaux) e.niveaux = "Requis";
-      break;
-    case 6:
-      if (!f.etat) e.etat = "Sélectionnez un état";
-      break;
-    case 9:
-      if (!f.proprietaire) e.proprietaire = "Requis";
-      if (!f.occupation) e.occupation = "Requis";
-      break;
-    case 10:
-      if (!f.delai) e.delai = "Requis";
-      break;
-    case 12:
-      if (!f.prenom) e.prenom = "Prénom requis";
-      if (!f.nom) e.nom = "Nom requis";
-      if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(f.email)) e.email = "Email invalide";
-      if (!/^(?:\+33|0)[1-9](?:[\s.-]?\d{2}){4}$/.test(f.telephone.replace(/\s/g, "")))
-        e.telephone = "Numéro français invalide";
-      if (!f.rgpd) e.rgpd = "Vous devez accepter pour continuer";
-      break;
-  }
-  return e;
 }
 
 export function LeenkeyWizard() {
@@ -223,10 +181,7 @@ export function LeenkeyWizard() {
     if (!hydrated) return;
     try {
       if (submitted) {
-        localStorage.setItem(
-          DASHBOARD_KEY,
-          JSON.stringify({ form, submitted })
-        );
+        localStorage.setItem(DASHBOARD_KEY, JSON.stringify({ form, submitted }));
       } else {
         localStorage.removeItem(DASHBOARD_KEY);
       }
@@ -250,10 +205,23 @@ export function LeenkeyWizard() {
     setErrors({});
   }, []);
 
-  const progress = useMemo(() => Math.round((step / TOTAL) * 100), [step]);
+  // Le parcours dépend du type de bien : un terrain n'a pas les mêmes étapes
+  // qu'un appartement. Il est donc recalculé dès que le type change.
+  const flow = useMemo(() => getFlow(form.type), [form.type]);
+  const TOTAL = flow.length;
+  const current = flow[step - 1];
+
+  // Un parcours plus court que l'étape restaurée (changement de type, ancien
+  // brouillon en localStorage) laisserait le wizard sur une étape inexistante.
+  useEffect(() => {
+    if (step > TOTAL) setStep(TOTAL);
+  }, [step, TOTAL]);
+
+  const progress = useMemo(() => Math.round((step / TOTAL) * 100), [step, TOTAL]);
+  const stepPosition = useMemo(() => ({ step, total: TOTAL }), [step, TOTAL]);
 
   const next = () => {
-    const e = validateStep(step, form);
+    const e = current?.validate?.(form) ?? {};
     setErrors(e);
     if (Object.keys(e).length > 0) {
       // Scroll vers le 1er champ en erreur (après le render)
@@ -264,7 +232,7 @@ export function LeenkeyWizard() {
             firstErrorEl.scrollIntoView({ behavior: "smooth", block: "center" });
             // Focus l'input à l'intérieur si possible
             const input = firstErrorEl.querySelector<HTMLElement>(
-              "input, select, textarea, button[role='combobox']"
+              "input, select, textarea, button[role='combobox']",
             );
             if (input && typeof input.focus === "function") {
               input.focus({ preventScroll: true });
@@ -324,10 +292,7 @@ export function LeenkeyWizard() {
       .then((r) => (r.ok ? r.json() : null))
       .catch(() => null);
 
-    const [estimateResult, dvfResult] = await Promise.all([
-      estimatePromise,
-      dvfPromise,
-    ]);
+    const [estimateResult, dvfResult] = await Promise.all([estimatePromise, dvfPromise]);
 
     const ref =
       (estimateResult as { ref?: string } | null)?.ref ??
@@ -373,36 +338,7 @@ export function LeenkeyWizard() {
       />
     );
 
-  const StepNode = (() => {
-    switch (step) {
-      case 1:
-        return <Step1 form={form} set={set} errors={errors} />;
-      case 2:
-        return <Step2 form={form} set={set} errors={errors} />;
-      case 3:
-        return <Step3 form={form} set={set} errors={errors} />;
-      case 4:
-        return <Step4 form={form} set={set} errors={errors} />;
-      case 5:
-        return <Step5 form={form} set={set} />;
-      case 6:
-        return <Step6 form={form} set={set} errors={errors} />;
-      case 7:
-        return <Step7 form={form} set={set} />;
-      case 8:
-        return <Step8 form={form} set={set} />;
-      case 9:
-        return <Step9 form={form} set={set} errors={errors} />;
-      case 10:
-        return <Step10 form={form} set={set} errors={errors} />;
-      case 11:
-        return <Step11 form={form} set={set} />;
-      case 12:
-        return <Step12 form={form} set={set} errors={errors} />;
-      default:
-        return null;
-    }
-  })();
+  const StepNode = current?.render({ form, set, errors }) ?? null;
 
   const firstError = Object.values(errors)[0];
 
@@ -413,7 +349,7 @@ export function LeenkeyWizard() {
         {/* Progress (logo retiré : déjà dans la navbar au-dessus) */}
         <div className="mx-auto max-w-5xl px-5 py-3">
           <div className="mb-2 flex items-center justify-between text-xs font-medium text-sub">
-            <span className="font-display font-semibold text-navy">{STEP_LABELS[step - 1]}</span>
+            <span className="font-display font-semibold text-navy">{current?.label}</span>
             <span>
               Étape {step} sur {TOTAL} · {progress}%
             </span>
@@ -463,9 +399,11 @@ export function LeenkeyWizard() {
 
       {/* Step content */}
       <main className="mx-auto max-w-3xl px-5 pb-32 pt-10">
-        <div key={step} className="step-enter">
-          {StepNode}
-        </div>
+        <StepPositionContext.Provider value={stepPosition}>
+          <div key={step} className="step-enter">
+            {StepNode}
+          </div>
+        </StepPositionContext.Provider>
         {firstError && (
           <p className="mt-6 rounded-[10px] border-2 border-destructive/30 bg-destructive/5 px-4 py-3 text-sm text-destructive">
             {firstError}
@@ -482,9 +420,7 @@ export function LeenkeyWizard() {
             disabled={step === 1}
             className={cn(
               "rounded-[10px] px-5 py-3 font-display text-sm font-semibold transition",
-              step === 1
-                ? "invisible"
-                : "text-navy hover:bg-sky",
+              step === 1 ? "invisible" : "text-navy hover:bg-sky",
             )}
           >
             ← Retour
@@ -515,4 +451,3 @@ export function LeenkeyWizard() {
     </div>
   );
 }
-

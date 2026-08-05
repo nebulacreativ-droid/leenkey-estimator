@@ -38,6 +38,30 @@ export interface LeenkeyForm {
   nb_etages_batiment: number | null;
   niveaux: number | null;
 
+  // ---- Parcours TERRAIN ----
+  terrain_type: string | null; // à bâtir, agricole, loisirs, forestier, non constructible, commercial/industriel
+  constructible: string | null; // Oui / Non / Je ne sais pas
+  zonage_plu: string | null;
+  emprise_sol: number | null; // %
+  hauteur_autorisee: number | null; // m
+  niveaux_autorises: number | null;
+  facade: number | null; // m
+  profondeur: number | null; // m
+  viabilisation: string[]; // eau, electricite, gaz, assainissement, fibre
+  topographie: string | null;
+  orientation: string | null;
+  vue: string[];
+  distances: {
+    ecoles: string | null;
+    commerces: string | null;
+    gare: string | null;
+    bus: string | null;
+    centre_ville: string | null;
+  };
+  situation_terrain: string | null; // lotissement, centre-ville, hameau, zone isolée
+  contraintes_terrain: string[];
+  potentiel_foncier: string[];
+
   // 5
   exterieur: string[];
 
@@ -113,6 +137,28 @@ export const initialForm: LeenkeyForm = {
   dernier_etage: false,
   nb_etages_batiment: null,
   niveaux: null,
+  terrain_type: null,
+  constructible: null,
+  zonage_plu: null,
+  emprise_sol: null,
+  hauteur_autorisee: null,
+  niveaux_autorises: null,
+  facade: null,
+  profondeur: null,
+  viabilisation: [],
+  topographie: null,
+  orientation: null,
+  vue: [],
+  distances: {
+    ecoles: null,
+    commerces: null,
+    gare: null,
+    bus: null,
+    centre_ville: null,
+  },
+  situation_terrain: null,
+  contraintes_terrain: [],
+  potentiel_foncier: [],
   exterieur: [],
   etat: null,
   prestations: [],
@@ -152,18 +198,3 @@ export const initialForm: LeenkeyForm = {
   newsletter: false,
   contact_conseiller: false,
 };
-
-export const STEP_LABELS = [
-  "Votre bien",
-  "Localisation",
-  "Superficie",
-  "Composition",
-  "Extérieur",
-  "État général",
-  "Prestations",
-  "Énergie",
-  "Situation",
-  "Votre projet",
-  "Vos documents",
-  "Vos coordonnées",
-];

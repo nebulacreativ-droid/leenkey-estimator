@@ -106,10 +106,10 @@ function tension(form: LeenkeyForm): "faible" | "moderee" | "forte" {
   return TENSION_DEPT[dept] ?? "faible";
 }
 
+// "terrain" ne figure plus ici : il a son propre modèle (computeTerrainEstimation).
 const TYPE_MULT: Record<string, number> = {
   maison: 1.0,
   appartement: 1.05,
-  terrain: 0.4,
   local_commercial: 0.85,
   immeuble: 0.95,
   atypique: 1.1,
@@ -133,24 +133,479 @@ const DPE_MULT: Record<string, { mult: number; label: string }> = {
   inconnu: { mult: 0.98, label: "DPE non renseigné" },
 };
 
-export function computeEstimation(
-  form: LeenkeyForm,
-  dvfPrixM2?: number | null,
-): EstimationResult {
-  const surface =
-    form.surface_habitable ||
-    form.surface_carrez ||
-    (form.type === "terrain" ? form.surface_terrain || 0 : 0) ||
-    60;
+/* ------------------------------------------------------------------ */
+/* TERRAIN                                                             */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Prix moyen du m² de terrain à bâtir viabilisé, par département (€/m²).
+ *
+ * ⚠️ Ce sont des ordres de grandeur. Ils remplacent l'ancien calcul
+ * (0,4 × prix du m² bâti), qui surévaluait les terrains d'un facteur 5 à 10 :
+ * un terrain de 800 m² en zone à 3 500 €/m² bâti en ressortait à 1,1 M€.
+ * À recalibrer sur les mutations DVF de nature « terrain à bâtir ».
+ */
+const PRIX_M2_TERRAIN: Record<string, number> = {
+  "75": 1500,
+  "92": 900,
+  "94": 550,
+  "93": 450,
+  "78": 400,
+  "91": 300,
+  "95": 280,
+  "77": 220,
+  "06": 450,
+  "83": 300,
+  "13": 320,
+  "84": 200,
+  "04": 120,
+  "05": 130,
+  "69": 300,
+  "74": 400,
+  "73": 300,
+  "38": 220,
+  "01": 200,
+  "42": 100,
+  "07": 120,
+  "26": 150,
+  "33": 250,
+  "40": 200,
+  "64": 250,
+  "24": 90,
+  "47": 80,
+  "31": 220,
+  "34": 300,
+  "30": 180,
+  "66": 200,
+  "11": 120,
+  "81": 100,
+  "82": 100,
+  "32": 80,
+  "65": 80,
+  "09": 70,
+  "12": 70,
+  "46": 70,
+  "48": 60,
+  "44": 250,
+  "85": 200,
+  "35": 200,
+  "56": 180,
+  "29": 150,
+  "22": 120,
+  "49": 150,
+  "53": 80,
+  "72": 90,
+  "41": 90,
+  "45": 120,
+  "37": 130,
+  "36": 60,
+  "18": 70,
+  "28": 120,
+  "59": 150,
+  "62": 100,
+  "80": 90,
+  "02": 70,
+  "60": 150,
+  "67": 200,
+  "68": 180,
+  "57": 120,
+  "54": 100,
+  "88": 60,
+  "55": 50,
+  "08": 50,
+  "51": 110,
+  "10": 80,
+  "52": 45,
+  "21": 120,
+  "71": 80,
+  "58": 45,
+  "89": 90,
+  "39": 70,
+  "25": 130,
+  "70": 55,
+  "90": 120,
+  "63": 130,
+  "03": 60,
+  "15": 55,
+  "43": 70,
+  "87": 70,
+  "19": 60,
+  "23": 25,
+  "16": 70,
+  "17": 200,
+  "79": 80,
+  "86": 80,
+  "14": 160,
+  "50": 100,
+  "61": 60,
+  "27": 120,
+  "76": 120,
+  "2A": 350,
+  "2B": 300,
+  "971": 200,
+  "972": 200,
+  "973": 100,
+  "974": 300,
+  "976": 150,
+};
+const PRIX_M2_TERRAIN_DEFAUT = 70;
+
+/** Nature du terrain : rapport au prix d'un terrain à bâtir équivalent. */
+const NATURE_MULT: Record<string, { mult: number; label: string }> = {
+  a_batir: { mult: 1, label: "Terrain à bâtir" },
+  commercial: { mult: 0.85, label: "Terrain commercial / industriel" },
+  loisirs: { mult: 0.15, label: "Terrain de loisirs" },
+  non_constructible: { mult: 0.04, label: "Terrain non constructible" },
+  agricole: { mult: 0.012, label: "Terrain agricole" },
+  forestier: { mult: 0.008, label: "Terrain forestier" },
+};
+
+/**
+ * Coût de raccordement d'un réseau manquant (€).
+ * Déduit en montant fixe et non en pourcentage : viabiliser coûte le même prix
+ * sur 300 m² que sur 3 000 m², alors qu'un pourcentage écraserait les petites
+ * parcelles.
+ */
+const COUT_VIABILISATION: Record<string, { cout: number; label: string }> = {
+  eau: { cout: 3000, label: "eau potable" },
+  electricite: { cout: 3000, label: "électricité" },
+  assainissement: { cout: 5000, label: "tout-à-l'égout" },
+  gaz: { cout: 1500, label: "gaz" },
+  fibre: { cout: 500, label: "fibre" },
+};
+
+const TOPO_MULT: Record<string, number> = {
+  Plat: 1,
+  "Pente légère": 0.95,
+  "Forte pente": 0.82,
+};
+
+const VUE_BONUS: Record<string, number> = {
+  Mer: 0.15,
+  Montagne: 0.08,
+  Dégagée: 0.05,
+  Forêt: 0.03,
+  Campagne: 0.02,
+  Ville: 0,
+};
+
+const SITUATION_MULT: Record<string, number> = {
+  "Centre-ville": 1.1,
+  Lotissement: 1,
+  Hameau: 0.85,
+  "Zone isolée": 0.7,
+};
+
+const CONTRAINTE_MALUS: Record<string, { malus: number; label: string }> = {
+  inondation: { malus: 0.15, label: "zone inondable" },
+  ppr: { malus: 0.12, label: "PPR" },
+  natura2000: { malus: 0.1, label: "Natura 2000" },
+  servitudes: { malus: 0.07, label: "servitudes" },
+  argiles: { malus: 0.05, label: "retrait-gonflement des argiles" },
+  monuments: { malus: 0.05, label: "abords de monument historique" },
+};
+
+const POTENTIEL_BONUS: Record<string, { bonus: number; label: string }> = {
+  permis_existant: { bonus: 0.12, label: "permis accordé" },
+  divisible: { bonus: 0.1, label: "divisible" },
+  certificat_urbanisme: { bonus: 0.05, label: "certificat d'urbanisme" },
+  libre_constructeur: { bonus: 0.04, label: "libre de constructeur" },
+  borne: { bonus: 0.03, label: "borné" },
+  etude_sol: { bonus: 0.03, label: "étude de sol" },
+  projet_etudie: { bonus: 0.03, label: "projet étudié" },
+};
+
+function basePrixM2Terrain(form: LeenkeyForm): number {
+  const cp = (form.code_postal || form.departement || "").trim();
+  // DOM : 3 chiffres (971xx…), Corse : 20xxx → 2A/2B, métropole : 2 chiffres.
+  const dom = cp.slice(0, 3);
+  if (PRIX_M2_TERRAIN[dom]) return PRIX_M2_TERRAIN[dom];
+  if (cp.startsWith("20")) return PRIX_M2_TERRAIN["2A"];
+  const dept = cp.slice(0, 2);
+  return PRIX_M2_TERRAIN[dept] ?? PRIX_M2_TERRAIN_DEFAUT;
+}
+
+/**
+ * Surface pondérée : au-delà de la taille d'un lot constructible courant, les
+ * mètres carrés supplémentaires ne se vendent pas au même prix — c'est du
+ * terrain d'agrément, pas de la constructibilité.
+ */
+function surfacePonderee(surface: number, nature: string): number {
+  // Seuls les terrains constructibles subissent cette décote : elle traduit le
+  // fait qu'au-delà d'un lot, le surplus n'est plus de la constructibilité mais
+  // de l'agrément. Un terrain agricole, forestier ou non constructible se vend
+  // à l'hectare, donc linéairement.
+  if (nature !== "a_batir" && nature !== "commercial") return surface;
+  const palier1 = Math.min(surface, 1000);
+  const palier2 = Math.min(Math.max(surface - 1000, 0), 2000) * 0.3;
+  const palier3 = Math.max(surface - 3000, 0) * 0.1;
+  return palier1 + palier2 + palier3;
+}
+
+function computeTerrainEstimation(form: LeenkeyForm): EstimationResult {
+  const surface = form.surface_terrain || 0;
+  const nature = form.terrain_type ?? "a_batir";
+  const natureEntry = NATURE_MULT[nature] ?? NATURE_MULT.a_batir;
+  const prixM2Marche = basePrixM2Terrain(form);
+
+  const facteurs: FactorImpact[] = [];
+
+  // Constructibilité déclarée — seulement si la nature ne la tranche pas déjà.
+  let constructibleMult = 1;
+  if (nature === "a_batir" || nature === "commercial") {
+    if (form.constructible === "Non") constructibleMult = 0.15;
+    else if (form.constructible === "Je ne sais pas") constructibleMult = 0.85;
+  }
+
+  const topoMult = TOPO_MULT[form.topographie ?? "Plat"] ?? 1;
+
+  let vueMult = 1;
+  const vueLabels: string[] = [];
+  for (const v of form.vue) {
+    const bonus = VUE_BONUS[v];
+    if (bonus) {
+      vueMult += bonus;
+      if (bonus > 0) vueLabels.push(v.toLowerCase());
+    }
+  }
+
+  const situationMult = SITUATION_MULT[form.situation_terrain ?? "Lotissement"] ?? 1;
+
+  let contrainteMult = 1;
+  const contrainteLabels: string[] = [];
+  for (const c of form.contraintes_terrain) {
+    const entry = CONTRAINTE_MALUS[c];
+    if (entry) {
+      contrainteMult -= entry.malus;
+      contrainteLabels.push(entry.label);
+    }
+  }
+  contrainteMult = Math.max(0.4, contrainteMult);
+
+  let potentielMult = 1;
+  const potentielLabels: string[] = [];
+  for (const p of form.potentiel_foncier) {
+    const entry = POTENTIEL_BONUS[p];
+    if (entry) {
+      potentielMult += entry.bonus;
+      potentielLabels.push(entry.label);
+    }
+  }
+
+  // Une façade trop étroite bride le projet constructible.
+  let facadeMult = 1;
+  if (form.facade && form.facade > 0 && form.facade < 8 && nature === "a_batir") {
+    facadeMult = 0.92;
+  }
+
+  // Accessibilité : commerces et écoles à portée élargissent la clientèle.
+  let accesMult = 1;
+  const proches = [form.distances.commerces, form.distances.ecoles].filter(
+    (d) => d === "< 5 min",
+  ).length;
+  const loin = [form.distances.commerces, form.distances.ecoles].filter(
+    (d) => d === "> 20 min",
+  ).length;
+  accesMult += proches * 0.02 - loin * 0.04;
+
+  const globalMult =
+    natureEntry.mult *
+    constructibleMult *
+    topoMult *
+    vueMult *
+    situationMult *
+    contrainteMult *
+    potentielMult *
+    facadeMult *
+    accesMult;
+
+  // Non arrondi : un terrain agricole vaut ~0,3 €/m², un arrondi à l'entier le
+  // ramènerait à zéro.
+  const prixM2Exact = prixM2Marche * globalMult;
+  const valeurBrute = prixM2Exact * surfacePonderee(surface, nature);
+
+  // Réseaux manquants : déduits au coût de raccordement (uniquement là où la
+  // viabilisation a un sens — un terrain agricole ne se viabilise pas).
+  let coutViabilisation = 0;
+  const manquants: string[] = [];
+  if (nature === "a_batir" || nature === "commercial") {
+    for (const [key, entry] of Object.entries(COUT_VIABILISATION)) {
+      if (!form.viabilisation.includes(key)) {
+        coutViabilisation += entry.cout;
+        manquants.push(entry.label);
+      }
+    }
+  }
+
+  // Arrondi au millier pour les valeurs courantes, à la centaine en dessous de
+  // 10 000 € : arrondir au millier un terrain agricole à 4 200 € le déformerait.
+  const brut = Math.max(0, valeurBrute - coutViabilisation);
+  const pas = brut < 10000 ? 100 : 1000;
+  const prixEstime = Math.round(brut / pas) * pas;
+
+  // Sous 10 €/m² (agricole, forestier), l'entier ne suffit plus à rendre compte
+  // de l'écart : on garde une décimale.
+  const prixM2Brut = surface > 0 ? prixEstime / surface : 0;
+  const prixM2Final = prixM2Brut >= 10 ? Math.round(prixM2Brut) : Math.round(prixM2Brut * 10) / 10;
+  const deltaMarche = Math.round(((prixM2Final - prixM2Marche) / prixM2Marche) * 100);
+
+  facteurs.push(
+    {
+      label: "Nature du terrain",
+      impact: Math.round((natureEntry.mult - 1) * 100),
+      detail: natureEntry.label,
+    },
+    {
+      label: "Constructibilité",
+      impact: Math.round((constructibleMult - 1) * 100),
+      detail:
+        form.constructible === "Oui"
+          ? `Constructible${form.zonage_plu ? ` · ${form.zonage_plu}` : ""}`
+          : form.constructible === "Non"
+            ? "Non constructible"
+            : "Constructibilité à confirmer en mairie",
+    },
+    {
+      label: "Viabilisation",
+      impact: 0,
+      detail: manquants.length
+        ? `${manquants.length} réseau${manquants.length > 1 ? "x" : ""} à raccorder (${manquants.join(", ")}) — ${coutViabilisation.toLocaleString("fr-FR")} € déduits`
+        : "Terrain entièrement viabilisé",
+    },
+    {
+      label: "Terrain & vue",
+      impact: Math.round((topoMult * vueMult - 1) * 100),
+      detail: [form.topographie, ...vueLabels].filter(Boolean).join(", ") || "Non renseigné",
+    },
+    {
+      label: "Situation",
+      impact: Math.round((situationMult * accesMult - 1) * 100),
+      detail: form.situation_terrain ?? "Non renseignée",
+    },
+    {
+      label: "Contraintes",
+      impact: Math.round((contrainteMult - 1) * 100),
+      detail: contrainteLabels.length ? contrainteLabels.join(", ") : "Aucune déclarée",
+    },
+    {
+      label: "Potentiel foncier",
+      impact: Math.round((potentielMult - 1) * 100),
+      detail: potentielLabels.length ? potentielLabels.join(", ") : "Aucune démarche engagée",
+    },
+  );
+
+  // Fiabilité : complétude des champs qui pèsent réellement sur le prix.
+  const champsClés: Array<keyof LeenkeyForm> = [
+    "adresse",
+    "code_postal",
+    "surface_terrain",
+    "terrain_type",
+    "constructible",
+    "zonage_plu",
+    "topographie",
+    "situation_terrain",
+  ];
+  const complet = champsClés.filter((k) => {
+    const v = form[k];
+    return v !== null && v !== "" && v !== undefined;
+  }).length;
+  const fiabiliteScore = Math.round((complet / champsClés.length) * 100);
+  const fiabilite: EstimationResult["fiabilite"] =
+    fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
+
+  let rangePct = 0.03;
+  if (fiabilite === "elevee") rangePct = 0.02;
+  else if (fiabilite === "moyenne") rangePct = 0.025;
+
+  const tensionMarche = tension(form);
+  if (tensionMarche === "forte") rangePct *= 0.85;
+  rangePct = Math.min(rangePct, 0.03);
+
+  // Score d'attractivité : constructibilité et viabilisation d'abord.
+  let score = 40;
+  if (form.constructible === "Oui") score += 25;
+  score += Math.round((form.viabilisation.length / 5) * 15);
+  score += Math.round((potentielMult - 1) * 100);
+  score += Math.round((contrainteMult - 1) * 100);
+  score += Math.round((vueMult - 1) * 100);
+  score = Math.max(0, Math.min(100, score));
+
+  let delaiBase: [number, number] = [90, 150];
+  if (nature === "a_batir" && form.constructible === "Oui") delaiBase = [60, 100];
+  if (nature === "agricole" || nature === "forestier") delaiBase = [120, 240];
+  if (tensionMarche === "forte") delaiBase = [delaiBase[0] - 20, delaiBase[1] - 30];
+
+  const recommandations: Recommendation[] = [];
+  if (manquants.length) {
+    recommandations.push({
+      title: "Viabiliser avant la mise en vente",
+      description: `Il manque : ${manquants.join(", ")}. Un terrain viabilisé se vend plus vite et se négocie moins.`,
+      uplift: `+${coutViabilisation.toLocaleString("fr-FR")} € environ`,
+    });
+  }
+  if (form.constructible === "Je ne sais pas") {
+    recommandations.push({
+      title: "Demander un certificat d'urbanisme",
+      description:
+        "Le CU est gratuit et s'obtient en mairie sous 1 à 2 mois. Sans lui, les acheteurs appliquent une décote de précaution.",
+      uplift: "+10 à 15%",
+    });
+  }
+  if (!form.potentiel_foncier.includes("borne")) {
+    recommandations.push({
+      title: "Faire borner le terrain",
+      description:
+        "Un bornage par géomètre lève l'incertitude sur les limites et évite les litiges — souvent exigé par l'acheteur.",
+      uplift: "+2 à 4%",
+    });
+  }
+  if (!form.potentiel_foncier.includes("divisible") && surface > 1200 && nature === "a_batir") {
+    recommandations.push({
+      title: "Étudier une division parcellaire",
+      description:
+        "Au-delà de 1 200 m², deux lots se vendent souvent mieux qu'un grand terrain unique.",
+      uplift: "+10 à 20%",
+    });
+  }
+  if (recommandations.length < 3) {
+    recommandations.push({
+      title: "Réunir le dossier foncier",
+      description:
+        "Plan cadastral, CU, étude de sol et relevé de bornage : un dossier complet rassure et accélère la vente.",
+    });
+  }
+
+  return {
+    prixEstime,
+    prixBas: Math.round((prixEstime * (1 - rangePct)) / 1000) * 1000,
+    prixHaut: Math.round((prixEstime * (1 + rangePct)) / 1000) * 1000,
+    prixM2: prixM2Final,
+    prixM2Marche,
+    deltaMarche,
+    surface,
+    fiabilite,
+    fiabiliteScore,
+    scoreAttractivite: score,
+    delaiVente: `${delaiBase[0]}–${delaiBase[1]} jours`,
+    tensionMarche,
+    facteurs,
+    recommandations: recommandations.slice(0, 3),
+  };
+}
+
+export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
+  // Un terrain n'a ni surface habitable, ni DPE, ni prestations : il a son
+  // propre modèle, fondé sur la constructibilité et la viabilisation.
+  if (form.type === "terrain") return computeTerrainEstimation(form);
+
+  const surface = form.surface_habitable || form.surface_carrez || 60;
 
   // Prix moyen marché = mix entre table statique et DVF (si dispo)
   // DVF a 70% de poids car ce sont de vraies données, mais on garde 30% de la table
   // (qui peut compenser le délai DVF en estimant la tendance actuelle).
   const prixM2Table = basePrixM2(form);
   const prixM2Marche =
-    dvfPrixM2 && dvfPrixM2 > 0
-      ? Math.round(dvfPrixM2 * 0.7 + prixM2Table * 0.3)
-      : prixM2Table;
+    dvfPrixM2 && dvfPrixM2 > 0 ? Math.round(dvfPrixM2 * 0.7 + prixM2Table * 0.3) : prixM2Table;
 
   // Multiplicateurs
   const typeMult = TYPE_MULT[form.type ?? "maison"] ?? 1;
@@ -248,7 +703,8 @@ export function computeEstimation(
   // Fourchette précise — max ±3% en toute circonstance
   // Plus la fiabilité est haute → fourchette resserrée
   let rangePct = 0.03; // plafond : ±3%
-  if (fiabilite === "elevee") rangePct = 0.02; // ±2%
+  if (fiabilite === "elevee")
+    rangePct = 0.02; // ±2%
   else if (fiabilite === "moyenne") rangePct = 0.025; // ±2,5%
 
   // Tension marché peut RESSERRER mais jamais élargir au-dessus de 3%
@@ -300,7 +756,9 @@ export function computeEstimation(
     {
       label: "Prestations",
       impact: Math.round((prestMult - 1) * 100),
-      detail: prestCount ? `${prestCount} prestation${prestCount > 1 ? "s" : ""} premium` : "Standard",
+      detail: prestCount
+        ? `${prestCount} prestation${prestCount > 1 ? "s" : ""} premium`
+        : "Standard",
     },
   ];
   if (form.type === "appartement") {
@@ -344,7 +802,8 @@ export function computeEstimation(
   if (recommandations.length < 3) {
     recommandations.push({
       title: "Préparer un dossier de vente complet",
-      description: "Diagnostics à jour, factures de travaux, taxe foncière : un dossier complet rassure les acheteurs.",
+      description:
+        "Diagnostics à jour, factures de travaux, taxe foncière : un dossier complet rassure les acheteurs.",
     });
   }
 
