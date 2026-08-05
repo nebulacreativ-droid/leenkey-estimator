@@ -62,6 +62,36 @@ export interface LeenkeyForm {
   contraintes_terrain: string[];
   potentiel_foncier: string[];
 
+  // ---- Parcours LOCAL COMMERCIAL ----
+  local_type: string | null; // boutique, bureau, restaurant…
+  surface_totale: number | null;
+  surface_vente: number | null;
+  surface_reserve: number | null;
+  local_config: string[]; // angle, traversant, plain_pied, plusieurs_niveaux
+  local_equipements: string[]; // pmr, clim, extraction, rideau, vitrine_securisee
+  longueur_vitrine: number | null; // m
+  hauteur_plafond: number | null; // m
+  nb_acces: number | null;
+  environnement: string | null; // rue très commerçante, passante, secondaire…
+  visibilite: string | null;
+  flux_pieton: string | null;
+  flux_auto: string | null;
+  stationnement: string[];
+  transports: string[];
+  acces_livraison: string | null;
+  local_occupation: string | null; // Libre / Occupé
+  loyer_annuel: number | null; // € HT/HC
+  charges_annuelles: number | null;
+  taxe_fonciere: number | null;
+  bail_duree_restante: string | null;
+  bail_commercial_type: string | null;
+  activite_actuelle: string | null;
+  etat_electricite: string | null;
+  etat_vitrine: string | null;
+  local_commodites: string[]; // sanitaires, cuisine, fibre
+  local_potentiel: string[];
+  potentiel_transformation: string[];
+
   // 5
   exterieur: string[];
 
@@ -159,6 +189,34 @@ export const initialForm: LeenkeyForm = {
   situation_terrain: null,
   contraintes_terrain: [],
   potentiel_foncier: [],
+  local_type: null,
+  surface_totale: null,
+  surface_vente: null,
+  surface_reserve: null,
+  local_config: [],
+  local_equipements: [],
+  longueur_vitrine: null,
+  hauteur_plafond: null,
+  nb_acces: null,
+  environnement: null,
+  visibilite: null,
+  flux_pieton: null,
+  flux_auto: null,
+  stationnement: [],
+  transports: [],
+  acces_livraison: null,
+  local_occupation: null,
+  loyer_annuel: null,
+  charges_annuelles: null,
+  taxe_fonciere: null,
+  bail_duree_restante: null,
+  bail_commercial_type: null,
+  activite_actuelle: null,
+  etat_electricite: null,
+  etat_vitrine: null,
+  local_commodites: [],
+  local_potentiel: [],
+  potentiel_transformation: [],
   exterieur: [],
   etat: null,
   prestations: [],

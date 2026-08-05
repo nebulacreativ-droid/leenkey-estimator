@@ -86,6 +86,38 @@ function buildPayload(form: LeenkeyForm) {
         potentiel_foncier: form.potentiel_foncier,
       },
     }),
+    ...(form.type === "local_commercial" && {
+      local: {
+        destination: form.local_type,
+        surface_totale: form.surface_totale,
+        surface_vente: form.surface_vente,
+        surface_reserve: form.surface_reserve,
+        configuration: form.local_config,
+        equipements: form.local_equipements,
+        longueur_vitrine_m: form.longueur_vitrine,
+        hauteur_plafond_m: form.hauteur_plafond,
+        nb_acces: form.nb_acces,
+        environnement: form.environnement,
+        visibilite: form.visibilite,
+        flux_pieton: form.flux_pieton,
+        flux_auto: form.flux_auto,
+        stationnement: form.stationnement,
+        transports: form.transports,
+        acces_livraison: form.acces_livraison,
+        occupation: form.local_occupation,
+        loyer_annuel: form.loyer_annuel,
+        charges_annuelles: form.charges_annuelles,
+        taxe_fonciere: form.taxe_fonciere,
+        bail_type: form.bail_commercial_type,
+        bail_duree_restante: form.bail_duree_restante,
+        activite_actuelle: form.activite_actuelle,
+        etat_electricite: form.etat_electricite,
+        etat_vitrine: form.etat_vitrine,
+        commodites: form.local_commodites,
+        potentiel: form.local_potentiel,
+        transformations_possibles: form.potentiel_transformation,
+      },
+    }),
     exterieur: form.exterieur,
     etat: { general: form.etat, prestations: form.prestations },
     energie: {
@@ -286,7 +318,8 @@ export function LeenkeyWizard() {
         ville: form.ville,
         type: form.type,
         // Appartement : l'habitable peut être vide, la Carrez fait foi.
-        surface: form.surface_habitable ?? form.surface_carrez,
+        // Local commercial : c'est la surface totale qui sert de référence.
+        surface: form.surface_habitable ?? form.surface_carrez ?? form.surface_totale,
       }),
     })
       .then((r) => (r.ok ? r.json() : null))

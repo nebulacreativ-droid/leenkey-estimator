@@ -647,10 +647,346 @@ function computeTerrainEstimation(form: LeenkeyForm): EstimationResult {
   };
 }
 
+/* ------------------------------------------------------------------ */
+/* LOCAL COMMERCIAL                                                    */
+/* ------------------------------------------------------------------ */
+
+/**
+ * Qualité de l'emplacement commercial.
+ *
+ * - `prixMult` : rapport entre le prix du m² commercial et celui du m²
+ *   résidentiel du secteur. En pied d'artère n°1 le commercial dépasse le
+ *   logement ; en zone artisanale il en vaut le tiers.
+ * - `taux` : taux de capitalisation attendu par un investisseur. Plus
+ *   l'emplacement est sûr, plus le taux est bas — donc le prix élevé.
+ */
+const EMPLACEMENT: Record<string, { prixMult: number; taux: number; label: string }> = {
+  tres_commercante: { prixMult: 1.3, taux: 0.06, label: "Rue très commerçante" },
+  passante: { prixMult: 0.95, taux: 0.07, label: "Rue passante" },
+  secondaire: { prixMult: 0.7, taux: 0.085, label: "Rue secondaire" },
+  residentielle: { prixMult: 0.6, taux: 0.09, label: "Zone résidentielle" },
+  artisanale: { prixMult: 0.35, taux: 0.1, label: "Zone artisanale" },
+};
+
+/** Destination du local : liquidité et prix au m² relatifs. */
+const LOCAL_TYPE_MULT: Record<string, { mult: number; label: string }> = {
+  boutique: { mult: 1, label: "Boutique" },
+  alimentaire: { mult: 1.05, label: "Commerce alimentaire" },
+  restaurant: { mult: 1.02, label: "Restaurant" },
+  bar: { mult: 1, label: "Bar" },
+  coiffure: { mult: 0.95, label: "Salon de coiffure" },
+  medical: { mult: 1.05, label: "Cabinet médical" },
+  bureau: { mult: 0.9, label: "Bureau" },
+  activite: { mult: 0.6, label: "Local d'activité" },
+  entrepot: { mult: 0.45, label: "Entrepôt" },
+  autre: { mult: 0.85, label: "Autre local" },
+};
+
+const NIVEAU_BONUS: Record<string, number> = {
+  Excellent: 0.06,
+  Bon: 0.02,
+  Moyen: 0,
+  Faible: -0.05,
+};
+
+const LOCAL_CONFIG_BONUS: Record<string, { bonus: number; label: string }> = {
+  angle: { bonus: 0.12, label: "local d'angle" },
+  traversant: { bonus: 0.05, label: "traversant" },
+  plain_pied: { bonus: 0.04, label: "de plain-pied" },
+  plusieurs_niveaux: { bonus: -0.03, label: "sur plusieurs niveaux" },
+};
+
+const LOCAL_POTENTIEL_BONUS: Record<string, { bonus: number; label: string }> = {
+  changement_destination: { bonus: 0.08, label: "changement de destination possible" },
+  extraction_possible: { bonus: 0.05, label: "extraction réalisable" },
+  divisible: { bonus: 0.05, label: "divisible" },
+  terrasse: { bonus: 0.05, label: "terrasse" },
+  pmr_conforme: { bonus: 0.04, label: "conforme PMR" },
+  reunifiable: { bonus: 0.03, label: "réunifiable" },
+  erp: { bonus: 0.02, label: "classé ERP" },
+  enseigne: { bonus: 0.02, label: "enseigne autorisée" },
+};
+
+/** Un bail long sécurise le revenu : l'investisseur accepte un taux plus bas. */
+const BAIL_TAUX_AJUST: Record<string, number> = {
+  "Plus de 6 ans": -0.005,
+  "3 à 6 ans": -0.0025,
+  "1 à 3 ans": 0,
+  "Moins d'un an": 0.005,
+};
+
+function computeLocalEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
+  const emplacement = EMPLACEMENT[form.environnement ?? "secondaire"] ?? EMPLACEMENT.secondaire;
+  const typeEntry = LOCAL_TYPE_MULT[form.local_type ?? "boutique"] ?? LOCAL_TYPE_MULT.boutique;
+
+  // Surface pondérée : la réserve ne vaut pas la surface de vente.
+  const totale = form.surface_totale || 0;
+  const vente = form.surface_vente ?? 0;
+  const reserve = form.surface_reserve ?? 0;
+  const surfacePonderee =
+    vente + reserve > 0
+      ? vente + reserve * 0.4 + Math.max(0, totale - vente - reserve) * 0.6
+      : totale;
+
+  // Base résidentielle du secteur, convertie en prix commercial.
+  const baseResidentiel =
+    dvfPrixM2 && dvfPrixM2 > 0
+      ? Math.round(dvfPrixM2 * 0.7 + basePrixM2(form) * 0.3)
+      : basePrixM2(form);
+  const prixM2Marche = Math.round(baseResidentiel * emplacement.prixMult);
+
+  const etatEntry = ETAT_MULT[form.etat ?? "bon"] ?? ETAT_MULT.bon;
+
+  let configMult = 1;
+  const configLabels: string[] = [];
+  for (const c of form.local_config) {
+    const e = LOCAL_CONFIG_BONUS[c];
+    if (e) {
+      configMult += e.bonus;
+      configLabels.push(e.label);
+    }
+  }
+
+  // Une vitrine large est le principal vecteur de chalandise d'une boutique.
+  let vitrineMult = 1;
+  if (form.longueur_vitrine) {
+    if (form.longueur_vitrine >= 10) vitrineMult = 1.08;
+    else if (form.longueur_vitrine >= 6) vitrineMult = 1.04;
+    else if (form.longueur_vitrine < 3) vitrineMult = 0.94;
+  }
+
+  const fluxMult =
+    1 +
+    (NIVEAU_BONUS[form.visibilite ?? "Moyen"] ?? 0) +
+    (NIVEAU_BONUS[form.flux_pieton ?? "Moyen"] ?? 0);
+
+  let equipMult = 1;
+  for (const e of form.local_equipements) {
+    if (e === "extraction") equipMult += 0.04;
+    else if (e === "pmr") equipMult += 0.03;
+    else equipMult += 0.015;
+  }
+
+  let potentielMult = 1;
+  const potentielLabels: string[] = [];
+  for (const p of form.local_potentiel) {
+    const e = LOCAL_POTENTIEL_BONUS[p];
+    if (e) {
+      potentielMult += e.bonus;
+      potentielLabels.push(e.label);
+    }
+  }
+  // Chaque usage supplémentaire élargit la clientèle d'acquéreurs.
+  potentielMult += Math.min(form.potentiel_transformation.length * 0.015, 0.06);
+
+  let accesMult = 1;
+  if (form.stationnement.includes("Parking privé")) accesMult += 0.04;
+  if (form.transports.length) accesMult += Math.min(form.transports.length * 0.015, 0.05);
+  if (form.acces_livraison === "Impossible") accesMult -= 0.04;
+
+  const globalMult =
+    typeEntry.mult *
+    etatEntry.mult *
+    configMult *
+    vitrineMult *
+    fluxMult *
+    equipMult *
+    potentielMult *
+    accesMult;
+
+  // ── Méthode 1 : comparaison au m² ──
+  const prixM2 = Math.round(prixM2Marche * globalMult);
+  const valeurComparaison = prixM2 * surfacePonderee;
+
+  // ── Méthode 2 : capitalisation du loyer ──
+  // Un local loué se vend à un investisseur, qui raisonne en rendement et non
+  // en prix au mètre carré.
+  const loyer = form.loyer_annuel ?? 0;
+  const occupe = form.local_occupation === "Occupé — bail en cours" && loyer > 0;
+  let valeurRendement = 0;
+  let taux = emplacement.taux;
+  if (occupe) {
+    taux += BAIL_TAUX_AJUST[form.bail_duree_restante ?? "1 à 3 ans"] ?? 0;
+    if (form.etat === "a_renover") taux += 0.01;
+    else if (form.etat === "excellent") taux -= 0.005;
+    taux = Math.max(0.04, taux);
+    // Revenu net : la taxe foncière reste à la charge du bailleur.
+    const loyerNet = Math.max(0, loyer - (form.taxe_fonciere ?? 0));
+    valeurRendement = loyerNet / taux;
+  }
+
+  // Local loué : le rendement prime (c'est ce que regarde l'acquéreur), la
+  // comparaison sert de garde-fou. Local libre : comparaison seule.
+  const valeur = occupe ? valeurRendement * 0.7 + valeurComparaison * 0.3 : valeurComparaison;
+
+  const prixEstime = Math.max(0, Math.round(valeur / 1000) * 1000);
+  const prixM2Final = totale > 0 ? Math.round(prixEstime / totale) : 0;
+  const deltaMarche = Math.round(((prixM2Final - prixM2Marche) / prixM2Marche) * 100);
+
+  const facteurs: FactorImpact[] = [
+    {
+      label: "Emplacement commercial",
+      impact: Math.round((emplacement.prixMult - 1) * 100),
+      detail: `${emplacement.label} · ${prixM2Marche.toLocaleString("fr-FR")} €/m² de référence`,
+    },
+    {
+      label: "Destination",
+      impact: Math.round((typeEntry.mult - 1) * 100),
+      detail: typeEntry.label,
+    },
+    {
+      label: "Configuration & vitrine",
+      impact: Math.round((configMult * vitrineMult - 1) * 100),
+      detail:
+        [...configLabels, form.longueur_vitrine ? `vitrine de ${form.longueur_vitrine} m` : ""]
+          .filter(Boolean)
+          .join(", ") || "Configuration standard",
+    },
+    {
+      label: "Flux & visibilité",
+      impact: Math.round((fluxMult - 1) * 100),
+      detail: `Visibilité ${(form.visibilite ?? "non renseignée").toLowerCase()} · flux piéton ${(form.flux_pieton ?? "non renseigné").toLowerCase()}`,
+    },
+    {
+      label: "État & équipements",
+      impact: Math.round((etatEntry.mult * equipMult - 1) * 100),
+      detail: etatEntry.label,
+    },
+    {
+      label: "Potentiel",
+      impact: Math.round((potentielMult - 1) * 100),
+      detail: potentielLabels.length ? potentielLabels.join(", ") : "Aucun atout déclaré",
+    },
+  ];
+
+  if (occupe) {
+    facteurs.unshift({
+      label: "Rendement locatif",
+      impact: 0,
+      detail: `${loyer.toLocaleString("fr-FR")} € de loyer annuel capitalisés à ${(taux * 100).toFixed(1)} % — soit ${(Math.round(valeurRendement / 1000) * 1000).toLocaleString("fr-FR")} € par la méthode du rendement`,
+    });
+
+    // Les deux méthodes doivent converger. Un écart marqué signifie que le
+    // loyer en place est décalé du marché — c'est une information de
+    // négociation, pas un détail à lisser en silence dans la moyenne.
+    const ecart = (valeurRendement - valeurComparaison) / valeurComparaison;
+    if (Math.abs(ecart) > 0.3) {
+      facteurs.push({
+        label: "Écart entre les deux méthodes",
+        impact: Math.round(ecart * 100),
+        detail:
+          ecart < 0
+            ? `Le loyer en place valorise le local ${Math.abs(Math.round(ecart * 100))} % sous sa valeur au m². Un loyer sous-évalué : à la révision ou au départ du locataire, le bien retrouve son potentiel.`
+            : `Le loyer en place valorise le local ${Math.round(ecart * 100)} % au-dessus de sa valeur au m². Un acquéreur vérifiera que ce loyer est tenable dans la durée.`,
+      });
+    }
+  }
+
+  const champsClés: Array<keyof LeenkeyForm> = [
+    "adresse",
+    "code_postal",
+    "surface_totale",
+    "local_type",
+    "environnement",
+    "etat",
+    "local_occupation",
+    "visibilite",
+  ];
+  const complet = champsClés.filter((k) => {
+    const v = form[k];
+    return v !== null && v !== "" && v !== undefined;
+  }).length;
+  const fiabiliteScore = Math.round((complet / champsClés.length) * 100);
+  const fiabilite: EstimationResult["fiabilite"] =
+    fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
+
+  let rangePct = 0.03;
+  if (fiabilite === "elevee") rangePct = 0.02;
+  else if (fiabilite === "moyenne") rangePct = 0.025;
+  const tensionMarche = tension(form);
+  if (tensionMarche === "forte") rangePct *= 0.85;
+  rangePct = Math.min(rangePct, 0.03);
+
+  let score = 50;
+  score += Math.round((emplacement.prixMult - 0.7) * 40);
+  score += Math.round((fluxMult - 1) * 100);
+  score += Math.round((potentielMult - 1) * 100);
+  score += Math.round((etatEntry.mult - 1) * 100);
+  if (occupe) score += 8;
+  score = Math.max(0, Math.min(100, score));
+
+  // Le commerce se vend plus lentement que le résidentiel.
+  let delaiBase: [number, number] = [120, 210];
+  if (emplacement.prixMult >= 1.3) delaiBase = [60, 120];
+  else if (emplacement.prixMult >= 0.95) delaiBase = [90, 150];
+  if (occupe) delaiBase = [delaiBase[0] - 20, delaiBase[1] - 30];
+  if (form.etat === "a_renover") delaiBase = [delaiBase[0] + 30, delaiBase[1] + 60];
+
+  const recommandations: Recommendation[] = [];
+  if (!occupe) {
+    recommandations.push({
+      title: "Louer avant de vendre",
+      description:
+        "Un local occupé par un locataire solide se vend à un investisseur, sur la base du rendement — une clientèle plus large et plus rapide qu'un local vide.",
+      uplift: "+5 à 15%",
+    });
+  }
+  if (!form.local_equipements.includes("pmr")) {
+    recommandations.push({
+      title: "Mettre le local aux normes PMR",
+      description:
+        "L'accessibilité est obligatoire pour tout ERP. Sans elle, l'acheteur déduit le coût des travaux de son offre.",
+      uplift: "+3 à 5%",
+    });
+  }
+  if (!form.local_potentiel.includes("extraction_possible") && form.local_type !== "restaurant") {
+    recommandations.push({
+      title: "Faire vérifier la faisabilité d'une extraction",
+      description:
+        "Une extraction possible ouvre le local à la restauration, de loin la demande la plus forte du marché commercial.",
+      uplift: "+5 à 10%",
+    });
+  }
+  if (form.etat === "a_renover" || form.etat === "moyen") {
+    recommandations.push({
+      title: "Reprendre la devanture",
+      description:
+        "La vitrine est le premier élément vu par un repreneur. Une devanture refaite change la perception du local pour un budget limité.",
+      uplift: "+3 à 6%",
+    });
+  }
+  if (recommandations.length < 3) {
+    recommandations.push({
+      title: "Réunir le dossier commercial",
+      description:
+        "Bail, quittances, taxe foncière, diagnostics et attestation ERP : un dossier complet est décisif pour un acquéreur investisseur.",
+    });
+  }
+
+  return {
+    prixEstime,
+    prixBas: Math.round((prixEstime * (1 - rangePct)) / 1000) * 1000,
+    prixHaut: Math.round((prixEstime * (1 + rangePct)) / 1000) * 1000,
+    prixM2: prixM2Final,
+    prixM2Marche,
+    deltaMarche,
+    surface: totale,
+    fiabilite,
+    fiabiliteScore,
+    scoreAttractivite: score,
+    delaiVente: `${delaiBase[0]}–${delaiBase[1]} jours`,
+    tensionMarche,
+    facteurs,
+    recommandations: recommandations.slice(0, 3),
+  };
+}
+
 export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
   // Un terrain n'a ni surface habitable, ni DPE, ni prestations : il a son
   // propre modèle, fondé sur la constructibilité et la viabilisation.
   if (form.type === "terrain") return computeTerrainEstimation(form);
+  // Un local commercial se valorise à l'emplacement et au rendement locatif.
+  if (form.type === "local_commercial") return computeLocalEstimation(form, dvfPrixM2);
 
   const surface = form.surface_habitable || form.surface_carrez || 60;
 

@@ -16,6 +16,15 @@ import {
   type StepErrors,
 } from "./steps";
 import {
+  LocalStep1,
+  LocalStep2,
+  LocalStep3,
+  LocalStep4,
+  LocalStep5,
+  LocalStep6,
+  LocalStep7,
+} from "./steps-local";
+import {
   TerrainStep1,
   TerrainStep2,
   TerrainStep3,
@@ -171,8 +180,55 @@ const PARCOURS_TERRAIN: FlowStep[] = [
   COORDONNEES,
 ];
 
+/* ---------- Parcours local commercial ---------- */
+
+const PARCOURS_LOCAL: FlowStep[] = [
+  CHOIX_TYPE,
+  LOCALISATION,
+  {
+    label: "Le local",
+    render: (p) => <LocalStep1 {...p} />,
+    validate: (f) => {
+      const e: StepErrors = {};
+      if (!f.local_type) e.local_type = "Sélectionnez un type de local";
+      if (!f.surface_totale) e.surface_totale = "Surface totale requise";
+      return e;
+    },
+  },
+  { label: "Caractéristiques", render: (p) => <LocalStep2 {...p} /> },
+  {
+    label: "Emplacement",
+    render: (p) => <LocalStep3 {...p} />,
+    validate: (f) =>
+      f.environnement ? {} : { environnement: "Sélectionnez un type d'environnement" },
+  },
+  { label: "Accessibilité", render: (p) => <LocalStep4 {...p} /> },
+  {
+    label: "Données commerciales",
+    render: (p) => <LocalStep5 {...p} />,
+    validate: (f) => {
+      const e: StepErrors = {};
+      if (!f.local_occupation) e.local_occupation = "Indiquez si le local est loué";
+      // Le loyer est la base de la valorisation d'un local occupé.
+      if (f.local_occupation === "Occupé — bail en cours" && !f.loyer_annuel)
+        e.loyer_annuel = "Loyer annuel requis pour valoriser un local occupé";
+      return e;
+    },
+  },
+  {
+    label: "État du local",
+    render: (p) => <LocalStep6 {...p} />,
+    validate: (f) => (f.etat ? {} : { etat: "Sélectionnez un état" }),
+  },
+  { label: "Potentiel", render: (p) => <LocalStep7 {...p} /> },
+  PROJET,
+  DOCUMENTS,
+  COORDONNEES,
+];
+
 const PARCOURS: Partial<Record<BienType, FlowStep[]>> = {
   terrain: PARCOURS_TERRAIN,
+  local_commercial: PARCOURS_LOCAL,
 };
 
 /** Parcours applicable au type sélectionné (généraliste par défaut). */
