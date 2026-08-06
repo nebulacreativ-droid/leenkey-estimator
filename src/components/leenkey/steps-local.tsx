@@ -9,7 +9,8 @@ import {
   TextInput,
   ToggleCard,
 } from "./ui";
-import type { P } from "./steps";
+import { DpeRow, type P } from "./steps";
+import { CHAUFFAGE_OPTS } from "./energie";
 import type { EtatGeneral } from "./types";
 
 /* ------------------------------------------------------------------ */
@@ -498,6 +499,25 @@ export function LocalStep6({ form, set, errors }: P) {
             options={ETATS_TECHNIQUES}
           />
         </Field>
+        <SectionTitle>Diagnostic de performance énergétique</SectionTitle>
+        <p className="text-sm text-sub">
+          Le DPE est obligatoire à la vente d'un local commercial comme d'un logement. Sur du
+          tertiaire, il conditionne aussi les obligations du décret tertiaire.
+        </p>
+        <Field label="Étiquette énergie (DPE)">
+          <DpeRow value={form.dpe} onChange={(v) => set({ dpe: v })} />
+        </Field>
+        <Field label="Étiquette GES">
+          <DpeRow value={form.ges} onChange={(v) => set({ ges: v })} />
+        </Field>
+        <Field label="Type de chauffage">
+          <PillGroup
+            value={form.chauffage}
+            onChange={(v) => set({ chauffage: v })}
+            options={CHAUFFAGE_OPTS}
+          />
+        </Field>
+
         <SectionTitle>Commodités présentes</SectionTitle>
         <div className="grid gap-3 sm:grid-cols-2">
           {COMMODITES.map((o) => (

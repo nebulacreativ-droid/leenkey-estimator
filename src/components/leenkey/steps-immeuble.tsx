@@ -9,7 +9,8 @@ import {
   TextInput,
   ToggleCard,
 } from "./ui";
-import type { P } from "./steps";
+import { DpeRow, type P } from "./steps";
+import { CHAUFFAGE_MODES, CHAUFFAGE_OPTS } from "./energie";
 import type { DpeLetter, LeenkeyForm, Lot } from "./types";
 import {
   ANNEXES,
@@ -491,6 +492,35 @@ export function ImmeubleStep5({ form, set }: P) {
           </Field>
         ))}
       </div>
+      <SectionTitle>Diagnostic de performance énergétique</SectionTitle>
+      <p className="text-sm text-sub">
+        Le DPE de chaque lot se renseigne à l'étape « Situation locative ». Indiquez ici le DPE
+        global de l'immeuble s'il en existe un, ainsi que le mode de chauffage.
+      </p>
+      <Field label="DPE global de l'immeuble" hint="si un diagnostic collectif existe">
+        <DpeRow value={form.dpe} onChange={(v) => set({ dpe: v })} />
+      </Field>
+      <Field label="Étiquette GES">
+        <DpeRow value={form.ges} onChange={(v) => set({ ges: v })} />
+      </Field>
+      <Field label="Type de chauffage">
+        <PillGroup
+          value={form.chauffage}
+          onChange={(v) => set({ chauffage: v })}
+          options={CHAUFFAGE_OPTS}
+        />
+      </Field>
+      <Field
+        label="Chauffage individuel ou collectif ?"
+        hint="un chauffage collectif pèse sur les charges et sur la revente à la découpe"
+      >
+        <PillGroup
+          value={form.chauffage_mode}
+          onChange={(v) => set({ chauffage_mode: v })}
+          options={CHAUFFAGE_MODES}
+        />
+      </Field>
+
       <SectionTitle>Travaux récents réalisés</SectionTitle>
       <Field label="Postes repris depuis moins de 10 ans" hint="plusieurs choix possibles">
         <PillMulti

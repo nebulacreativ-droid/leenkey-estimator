@@ -9,7 +9,8 @@ import {
   TextInput,
   ToggleCard,
 } from "./ui";
-import type { P } from "./steps";
+import { DpeRow, type P } from "./steps";
+import { CHAUFFAGE_OPTS } from "./energie";
 import type { LeenkeyForm } from "./types";
 import { POSTES_ATYPIQUE } from "./estimation";
 
@@ -307,6 +308,25 @@ export function AtypiqueStep3({ form, set }: P) {
           </Field>
         ))}
       </div>
+
+      <SectionTitle>Diagnostic de performance énergétique</SectionTitle>
+      <p className="text-sm text-sub">
+        Obligatoire à la vente. Sur ce type de bien, il est souvent défavorable — les acquéreurs le
+        savent et l'intègrent : mieux vaut l'afficher que le laisser deviner.
+      </p>
+      <Field label="Étiquette énergie (DPE)">
+        <DpeRow value={form.dpe} onChange={(v) => set({ dpe: v })} />
+      </Field>
+      <Field label="Étiquette GES">
+        <DpeRow value={form.ges} onChange={(v) => set({ ges: v })} />
+      </Field>
+      <Field label="Type de chauffage principal">
+        <PillGroup
+          value={form.chauffage}
+          onChange={(v) => set({ chauffage: v })}
+          options={CHAUFFAGE_OPTS}
+        />
+      </Field>
 
       <SectionTitle>Travaux récents</SectionTitle>
       <Field label="Postes repris depuis moins de 10 ans" hint="plusieurs choix possibles">

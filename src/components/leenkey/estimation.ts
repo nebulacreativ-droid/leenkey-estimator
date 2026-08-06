@@ -964,6 +964,12 @@ function computeLocalEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): E
     (NIVEAU_BONUS[form.visibilite ?? "Moyen"] ?? 0) +
     (NIVEAU_BONUS[form.flux_pieton ?? "Moyen"] ?? 0);
 
+  // Le DPE pèse moins sur du commercial que sur du logement, mais il pèse : le
+  // décret tertiaire impose des réductions de consommation aux surfaces de
+  // plus de 1 000 m², et un local énergivore se reloue plus difficilement.
+  const dpeLocal = DPE_MULT[form.dpe ?? "inconnu"] ?? DPE_MULT.inconnu;
+  const dpeMult = 1 + (dpeLocal.mult - 1) * 0.6;
+
   let equipMult = 1;
   for (const e of form.local_equipements) {
     if (e === "extraction") equipMult += 0.04;
@@ -996,7 +1002,8 @@ function computeLocalEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): E
     fluxMult *
     equipMult *
     potentielMult *
-    accesMult;
+    accesMult *
+    dpeMult;
 
   // ── Méthode 1 : comparaison au m² ──
   const prixM2 = Math.round(prixM2Marche * globalMult);
@@ -1055,6 +1062,11 @@ function computeLocalEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): E
       label: "État & équipements",
       impact: Math.round((etatEntry.mult * equipMult - 1) * 100),
       detail: etatEntry.label,
+    },
+    {
+      label: "Performance énergétique",
+      impact: Math.round((dpeMult - 1) * 100),
+      detail: dpeLocal.label,
     },
     {
       label: "Potentiel",
@@ -1258,7 +1270,14 @@ function computeImmeubleEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   // ── DPE du parc : depuis 2025 un logement G ne peut plus être loué ──
   const lotsAvecDpe = form.lots.filter((l) => l.dpe && l.dpe !== "inconnu");
   const passoires = lotsAvecDpe.filter((l) => l.dpe === "F" || l.dpe === "G").length;
-  const partPassoires = lotsAvecDpe.length ? passoires / lotsAvecDpe.length : 0;
+  // À défaut de DPE lot par lot, le diagnostic collectif de l'immeuble vaut
+  // indication pour l'ensemble du parc.
+  const dpeGlobalPassoire = form.dpe === "F" || form.dpe === "G";
+  const partPassoires = lotsAvecDpe.length
+    ? passoires / lotsAvecDpe.length
+    : dpeGlobalPassoire
+      ? 1
+      : 0;
   const dpeMult = 1 - partPassoires * 0.1;
 
   const prixM2Lot = melangeAvecDvf(dvfPrixM2, basePrixM2(form));
@@ -1352,6 +1371,13 @@ function computeImmeubleEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
             : `Les loyers actuels valorisent l'immeuble ${Math.round(ecart * 100)} % au-dessus de sa valeur patrimoniale. Un acquéreur vérifiera qu'ils sont tenables dans la durée.`,
       });
     }
+  }
+  if (!lotsAvecDpe.length && form.dpe && form.dpe !== "inconnu") {
+    facteurs.push({
+      label: "Performance énergétique",
+      impact: Math.round((dpeMult - 1) * 100),
+      detail: `DPE global de l'immeuble : ${form.dpe}${dpeGlobalPassoire ? " — location interdite pour les G depuis 2025" : ""}`,
+    });
   }
   if (lotsAvecDpe.length && passoires) {
     facteurs.push({
@@ -1617,6 +1643,12 @@ function computeAtypiqueEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   const malusApplique = budgetTravaux > 0 ? travauxMalus / 2 : travauxMalus;
   const travauxMult = 1 - malusApplique;
 
+  // Sur ce type de bien, un DPE défavorable est la norme et les acquéreurs
+  // l'anticipent : l'effet est réel mais atténué par rapport à un logement
+  // standard, où il surprend et fait fuir.
+  const dpeAtypique = DPE_MULT[form.dpe ?? "inconnu"] ?? DPE_MULT.inconnu;
+  const dpeMult = 1 + (dpeAtypique.mult - 1) * 0.5;
+
   // ── Environnement ──
   const cadreMult = CADRE_MULT[form.cadre ?? "Village"] ?? 1;
   const envMult =
@@ -1670,7 +1702,8 @@ function computeAtypiqueEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
     accesMult *
     potentielMult *
     contrainteMult *
-    classementMult;
+    classementMult *
+    dpeMult;
 
   const prixM2 = Math.round(prixM2Marche * globalMult);
 
@@ -1745,6 +1778,11 @@ function computeAtypiqueEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
       label: "Contraintes",
       impact: -Math.round(Math.min(contrainteSomme, 0.25) * 100),
       detail: contrainteLabels.length ? contrainteLabels.join(", ") : "Aucune déclarée",
+    },
+    {
+      label: "Performance énergétique",
+      impact: Math.round((dpeMult - 1) * 100),
+      detail: dpeAtypique.label,
     },
   ];
 

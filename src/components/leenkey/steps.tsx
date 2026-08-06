@@ -11,6 +11,7 @@ import {
 } from "./ui";
 import type { BienType, DpeLetter, EtatGeneral, LeenkeyForm } from "./types";
 import { cn } from "@/lib/utils";
+import { CHAUFFAGE_MODES, CHAUFFAGE_OPTS } from "./energie";
 
 type SetForm = (patch: Partial<LeenkeyForm>) => void;
 export type StepErrors = Partial<Record<keyof LeenkeyForm, string>>;
@@ -694,17 +695,6 @@ const DPE_LETTERS: { v: DpeLetter; bg: string }[] = [
   { v: "F", bg: "#EE7A2F" },
   { v: "G", bg: "#E52D27" },
 ];
-const CHAUFFAGE_OPTS = [
-  "Gaz naturel",
-  "Fioul",
-  "Électrique",
-  "Bois",
-  "Pompe à chaleur",
-  "Géothermie",
-  "Réseau de chaleur urbain",
-  "Autre",
-];
-const CHAUFFAGE_MODES = ["Individuel", "Collectif", "Je ne sais pas"];
 const EAU_CHAUDE_OPTS = [
   "Chauffe-eau électrique",
   "Chauffe-eau gaz",
@@ -724,7 +714,7 @@ const ANNEES = [
 ];
 const RENOV = ["Jamais", "Il y a plus de 10 ans", "Il y a 5 à 10 ans", "Il y a moins de 5 ans"];
 
-function DpeRow({
+export function DpeRow({
   value,
   onChange,
 }: {
