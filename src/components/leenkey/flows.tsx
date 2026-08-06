@@ -67,6 +67,8 @@ export interface FlowStep {
   render: (p: P) => ReactNode;
   /** Erreurs bloquant le passage à l'étape suivante. */
   validate?: (f: LeenkeyForm) => StepErrors;
+  /** Étape à deux colonnes : le wizard élargit son conteneur. */
+  large?: boolean;
 }
 
 /* ---------- Étapes communes à tous les types ---------- */
@@ -151,7 +153,7 @@ const PARCOURS_STANDARD: FlowStep[] = [
     validate: (f) => (f.etat ? {} : { etat: "Sélectionnez un état" }),
   },
   { label: "Prestations", render: (p) => <Step7 {...p} /> },
-  { label: "Énergie", render: (p) => <Step8 {...p} /> },
+  { label: "Énergie", render: (p) => <Step8 {...p} />, large: true },
   {
     label: "Situation",
     render: (p) => <Step9 {...p} />,

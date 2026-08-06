@@ -12,6 +12,7 @@ import {
 import type { BienType, DpeLetter, EtatGeneral, LeenkeyForm } from "./types";
 import { cn } from "@/lib/utils";
 import { CHAUFFAGE_MODES, CHAUFFAGE_OPTS } from "./energie";
+import { ProfilEnergetiquePanel } from "./ProfilEnergetiquePanel";
 
 type SetForm = (patch: Partial<LeenkeyForm>) => void;
 export type StepErrors = Partial<Record<keyof LeenkeyForm, string>>;
@@ -712,6 +713,8 @@ const ANNEES = [
   "2011-2020",
   "Après 2020",
 ];
+const DPE_DATES = ["Avant juillet 2021", "Depuis juillet 2021", "Je ne sais pas"];
+const AUDIT_OPTS = ["Réalisé", "Non réalisé", "Je ne sais pas"];
 const RENOV = ["Jamais", "Il y a plus de 10 ans", "Il y a 5 à 10 ans", "Il y a moins de 5 ans"];
 
 export function DpeRow({
@@ -754,6 +757,8 @@ export function DpeRow({
 }
 
 export function Step8({ form, set }: P) {
+  const passoire = form.dpe === "F" || form.dpe === "G";
+
   return (
     <div className="space-y-8">
       <StepHeader
@@ -761,61 +766,117 @@ export function Step8({ form, set }: P) {
         total={TOTAL}
         label="Énergie"
         title="Connaissez-vous le DPE de votre bien ?"
-        subtitle="Le Diagnostic de Performance Énergétique a un impact direct sur la valeur et la vente de votre bien."
+        subtitle="Le Diagnostic de Performance Énergétique a un impact direct sur la valeur et la vente de votre bien. Les réponses ci-dessous permettent de construire votre profil énergétique."
       />
-      <div className="space-y-6">
-        <Field label="Étiquette énergie (DPE)">
-          <DpeRow value={form.dpe} onChange={(v) => set({ dpe: v })} />
-        </Field>
-        <Field label="Étiquette GES (gaz à effet de serre)">
-          <DpeRow value={form.ges} onChange={(v) => set({ ges: v })} />
-        </Field>
-        <Field label="Type de chauffage principal">
-          <PillGroup
-            value={form.chauffage}
-            onChange={(v) => set({ chauffage: v })}
-            options={CHAUFFAGE_OPTS}
-          />
-        </Field>
-        <Field
-          label="Chauffage individuel ou collectif ?"
-          hint="un chauffage collectif limite la maîtrise des charges et pèse sur la valeur"
-        >
-          <PillGroup
-            value={form.chauffage_mode}
-            onChange={(v) => set({ chauffage_mode: v })}
-            options={CHAUFFAGE_MODES}
-          />
-        </Field>
-        <Field label="Production d'eau chaude">
-          <PillGroup
-            value={form.eau_chaude}
-            onChange={(v) => set({ eau_chaude: v })}
-            options={EAU_CHAUDE_OPTS}
-          />
-        </Field>
-        <Field label="Année de construction estimée">
-          <PillGroup
-            value={form.annee_construction}
-            onChange={(v) => set({ annee_construction: v })}
-            options={ANNEES}
-          />
-        </Field>
-        <Field label="Dernière rénovation énergétique">
-          <PillGroup
-            value={form.derniere_renovation}
-            onChange={(v) => set({ derniere_renovation: v })}
-            options={RENOV}
-          />
-        </Field>
-        <p className="flex items-start gap-3 rounded-[12px] border-2 border-sky-mid bg-sky/50 p-4 text-sm text-navy">
-          <span>💡</span>
-          <span>
-            Depuis 2025, les logements classés G ne peuvent plus être mis en location. Un DPE
-            défavorable impacte directement le nombre d'acheteurs potentiels et votre prix de vente.
-            Leenkey peut vous orienter vers des aides à la rénovation.
-          </span>
-        </p>
+
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="space-y-6">
+          <Field label="Étiquette énergie (DPE)">
+            <DpeRow value={form.dpe} onChange={(v) => set({ dpe: v })} />
+          </Field>
+          <Field label="Étiquette GES (gaz à effet de serre)">
+            <DpeRow value={form.ges} onChange={(v) => set({ ges: v })} />
+          </Field>
+
+          <Field
+            label="Date du DPE"
+            hint="un DPE d\'avant juillet 2021 relève de l\'ancienne méthode et n\'est plus opposable"
+          >
+            <PillGroup
+              value={form.dpe_date}
+              onChange={(v) => set({ dpe_date: v })}
+              options={DPE_DATES}
+            />
+          </Field>
+
+          {passoire && (
+            <Field
+              label="Audit énergétique réalisé ?"
+              hint="obligatoire depuis 2023 pour vendre un logement classé F ou G"
+            >
+              <PillGroup
+                value={form.audit_energetique}
+                onChange={(v) => set({ audit_energetique: v })}
+                options={AUDIT_OPTS}
+              />
+            </Field>
+          )}
+
+          <SectionTitle>Chauffage et eau chaude</SectionTitle>
+          <Field label="Type de chauffage principal">
+            <PillGroup
+              value={form.chauffage}
+              onChange={(v) => set({ chauffage: v })}
+              options={CHAUFFAGE_OPTS}
+            />
+          </Field>
+          <Field
+            label="Chauffage individuel ou collectif ?"
+            hint="un chauffage collectif limite la maîtrise des charges et pèse sur la valeur"
+          >
+            <PillGroup
+              value={form.chauffage_mode}
+              onChange={(v) => set({ chauffage_mode: v })}
+              options={CHAUFFAGE_MODES}
+            />
+          </Field>
+          <Field label="Production d\'eau chaude">
+            <PillGroup
+              value={form.eau_chaude}
+              onChange={(v) => set({ eau_chaude: v })}
+              options={EAU_CHAUDE_OPTS}
+            />
+          </Field>
+
+          <SectionTitle>Le bâti</SectionTitle>
+          <Field label="Année de construction estimée">
+            <PillGroup
+              value={form.annee_construction}
+              onChange={(v) => set({ annee_construction: v })}
+              options={ANNEES}
+            />
+          </Field>
+          <Field label="Dernière rénovation énergétique">
+            <PillGroup
+              value={form.derniere_renovation}
+              onChange={(v) => set({ derniere_renovation: v })}
+              options={RENOV}
+            />
+          </Field>
+
+          <SectionTitle>Travaux de rénovation énergétique</SectionTitle>
+          <Field
+            label="Classement DPE visé après travaux"
+            hint="pour chiffrer le gain réel plutôt que l\'estimer"
+          >
+            <DpeRow value={form.dpe_vise} onChange={(v) => set({ dpe_vise: v })} />
+          </Field>
+          <Field
+            label="Budget de travaux chiffré"
+            hint="€ — si vous avez un devis, il est déduit tel quel au lieu d\'un pourcentage"
+          >
+            <TextInput
+              type="number"
+              min={0}
+              value={form.travaux_energie_budget ?? ""}
+              onChange={(e) =>
+                set({ travaux_energie_budget: e.target.value ? Number(e.target.value) : null })
+              }
+              placeholder="25000"
+            />
+          </Field>
+
+          <p className="flex items-start gap-3 rounded-[12px] border-2 border-sky-mid bg-sky/50 p-4 text-sm text-navy">
+            <span>💡</span>
+            <span>
+              Depuis 2025, les logements classés G ne peuvent plus être mis en location. Un DPE
+              défavorable impacte directement le nombre d\'acheteurs potentiels et votre prix de
+              vente. Leenkey peut vous orienter vers des aides à la rénovation.
+            </span>
+          </p>
+        </div>
+
+        <ProfilEnergetiquePanel form={form} />
       </div>
     </div>
   );

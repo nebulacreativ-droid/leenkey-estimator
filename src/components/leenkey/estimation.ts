@@ -1974,9 +1974,21 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
     if ((form.etage ?? 0) === 0) etageMult -= 0.02;
   }
 
-  const globalMult = typeMult * etatEntry.mult * dpeEntry.mult * extMult * prestMult * etageMult;
+  // Depuis 2023, vendre un logement classé F ou G impose un audit énergétique.
+  // Son absence ne décote pas le bien en soi : elle bloque la signature, et
+  // l'acquéreur la traite comme un risque.
+  const passoire = form.dpe === "F" || form.dpe === "G";
+  const auditManquant = passoire && form.audit_energetique === "Non réalisé";
+  const auditMult = auditManquant ? 0.98 : 1;
+
+  const globalMult =
+    typeMult * etatEntry.mult * dpeEntry.mult * extMult * prestMult * etageMult * auditMult;
   const prixM2 = Math.round(prixM2Marche * globalMult);
-  const prixEstime = Math.round((prixM2 * surface) / 1000) * 1000;
+  // Les travaux chiffrés par le vendeur sont déduits tels quels : un devis vaut
+  // mieux qu'un pourcentage, et évite de compter deux fois ce que le DPE traduit
+  // déjà en décote.
+  const budgetTravaux = form.travaux_energie_budget ?? 0;
+  const prixEstime = Math.max(0, Math.round((prixM2 * surface - budgetTravaux) / 1000) * 1000);
   const deltaMarche = Math.round(((prixM2 - prixM2Marche) / prixM2Marche) * 100);
 
   // Score attractivité
@@ -2006,7 +2018,14 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
     const v = form[k];
     return v !== null && v !== "" && v !== undefined;
   }).length;
-  const fiabiliteScore = Math.round((complet / champsClés.length) * 100);
+  // Un DPE d'avant juillet 2021 relève de l'ancienne méthode : il n'est plus
+  // opposable et sera refait avant la vente. Le multiplicateur DPE repose donc
+  // sur une donnée incertaine — c'est la fiabilité qui en pâtit, pas le prix.
+  const dpePerime = !!form.dpe && form.dpe !== "inconnu" && form.dpe_date === "Avant juillet 2021";
+  const fiabiliteScore = Math.max(
+    0,
+    Math.round((complet / champsClés.length) * 100) - (dpePerime ? 15 : 0),
+  );
   const fiabilite: EstimationResult["fiabilite"] =
     fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
 

@@ -170,6 +170,10 @@ function buildPayload(form: LeenkeyForm) {
       eau_chaude: form.eau_chaude,
       annee_construction: form.annee_construction,
       derniere_renovation_energetique: form.derniere_renovation,
+      dpe_date: form.dpe_date,
+      audit_energetique: form.audit_energetique,
+      travaux_energie_budget: form.travaux_energie_budget,
+      dpe_vise: form.dpe_vise,
     },
     situation: {
       proprietaire: form.proprietaire,
@@ -506,7 +510,7 @@ export function LeenkeyWizard() {
       )}
 
       {/* Step content */}
-      <main className="mx-auto max-w-3xl px-5 pb-32 pt-10">
+      <main className={cn("mx-auto px-5 pb-32 pt-10", current?.large ? "max-w-6xl" : "max-w-3xl")}>
         <StepPositionContext.Provider value={stepPosition}>
           <div key={step} className="step-enter">
             {StepNode}

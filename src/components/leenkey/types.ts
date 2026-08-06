@@ -170,6 +170,13 @@ export interface LeenkeyForm {
   eau_chaude: string | null;
   annee_construction: string | null;
   derniere_renovation: string | null;
+  /** Un DPE d'avant juillet 2021 relève de l'ancienne méthode et n'est plus opposable. */
+  dpe_date: string | null;
+  /** Obligatoire depuis 2023 pour vendre un logement classé F ou G. */
+  audit_energetique: string | null;
+  travaux_energie_budget: number | null;
+  /** Classement visé après travaux, pour chiffrer le gain plutôt que l'estimer. */
+  dpe_vise: DpeLetter | null;
 
   // 9
   proprietaire: string | null;
@@ -329,6 +336,10 @@ export const initialForm: LeenkeyForm = {
   eau_chaude: null,
   annee_construction: null,
   derniere_renovation: null,
+  dpe_date: null,
+  audit_energetique: null,
+  travaux_energie_budget: null,
+  dpe_vise: null,
   proprietaire: null,
   occupation: null,
   bail_expiration: "",
