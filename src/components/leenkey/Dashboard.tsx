@@ -45,6 +45,18 @@ const fiabiliteLabel = {
   },
 };
 
+/**
+ * La largeur de la fourchette dépend de ce que le vendeur a renseigné et du
+ * type de bien. L'annoncer comme « resserrée » quelle que soit sa valeur était
+ * faux dès qu'elle s'élargissait : mieux vaut dire pourquoi, et ce qui la
+ * réduirait.
+ */
+const precisionLabel: Record<"elevee" | "moyenne" | "faible", string> = {
+  elevee: "fourchette resserrée : votre dossier est complet",
+  moyenne: "complétez votre dossier pour resserrer la fourchette",
+  faible: "fourchette large : il manque des informations déterminantes",
+};
+
 const tensionLabel = {
   faible: "Marché détendu",
   moderee: "Marché actif",
@@ -220,7 +232,7 @@ export function EstimationDashboard({
                 <span className="font-semibold text-navy">
                   ±{Math.round(((r.prixHaut - r.prixEstime) / r.prixEstime) * 100)}%
                 </span>{" "}
-                · Fourchette resserrée selon votre profil
+                · {precisionLabel[r.fiabilite]}
               </div>
 
               {/* Barre de fourchette visuelle */}

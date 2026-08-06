@@ -241,6 +241,46 @@ function tension(form: LeenkeyForm): "faible" | "moderee" | "forte" {
 }
 
 /**
+ * Largeur de la fourchette, indexée sur l'incertitude réelle.
+ *
+ * Elle était plafonnée à ±3 % en toutes circonstances, y compris avec une
+ * fiabilité « faible ». Annoncer ±2 % sur un château sans devis de travaux ou
+ * un terrain sans certificat d'urbanisme transformait tout écart normal de
+ * marché en « votre estimation est fausse ».
+ *
+ * Trois choses déterminent l'incertitude :
+ * - le type de bien : un appartement a des dizaines de comparables, un bien
+ *   d'exception n'en a aucun ;
+ * - la complétude du formulaire ;
+ * - la présence d'un échantillon DVF exploitable, c'est-à-dire de vraies
+ *   transactions à proximité.
+ */
+const FOURCHETTE_BASE: Record<string, Record<"elevee" | "moyenne" | "faible", number>> = {
+  appartement: { elevee: 0.05, moyenne: 0.08, faible: 0.12 },
+  maison: { elevee: 0.06, moyenne: 0.09, faible: 0.13 },
+  immeuble: { elevee: 0.08, moyenne: 0.12, faible: 0.18 },
+  terrain: { elevee: 0.1, moyenne: 0.15, faible: 0.2 },
+  local_commercial: { elevee: 0.1, moyenne: 0.15, faible: 0.2 },
+  atypique: { elevee: 0.12, moyenne: 0.18, faible: 0.25 },
+};
+
+function fourchette(opts: {
+  type: string | null;
+  fiabilite: "elevee" | "moyenne" | "faible";
+  tension: "faible" | "moderee" | "forte";
+  dvfExploitable: boolean;
+}): number {
+  const base = FOURCHETTE_BASE[opts.type ?? "maison"] ?? FOURCHETTE_BASE.maison;
+  let pct = base[opts.fiabilite];
+  // De vraies ventes à proximité resserrent la fourchette ; leur absence l'élargit.
+  pct *= opts.dvfExploitable ? 0.85 : 1.1;
+  // Un marché tendu se négocie peu : les prix de vente s'écartent moins du prix affiché.
+  if (opts.tension === "forte") pct *= 0.9;
+  else if (opts.tension === "faible") pct *= 1.05;
+  return Math.min(0.3, Math.max(0.04, Math.round(pct * 1000) / 1000));
+}
+
+/**
  * Mélange le prix au m² issu de DVF avec la table de référence.
  *
  * DVF pèse 70 % car ce sont de vraies transactions, la table compensant le
@@ -732,13 +772,15 @@ function computeTerrainEstimation(form: LeenkeyForm): EstimationResult {
   const fiabilite: EstimationResult["fiabilite"] =
     fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
 
-  let rangePct = 0.03;
-  if (fiabilite === "elevee") rangePct = 0.02;
-  else if (fiabilite === "moyenne") rangePct = 0.025;
-
+  // DVF ne couvre pas les terrains : l'endpoint renvoie available:false.
+  const dvfExploitable = false;
   const tensionMarche = tension(form);
-  if (tensionMarche === "forte") rangePct *= 0.85;
-  rangePct = Math.min(rangePct, 0.03);
+  const rangePct = fourchette({
+    type: form.type,
+    fiabilite,
+    tension: tensionMarche,
+    dvfExploitable,
+  });
 
   // Score d'attractivité : constructibilité et viabilisation d'abord.
   let score = 40;
@@ -1062,12 +1104,14 @@ function computeLocalEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): E
   const fiabilite: EstimationResult["fiabilite"] =
     fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
 
-  let rangePct = 0.03;
-  if (fiabilite === "elevee") rangePct = 0.02;
-  else if (fiabilite === "moyenne") rangePct = 0.025;
+  const dvfExploitable = !!dvfPrixM2 && dvfPrixM2 > 0;
   const tensionMarche = tension(form);
-  if (tensionMarche === "forte") rangePct *= 0.85;
-  rangePct = Math.min(rangePct, 0.03);
+  const rangePct = fourchette({
+    type: form.type,
+    fiabilite,
+    tension: tensionMarche,
+    dvfExploitable,
+  });
 
   let score = 50;
   score += Math.round((emplacement.prixMult - 0.7) * 40);
@@ -1335,12 +1379,14 @@ function computeImmeubleEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   const fiabilite: EstimationResult["fiabilite"] =
     fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
 
-  let rangePct = 0.03;
-  if (fiabilite === "elevee") rangePct = 0.02;
-  else if (fiabilite === "moyenne") rangePct = 0.025;
+  const dvfExploitable = !!dvfPrixM2 && dvfPrixM2 > 0;
   const tensionMarche = tension(form);
-  if (tensionMarche === "forte") rangePct *= 0.85;
-  rangePct = Math.min(rangePct, 0.03);
+  const rangePct = fourchette({
+    type: form.type,
+    fiabilite,
+    tension: tensionMarche,
+    dvfExploitable,
+  });
 
   let score = 45;
   score += Math.round((stats.tauxOccupation - 70) / 3);
@@ -1741,12 +1787,14 @@ function computeAtypiqueEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   const fiabilite: EstimationResult["fiabilite"] =
     fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
 
-  let rangePct = 0.03;
-  if (fiabilite === "elevee") rangePct = 0.02;
-  else if (fiabilite === "moyenne") rangePct = 0.025;
+  const dvfExploitable = !!dvfPrixM2 && dvfPrixM2 > 0;
   const tensionMarche = tension(form);
-  if (tensionMarche === "forte") rangePct *= 0.85;
-  rangePct = Math.min(rangePct, 0.03);
+  const rangePct = fourchette({
+    type: form.type,
+    fiabilite,
+    tension: tensionMarche,
+    dvfExploitable,
+  });
 
   let score = 50;
   score += Math.round((caractereMult - 1) * 150);
@@ -1924,20 +1972,13 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
   const fiabilite: EstimationResult["fiabilite"] =
     fiabiliteScore >= 80 ? "elevee" : fiabiliteScore >= 55 ? "moyenne" : "faible";
 
-  // Fourchette précise — max ±3% en toute circonstance
-  // Plus la fiabilité est haute → fourchette resserrée
-  let rangePct = 0.03; // plafond : ±3%
-  if (fiabilite === "elevee")
-    rangePct = 0.02; // ±2%
-  else if (fiabilite === "moyenne") rangePct = 0.025; // ±2,5%
-
-  // Tension marché peut RESSERRER mais jamais élargir au-dessus de 3%
   const tensionMarcheTmp = tension(form);
-  if (tensionMarcheTmp === "forte") rangePct *= 0.85;
-  // (marché faible n'élargit plus la fourchette pour respecter le plafond 3%)
-
-  // Garantie absolue du plafond
-  rangePct = Math.min(rangePct, 0.03);
+  const rangePct = fourchette({
+    type: form.type,
+    fiabilite,
+    tension: tensionMarcheTmp,
+    dvfExploitable: !!dvfPrixM2 && dvfPrixM2 > 0,
+  });
 
   const prixBas = Math.round((prixEstime * (1 - rangePct)) / 1000) * 1000;
   const prixHaut = Math.round((prixEstime * (1 + rangePct)) / 1000) * 1000;
