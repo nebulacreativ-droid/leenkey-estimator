@@ -53,31 +53,51 @@ export function ProfilEnergetiquePanel({ form }: { form: LeenkeyForm }) {
         </div>
       </div>
 
-      {p.forts.length > 0 && (
-        <div className="mt-5">
-          <div className="text-xs font-bold text-navy">Points forts</div>
+      {/* Les deux blocs restent toujours visibles : un panneau qui disparaît
+          donne l'impression que le calcul ne marche pas. */}
+      <div className="mt-5">
+        <div className="text-xs font-bold text-navy">Points forts</div>
+        {p.forts.length > 0 ? (
           <ul className="mt-2 space-y-1.5">
-            {p.forts.slice(0, 6).map((f) => (
+            {p.forts.slice(0, 8).map((f) => (
               <li key={f} className="flex items-start gap-2 text-xs text-sub">
                 <span className="mt-px font-bold text-success">✓</span>
                 {f}
               </li>
             ))}
           </ul>
-        </div>
-      )}
+        ) : (
+          <p className="mt-2 text-xs italic text-muted-foreground">
+            Aucun atout énergétique identifié pour l'instant.
+          </p>
+        )}
+      </div>
 
-      {p.ameliorer.length > 0 && (
-        <div className="mt-5">
-          <div className="text-xs font-bold text-navy">Points à améliorer</div>
+      <div className="mt-5">
+        <div className="text-xs font-bold text-navy">Points à améliorer</div>
+        {p.ameliorer.length > 0 ? (
           <ul className="mt-2 space-y-1.5">
-            {p.ameliorer.slice(0, 6).map((a) => (
+            {p.ameliorer.slice(0, 8).map((a) => (
               <li key={a} className="flex items-start gap-2 text-xs text-sub">
                 <span className="mt-px text-amber-500">⚠</span>
                 {a}
               </li>
             ))}
           </ul>
+        ) : (
+          <p className="mt-2 text-xs italic text-muted-foreground">
+            Rien à signaler sur les réponses données.
+          </p>
+        )}
+      </div>
+
+      {p.manquants.length > 0 && (
+        <div className="mt-5 rounded-[10px] bg-sky/60 p-3">
+          <div className="text-xs font-bold text-navy">Pour affiner le profil</div>
+          <p className="mt-1 text-xs leading-relaxed text-sub">
+            Renseignez {p.manquants.slice(0, 4).join(", ")}
+            {p.manquants.length > 4 ? "…" : "."}
+          </p>
         </div>
       )}
 
