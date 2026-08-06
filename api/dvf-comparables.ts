@@ -1,16 +1,117 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 /**
- * Endpoint qui interroge l'API DVF (Demandes de Valeurs Foncières) publique
- * pour récupérer les ventes immobilières comparables.
+ * Comparables de vente issus de DVF (Demandes de Valeurs Foncières).
  *
- * Source : data.gouv.fr (données officielles DGFiP)
- * API utilisée : https://api.cquest.org/dvf
+ * Source : fichiers geo-dvf d'Etalab, dérivés des données DGFiP.
+ * https://files.data.gouv.fr/geo-dvf/latest/csv/{année}/communes/{dép}/{insee}.csv
  *
- * ⚠️ IMPORTANT : ces données sont HISTORIQUES (publiées avec ~6 mois de délai).
- * Elles ne reflètent pas l'état du marché en temps réel mais donnent
- * une base solide d'analyse de tendance.
+ * L'endpoint interrogeait auparavant api.cquest.org, qui renvoie aujourd'hui
+ * 502 sur toutes ses routes. Les fichiers officiels sont en outre bien plus
+ * riches : ils exposent `id_mutation`, sans lequel une vente s'étalant sur
+ * plusieurs lots ne peut pas être regroupée — et c'est le cas de 52 % des
+ * mutations (mesuré sur Bordeaux 2025).
+ *
+ * ⚠️ Ces données sont HISTORIQUES, publiées avec environ six mois de délai.
  */
+
+/** Millésimes tentés, du plus récent au plus ancien. Un 404 est normal en début d'année. */
+function anneesCandidates(): number[] {
+  const a = new Date().getFullYear();
+  return [a, a - 1, a - 2];
+}
+
+/** En deçà, on élargit la recherche au millésime précédent. */
+const MUTATIONS_SOUHAITEES = 8;
+
+/**
+ * Code INSEE de la commune à partir du code postal, pour les trois villes à
+ * arrondissements. DVF les publie par arrondissement : Paris 11e est le
+ * fichier 75111, et 75056 (Paris entier) n'existe pas.
+ */
+function inseeArrondissement(codePostal: string): string | null {
+  const n = Number(codePostal);
+  if (n >= 75001 && n <= 75020) return String(75100 + (n - 75000));
+  if (n >= 69001 && n <= 69009) return String(69380 + (n - 69000));
+  if (n >= 13001 && n <= 13016) return String(13200 + (n - 13000));
+  return null;
+}
+
+/** Résout le code INSEE via la Base Adresse Nationale, déjà utilisée par le formulaire. */
+async function resoudreInsee(codePostal: string, ville?: string): Promise<string | null> {
+  const arr = inseeArrondissement(codePostal);
+  if (arr) return arr;
+  const url =
+    "https://api-adresse.data.gouv.fr/search/?q=" +
+    encodeURIComponent(ville || codePostal) +
+    `&postcode=${encodeURIComponent(codePostal)}&type=municipality&limit=1`;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(6000) });
+    if (!res.ok) return null;
+    const data = (await res.json()) as {
+      features?: { properties?: { citycode?: string } }[];
+    };
+    return data.features?.[0]?.properties?.citycode ?? null;
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * Charge un millésime pour une commune.
+ *
+ * Les fichiers n'utilisent aucun guillemet et comptent exactement 40 colonnes :
+ * un découpage sur la virgule est sûr et évite d'embarquer un parseur CSV.
+ */
+async function chargerAnnee(insee: string, annee: number): Promise<DvfMutation[]> {
+  const dep = insee.length === 5 && insee.startsWith("97") ? insee.slice(0, 3) : insee.slice(0, 2);
+  const url = `https://files.data.gouv.fr/geo-dvf/latest/csv/${annee}/communes/${dep}/${insee}.csv`;
+  let texte: string;
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(12000) });
+    if (!res.ok) return []; // 404 attendu sur un millésime non encore publié
+    texte = await res.text();
+  } catch {
+    return [];
+  }
+
+  const lignes = texte.split("\n");
+  if (lignes.length < 2) return [];
+  const cols = lignes[0].split(",");
+  const idx = (nom: string) => cols.indexOf(nom);
+  const iId = idx("id_mutation");
+  const iDate = idx("date_mutation");
+  const iNature = idx("nature_mutation");
+  const iValeur = idx("valeur_fonciere");
+  const iNum = idx("adresse_numero");
+  const iVoie = idx("adresse_nom_voie");
+  const iCp = idx("code_postal");
+  const iCommune = idx("nom_commune");
+  const iType = idx("type_local");
+  const iSurface = idx("surface_reelle_bati");
+  const iPieces = idx("nombre_pieces_principales");
+  if (iId < 0 || iValeur < 0) return [];
+
+  const out: DvfMutation[] = [];
+  for (let i = 1; i < lignes.length; i++) {
+    const c = lignes[i].split(",");
+    if (c.length < cols.length) continue;
+    out.push({
+      id_mutation: c[iId],
+      date_mutation: c[iDate],
+      nature_mutation: c[iNature],
+      valeur_fonciere: Number(c[iValeur]) || 0,
+      type_local: c[iType],
+      surface_reelle_bati: Number(c[iSurface]) || 0,
+      nombre_pieces_principales: Number(c[iPieces]) || 0,
+      code_postal: c[iCp],
+      nom_commune: c[iCommune],
+      adresse_numero: c[iNum],
+      adresse_nom_voie: c[iVoie],
+    });
+  }
+  return out;
+}
 
 interface DvfMutation {
   date_mutation: string;
@@ -93,14 +194,6 @@ interface Comparable {
   nbLots: number;
 }
 
-function normaliser(s: string): string {
-  return s
-    .toLowerCase()
-    .normalize("NFD")
-    .replace(/[\u0300-\u036f]/g, "")
-    .replace(/[^a-z]/g, "");
-}
-
 /**
  * Transforme les lignes brutes DVF en comparables exploitables.
  *
@@ -113,7 +206,7 @@ export function agregerMutations(
   mutations: DvfMutation[],
   opts: {
     acceptedTypes: string[];
-    commune: string;
+    codePostal: string;
     surfaceMin: number;
     surfaceMax: number;
     surface: number;
@@ -127,7 +220,9 @@ export function agregerMutations(
     // Échanges, expropriations et adjudications ne reflètent pas le marché.
     if (m.nature_mutation && m.nature_mutation !== "Vente") return false;
     // Un code postal peut couvrir plusieurs communes : on s'y limite si on la connaît.
-    if (opts.commune && m.nom_commune && normaliser(m.nom_commune) !== opts.commune) return false;
+    // Le fichier couvre déjà toute la commune ; certaines en ont plusieurs codes
+    // postaux, on se limite à celui du bien quand la ligne le renseigne.
+    if (opts.codePostal && m.code_postal && m.code_postal !== opts.codePostal) return false;
     return true;
   });
 
@@ -226,6 +321,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     const body = req.body as {
       codePostal?: string;
       ville?: string;
+      codeInsee?: string;
       type?: string;
       surface?: number;
     };
@@ -250,43 +346,42 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
     const surface = body.surface ?? 0;
     const acceptedTypes = TYPE_MAPPING[type] ?? ["Maison", "Appartement"];
-    // Un code postal rural couvre souvent plusieurs communes, et en ville il
-    // recouvre un arrondissement entier : on restreint dès qu'on connaît la commune.
-    const commune = body.ville ? normaliser(String(body.ville)) : "";
 
     // Surface min/max : ±30% pour considérer comme comparable
     const surfaceMin = surface > 0 ? Math.round(surface * 0.7) : 0;
     const surfaceMax = surface > 0 ? Math.round(surface * 1.3) : 9999;
 
-    // Appel API DVF cquest.org (gratuit, public, basé sur data.gouv.fr)
-    // Documentation : https://github.com/cquest/dvf-api
-    const url = `https://api.cquest.org/dvf?code_postal=${encodeURIComponent(codePostal)}`;
-
-    const controller = new AbortController();
-    const timeout = setTimeout(() => controller.abort(), 8000); // 8s timeout
-
-    let mutations: DvfMutation[] = [];
-    try {
-      const dvfRes = await fetch(url, {
-        signal: controller.signal,
-        headers: { Accept: "application/json" },
+    // Les fichiers geo-dvf sont publiés par commune : il faut son code INSEE.
+    const insee = body.codeInsee || (await resoudreInsee(codePostal, body.ville));
+    if (!insee) {
+      return res.status(200).json({
+        available: false,
+        message: "Commune non identifiée",
+        comparables: [],
       });
-      clearTimeout(timeout);
+    }
 
-      if (!dvfRes.ok) {
-        console.warn("DVF API non disponible:", dvfRes.status);
-        return res.status(200).json({
-          available: false,
-          message: "Données DVF temporairement indisponibles",
-          comparables: [],
-        });
-      }
+    // On part du millésime le plus récent et on remonte tant que l'échantillon
+    // est trop mince pour être exploitable. Inutile de télécharger trois ans de
+    // données là où une seule année suffit.
+    let mutations: DvfMutation[] = [];
+    const anneesChargees: number[] = [];
+    for (const annee of anneesCandidates()) {
+      const lot = await chargerAnnee(insee, annee);
+      if (!lot.length) continue;
+      mutations = mutations.concat(lot);
+      anneesChargees.push(annee);
+      const apercu = agregerMutations(mutations, {
+        acceptedTypes,
+        codePostal,
+        surfaceMin,
+        surfaceMax,
+        surface,
+      });
+      if (apercu.comparables.length >= MUTATIONS_SOUHAITEES) break;
+    }
 
-      const data = (await dvfRes.json()) as { resultats?: DvfMutation[] };
-      mutations = data.resultats ?? [];
-    } catch (err) {
-      clearTimeout(timeout);
-      console.warn("Erreur appel DVF:", err);
+    if (!mutations.length) {
       return res.status(200).json({
         available: false,
         message: "Données DVF temporairement indisponibles",
@@ -303,7 +398,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       nbMutations,
       nbAberrantesEcartees,
       lignesRetenues,
-    } = agregerMutations(mutations, { acceptedTypes, commune, surfaceMin, surfaceMax, surface });
+    } = agregerMutations(mutations, { acceptedTypes, codePostal, surfaceMin, surfaceMax, surface });
 
     const dateLaPlusRecente = comparables.length > 0 ? comparables[0].date : null;
 
@@ -322,6 +417,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         /** En dessous de 5 mutations, l'échantillon ne doit pas piloter l'estimation. */
         fiable: comparables.length >= MIN_MUTATIONS_FIABLE,
       },
+      annees: anneesChargees,
       nettoyage: {
         lignesBrutes: mutations.length,
         lignesRetenues,
