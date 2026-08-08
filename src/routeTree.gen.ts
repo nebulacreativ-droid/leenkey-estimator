@@ -9,14 +9,21 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as TarifsRouteImport } from './routes/tarifs'
 import { Route as QuiSommesNousRouteImport } from './routes/qui-sommes-nous'
 import { Route as MentionsLegalesRouteImport } from './routes/mentions-legales'
 import { Route as InvestirRouteImport } from './routes/investir'
+import { Route as FaqRouteImport } from './routes/faq'
 import { Route as EstimerRouteImport } from './routes/estimer'
 import { Route as ConceptRouteImport } from './routes/concept'
 import { Route as CguRouteImport } from './routes/cgu'
 import { Route as IndexRouteImport } from './routes/index'
 
+const TarifsRoute = TarifsRouteImport.update({
+  id: '/tarifs',
+  path: '/tarifs',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const QuiSommesNousRoute = QuiSommesNousRouteImport.update({
   id: '/qui-sommes-nous',
   path: '/qui-sommes-nous',
@@ -30,6 +37,11 @@ const MentionsLegalesRoute = MentionsLegalesRouteImport.update({
 const InvestirRoute = InvestirRouteImport.update({
   id: '/investir',
   path: '/investir',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const FaqRoute = FaqRouteImport.update({
+  id: '/faq',
+  path: '/faq',
   getParentRoute: () => rootRouteImport,
 } as any)
 const EstimerRoute = EstimerRouteImport.update({
@@ -58,18 +70,22 @@ export interface FileRoutesByFullPath {
   '/cgu': typeof CguRoute
   '/concept': typeof ConceptRoute
   '/estimer': typeof EstimerRoute
+  '/faq': typeof FaqRoute
   '/investir': typeof InvestirRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/qui-sommes-nous': typeof QuiSommesNousRoute
+  '/tarifs': typeof TarifsRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/cgu': typeof CguRoute
   '/concept': typeof ConceptRoute
   '/estimer': typeof EstimerRoute
+  '/faq': typeof FaqRoute
   '/investir': typeof InvestirRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/qui-sommes-nous': typeof QuiSommesNousRoute
+  '/tarifs': typeof TarifsRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -77,9 +93,11 @@ export interface FileRoutesById {
   '/cgu': typeof CguRoute
   '/concept': typeof ConceptRoute
   '/estimer': typeof EstimerRoute
+  '/faq': typeof FaqRoute
   '/investir': typeof InvestirRoute
   '/mentions-legales': typeof MentionsLegalesRoute
   '/qui-sommes-nous': typeof QuiSommesNousRoute
+  '/tarifs': typeof TarifsRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
@@ -88,27 +106,33 @@ export interface FileRouteTypes {
     | '/cgu'
     | '/concept'
     | '/estimer'
+    | '/faq'
     | '/investir'
     | '/mentions-legales'
     | '/qui-sommes-nous'
+    | '/tarifs'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/'
     | '/cgu'
     | '/concept'
     | '/estimer'
+    | '/faq'
     | '/investir'
     | '/mentions-legales'
     | '/qui-sommes-nous'
+    | '/tarifs'
   id:
     | '__root__'
     | '/'
     | '/cgu'
     | '/concept'
     | '/estimer'
+    | '/faq'
     | '/investir'
     | '/mentions-legales'
     | '/qui-sommes-nous'
+    | '/tarifs'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -116,13 +140,22 @@ export interface RootRouteChildren {
   CguRoute: typeof CguRoute
   ConceptRoute: typeof ConceptRoute
   EstimerRoute: typeof EstimerRoute
+  FaqRoute: typeof FaqRoute
   InvestirRoute: typeof InvestirRoute
   MentionsLegalesRoute: typeof MentionsLegalesRoute
   QuiSommesNousRoute: typeof QuiSommesNousRoute
+  TarifsRoute: typeof TarifsRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/tarifs': {
+      id: '/tarifs'
+      path: '/tarifs'
+      fullPath: '/tarifs'
+      preLoaderRoute: typeof TarifsRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/qui-sommes-nous': {
       id: '/qui-sommes-nous'
       path: '/qui-sommes-nous'
@@ -142,6 +175,13 @@ declare module '@tanstack/react-router' {
       path: '/investir'
       fullPath: '/investir'
       preLoaderRoute: typeof InvestirRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/faq': {
+      id: '/faq'
+      path: '/faq'
+      fullPath: '/faq'
+      preLoaderRoute: typeof FaqRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/estimer': {
@@ -180,9 +220,11 @@ const rootRouteChildren: RootRouteChildren = {
   CguRoute: CguRoute,
   ConceptRoute: ConceptRoute,
   EstimerRoute: EstimerRoute,
+  FaqRoute: FaqRoute,
   InvestirRoute: InvestirRoute,
   MentionsLegalesRoute: MentionsLegalesRoute,
   QuiSommesNousRoute: QuiSommesNousRoute,
+  TarifsRoute: TarifsRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

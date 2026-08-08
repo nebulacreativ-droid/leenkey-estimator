@@ -47,7 +47,7 @@ export function Navbar() {
         {
           rootMargin: "-80px 0px -50% 0px",
           threshold: [0, 0.2, 0.5, 0.8, 1],
-        }
+        },
       );
       els.forEach((el) => observer.observe(el));
       return () => observer.disconnect();
@@ -217,8 +217,12 @@ export function Navbar() {
           <Link to="/qui-sommes-nous" className={routeLinkClass("/qui-sommes-nous")}>
             Qui sommes-nous
           </Link>
-          {sectionLink("tarifs", "Tarifs")}
-          {sectionLink("faq", "FAQ")}
+          <Link to="/tarifs" className={routeLinkClass("/tarifs")}>
+            Tarifs
+          </Link>
+          <Link to="/faq" className={routeLinkClass("/faq")}>
+            FAQ
+          </Link>
           <Link to="/investir" className={routeLinkClass("/investir")}>
             Investir dans Leenkey
           </Link>
@@ -228,11 +232,7 @@ export function Navbar() {
           Valoriser mon bien gratuitement
         </Link>
 
-        <button
-          className="lk-nav-burger"
-          aria-label="Menu"
-          onClick={() => setOpen(!open)}
-        >
+        <button className="lk-nav-burger" aria-label="Menu" onClick={() => setOpen(!open)}>
           <span />
           <span />
           <span />
@@ -247,13 +247,13 @@ export function Navbar() {
         >
           Qui sommes-nous
         </Link>
-        {sectionLink("tarifs", "Tarifs")}
-        {sectionLink("faq", "FAQ")}
-        <Link
-          to="/investir"
-          className={routeLinkClass("/investir")}
-          onClick={() => setOpen(false)}
-        >
+        <Link to="/tarifs" className={routeLinkClass("/tarifs")} onClick={() => setOpen(false)}>
+          Tarifs
+        </Link>
+        <Link to="/faq" className={routeLinkClass("/faq")} onClick={() => setOpen(false)}>
+          FAQ
+        </Link>
+        <Link to="/investir" className={routeLinkClass("/investir")} onClick={() => setOpen(false)}>
           Investir dans Leenkey
         </Link>
         <Link to="/estimer" className="lk-nav-cta" onClick={() => setOpen(false)}>

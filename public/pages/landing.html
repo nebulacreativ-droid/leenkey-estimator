@@ -420,118 +420,66 @@
   </div>
 </section>
 
-<!-- ===================== TARIFS ===================== -->
+<!-- ===================== TARIFS (résumé) ===================== -->
+<!-- ===================== TARIFS (résumé — détail sur /tarifs) ===================== -->
 <section class="section section-dark" id="tarifs" data-screen-label="Tarifs">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow" style="background:linear-gradient(135deg,#1156FC,#8B5CF6);color:#fff;padding:6px 14px;border-radius:100px">🎁 Phase de lancement · Freemium</span>
-      <h2 style="margin-top:16px">Une formule pour <span class="text-grad">chaque vendeur.</span></h2>
-      <p class="lead">Pendant notre phase pilote, accédez à la version gratuite de Leenkey. Aucun engagement, aucune carte bancaire demandée. Vendez votre bien et économisez réellement.</p>
+      <span class="eyebrow">Nos formules</span>
+      <h2>Un forfait fixe. <span class="text-grad">Jamais de commission.</span></h2>
+      <p class="lead">Vous choisissez votre niveau d'accompagnement. Le prix ne dépend jamais de la valeur de votre bien.</p>
     </div>
-    <div style="display:flex; justify-content:center" class="reveal">
-      <div class="pricing-toggle" id="pricingToggle" role="tablist">
-        <button class="active" data-view="forfait" role="tab">Gratuit pendant le lancement</button>
-        <button data-view="economie" role="tab">Mon économie vs agence</button>
-      </div>
-    </div>
-    <div class="pricing-grid reveal" data-d="1" data-view="forfait" id="pricingGrid">
-      <!-- Accompagné (gauche) -->
-      <div class="price-card" style="position:relative">
-        <div class="price-name">Accompagné</div>
-        <p class="price-desc">Un conseiller dédié à vos côtés, du prix à la signature.</p>
-        <div class="price-amount">
-          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">990&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span>
-          <span class="pa-eco" hidden><span class="pa-num">−14 010</span><span class="pa-unit">€ vs agence</span></span>
-        </div>
-        <div class="price-note pa-forfait" style="color:#64748B">Forfait fixe TTC · payé à la souscription</div>
-        <div class="price-note pa-eco" hidden>Économie indicative sur un bien à 350 000 €</div>
-        <ul class="price-feats">
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg><strong style="font-weight:600">Formule Autonomie + :</strong></li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Création de votre espace personnel</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie de mise en vente avec un conseiller dédié en illimité</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Création et optimisation de l'annonce, diffusion en exclusivité</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Messagerie et agenda de visites</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Aide à la négociation</li>
-        </ul>
-        <a class="btn btn-ghost" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Choisir Accompagné</a>
-      </div>
-      <!-- Autonomie GRATUIT (centre - recommandé) -->
-      <div class="price-card featured" style="position:relative;transform:scale(1.04);box-shadow:0 24px 64px -16px rgba(17,86,252,0.35);border:2px solid #1156FC">
-        <span class="price-badge" style="background:#10B981;color:#fff;font-weight:700">✓ Disponible gratuitement</span>
+    <div class="pricing-grid reveal" data-d="1">
+      <div class="price-card">
         <div class="price-name">Autonomie</div>
         <p class="price-desc">Pour piloter votre vente en toute autonomie.</p>
-        <div class="price-amount">
-          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">Gratuit</span>
-        </div>
-        <div class="price-note pa-forfait" style="font-weight:600;color:#1156fc">Sans engagement · sans CB · TTC</div>
-        <ul class="price-feats">
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Analyses et rapports de valeur illimités</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie de mise en vente avec un conseiller (call 30 min)</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Mise en place du dossier de vente, anticipation des futurs diagnostics</li>
-          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Création de votre espace personnel</li>
-          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Optimisation et diffusion annonce</li>
-          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Coordination notaire</li>
-        </ul>
-        <a class="btn btn-primary" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Commencer gratuitement
-          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
-        </a>
+        <div class="price-amount"><span style="font-size:44px;font-weight:800;color:#1156fc">Gratuit</span></div>
+        <div class="price-note" style="color:#64748B">Sans engagement · sans carte bancaire</div>
       </div>
-      <!-- Sérénité (droite) -->
       <div class="price-card" style="position:relative">
+        <div class="price-badge">Le plus choisi</div>
+        <div class="price-name">Accompagné</div>
+        <p class="price-desc">Un conseiller dédié à vos côtés, du prix à la signature.</p>
+        <div class="price-amount"><span style="font-size:44px;font-weight:800;color:#1156fc">990&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span></div>
+        <div class="price-note" style="color:#64748B">Forfait fixe · payé à la souscription</div>
+      </div>
+      <div class="price-card">
         <div class="price-name">Sérénité</div>
         <p class="price-desc">Nous nous occupons de presque tout, vous gardez la décision.</p>
-        <div class="price-amount">
-          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">1&nbsp;500&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span>
-          <span class="pa-eco" hidden><span class="pa-num">−13 500</span><span class="pa-unit">€ vs agence</span></span>
-        </div>
-        <div class="price-note pa-forfait" style="color:#64748B">Forfait fixe TTC · payé à la souscription</div>
-        <div class="price-note pa-eco" hidden>Économie indicative sur un bien à 350 000 €</div>
-        <ul class="price-feats">
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg><strong style="font-weight:600">Formule Accompagné + :</strong></li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie avec un conseiller dédié en illimité</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Mise en place du dossier de vente complet</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Anticipation des futurs diagnostics</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Coordination complète du notaire</li>
-          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Garantie juridique &amp; relecture des actes</li>
-        </ul>
-        <a class="btn btn-ghost" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Choisir Sérénité</a>
+        <div class="price-amount"><span style="font-size:44px;font-weight:800;color:#1156fc">1&nbsp;500&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span></div>
+        <div class="price-note" style="color:#64748B">Forfait fixe · payé à la souscription</div>
       </div>
+    </div>
+    <div class="reveal" style="text-align:center;margin-top:36px">
+      <a class="btn btn-primary" href="/tarifs">Voir le détail des formules →</a>
     </div>
   </div>
 </section>
 
-<!-- ===================== FAQ ===================== -->
-<section class="section section-dark" id="faq" data-screen-label="FAQ">
+<!-- ===================== FAQ (réduite) ===================== -->
+<!-- ===================== FAQ (réduite — détail sur /faq) ===================== -->
+<section class="section" id="faq" data-screen-label="FAQ">
   <div class="container">
     <div class="section-head reveal">
       <span class="eyebrow">Questions fréquentes</span>
-      <h2>Tout ce que vous vous demandez, sans détour.</h2>
+      <h2>Les trois questions <span class="text-grad">essentielles.</span></h2>
     </div>
-    <div class="faq reveal" data-d="1" id="faq">
+    <div class="faq reveal" data-d="1">
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Combien ça coûte, vraiment&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a"><div class="faq-a-inner">Leenkey propose <strong>trois formules transparentes</strong> à forfait fixe — jamais de commission au pourcentage. La formule <strong>Autonomie est gratuite</strong> pendant notre phase de lancement, et inclut l'analyse de votre bien, un call stratégique de 30 minutes et la mise en place du dossier de vente. Pour aller plus loin, la formule <strong>Accompagné à 990&nbsp;€ TTC</strong> et la formule <strong>Sérénité à 1&nbsp;500&nbsp;€ TTC</strong> sont payées <strong>à la souscription</strong>, en une fois, sans engagement de durée.</div></div>
+        <button class="faq-q" type="button" aria-expanded="false">Est-ce vraiment gratuit pour commencer&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Oui. La formule <strong>Autonomie est gratuite</strong> pendant la phase pilote, sans engagement et sans carte bancaire. Elle inclut l'analyse de votre bien, un call stratégique de 30 minutes et la mise en place du dossier de vente.</div></div>
       </div>
       <div class="faq-item">
         <button class="faq-q" type="button" aria-expanded="false">Suis-je vraiment accompagné, ou seul face à la plateforme&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
         <div class="faq-a"><div class="faq-a-inner">Accompagné. Selon votre forfait, un conseiller Leenkey reste joignable à chaque étape : pour valider votre prix, relire une offre, ou répondre à un doute avant la signature. Vous gardez la main, sans jamais rester seul.</div></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Mes données et mes documents sont-ils en sécurité&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a"><div class="faq-a-inner">Oui. Vos documents sont chiffrés et hébergés en France, conformément au RGPD. Vous seul décidez de ce qui est partagé, et avec qui. Aucune donnée n'est revendue.</div></div>
+        <button class="faq-q" type="button" aria-expanded="false">Quelle différence avec une agence&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Vous restez décisionnaire. Leenkey apporte les outils, le parcours guidé et l'accompagnement, avec un <strong>forfait fixe</strong> plutôt qu'une commission au pourcentage sur le prix de vente.</div></div>
       </div>
-      <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Combien de temps pour vendre&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a"><div class="faq-a-inner">En moyenne 42 jours entre la mise en ligne et le compromis, contre près de 90 jours sur le marché. Une annonce bien préparée et diffusée en exclusivité fait toute la différence. C'est exactement ce que nous outillons.</div></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Quelle est la différence avec une agence&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a"><div class="faq-a-inner">Une agence facture une commission au pourcentage et gère la vente à votre place. Leenkey vous donne les mêmes outils (valorisation, diffusion, suivi) pour un forfait fixe, avec un conseiller à la demande. Vous gardez le contrôle et l'économie.</div></div>
-      </div>
-      <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Et si je bloque en cours de route&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
-        <div class="faq-a"><div class="faq-a-inner">Vous n'avancez jamais à l'aveugle. À chaque étape, vous pouvez solliciter votre conseiller, qui vous rappelle généralement sous 24 h. Le jargon est expliqué, les démarches détaillées. C'est le principe même de Leenkey.</div></div>
-      </div>
+    </div>
+    <div class="reveal" style="text-align:center;margin-top:36px">
+      <a class="btn btn-ghost" href="/faq">Toutes les questions →</a>
     </div>
   </div>
 </section>

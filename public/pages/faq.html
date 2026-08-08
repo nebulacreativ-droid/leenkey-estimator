@@ -1,0 +1,255 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leenkey · Questions fréquentes</title>
+<meta name="description" content="Vendre son bien sans agence avec Leenkey : accompagnement, tarifs, diagnostics, sécurité juridique. Les réponses aux questions les plus posées.">
+<link rel="stylesheet" href="leenkey.css?v=5">
+<style>
+  /* Override forcé pour le tableau comparatif (4 colonnes côte à côte) */
+  .compare {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+  @media (min-width: 680px) {
+    .compare {
+      grid-template-columns: 1.1fr 1fr 1fr 1fr !important;
+      gap: 0 !important;
+    }
+  }
+  /* Logo Leenkey dans le comparatif — proportionnel aux libellés Vente seul / Agence */
+  .cmp-logo-img {
+    height: 40px !important;
+    width: auto !important;
+  }
+  /* Titres de section H2 — agrandis pour plus d'impact */
+  .section-head h2,
+  .constat-head h2,
+  section h2,
+  h2.h2 {
+    font-size: clamp(34px, 4vw, 48px) !important;
+    line-height: 1.15 !important;
+    letter-spacing: -1.2px !important;
+  }
+  /* Photo hero à droite — forme ovale/organique côté gauche */
+  img.estimate-photo {
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: 140px 24px 24px 140px / 220px 24px 24px 220px !important;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.4) !important;
+  }
+  /* Sur mobile — courbe plus douce pour rester lisible */
+  @media (max-width: 720px) {
+    img.estimate-photo {
+      border-radius: 40px 20px 20px 40px / 60px 20px 20px 60px !important;
+    }
+  }
+  /* Chip "+5,2 %" toujours au premier plan (au-dessus de la carte estimation) */
+  .estimate-chip { z-index: 6 !important; }
+  .estimate-card { z-index: 5 !important; }
+  /* Étapes "Comment ça marche" — désactive les micro-animations parasites
+     sur mobile/tactile (pop, rotation, hover collant) qui gênent la lecture */
+  @media (max-width: 900px), (hover: none) {
+    .step .step-n,
+    .step .step-ic,
+    .reveal.in .step-n,
+    .reveal.in .step-ic,
+    .reveal.in .feat-icon {
+      animation: none !important;
+      transition: none !important;
+      transform: none !important;
+    }
+    .step:hover .step-n,
+    .step:hover .step-ic {
+      transform: none !important;
+      box-shadow: var(--shadow-cta) !important;
+    }
+  }
+  /* Toggle tarifs — scrollable + compact sur mobile (ne coupe plus l'écran) */
+  @media (max-width: 640px) {
+    #tarifs .reveal:has(.pricing-toggle) {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+      justify-content: flex-start !important;
+      padding: 0 16px 6px;
+      scrollbar-width: none;
+    }
+    .pricing-toggle {
+      flex-shrink: 0;
+      margin: 0 auto 32px !important;
+    }
+    .pricing-toggle button {
+      font-size: 12.5px !important;
+      padding: 9px 14px !important;
+    }
+  }
+  /* ───────────────────────────────────────────────────────
+     Tarifs — effet pop sur les prix (sur fond dark navy)
+     ─────────────────────────────────────────────────────── */
+  /* Prix : gradient blanc→bleu lumineux pour ressortir sur le navy */
+  .price-card .price-amount .pa-forfait {
+    background: linear-gradient(135deg, #ffffff 0%, #B8D4FF 50%, #6FA0FF 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    text-shadow: 0 0 30px rgba(17, 86, 252, 0.4);
+    font-weight: 900 !important;
+    letter-spacing: -1.5px !important;
+  }
+  /* Le "TTC" reste lisible mais discret en gris clair */
+  .price-card .price-amount .pa-forfait span {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+    color: #94A3B8 !important;
+    text-shadow: none !important;
+    font-weight: 600 !important;
+  }
+  /* Note de prix : reste bien lisible, espacement normal */
+  .price-card .price-note.pa-forfait {
+    color: #B8D4FF !important;
+    letter-spacing: 0 !important;
+  }
+  /* ───────────────────────────────────────────────────────
+     Comparatif — alignement horizontal des lignes entre les 4 colonnes
+     ─────────────────────────────────────────────────────── */
+  .compare .cmp-col {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  /* Header (titre de colonne) — hauteur identique partout */
+  .compare .cmp-head {
+    min-height: 96px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  /* Chaque ligne — hauteur fixe pour alignement perfect */
+  .compare .cmp-row {
+    min-height: 84px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+  }
+  /* Colonne labels : texte aligné à gauche et bien centré verticalement */
+  .compare .cmp-col.feature-col .cmp-row {
+    font-weight: 600 !important;
+  }
+  /* Fond proptech Leenkey — gradient bleu/violet avec pattern technique */
+  .hero {
+    background:
+      radial-gradient(ellipse at top right, rgba(139, 92, 246, 0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at bottom left, rgba(17, 86, 252, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+      linear-gradient(135deg, #0F1E35 0%, #1A2B4A 45%, #1156FC 130%);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Couche pattern : maillage de points subtil (effet "data/tech") */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+    background-size: 28px 28px;
+    background-position: 0 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+  /* Lignes obliques décoratives très subtiles (effet PropTech) */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(110deg, transparent 0%, transparent 45%, rgba(139, 92, 246, 0.06) 50%, transparent 55%, transparent 100%),
+      linear-gradient(70deg, transparent 0%, transparent 60%, rgba(59, 130, 246, 0.08) 65%, transparent 70%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* S'assurer que le contenu reste au-dessus */
+  .hero .container,
+  .hero-grid,
+  .hero-dots {
+    position: relative;
+    z-index: 2;
+  }
+  /* Texte hero en blanc pour bon contraste sur le fond sombre */
+  .hero h1,
+  .hero .h1-display,
+  .hero .hero-sub,
+  .hero .lead {
+    color: #ffffff !important;
+  }
+  .hero .hero-sub strong {
+    color: #ffffff !important;
+  }
+  .hero .reassure-item {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+  .hero .reassure-item .ri-ic {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+  }
+</style>
+</head>
+</head>
+<body>
+
+<main>
+<!-- ===================== FAQ ===================== -->
+<section class="section section-dark" id="faq" data-screen-label="FAQ">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Questions fréquentes</span>
+      <h2>Tout ce que vous vous demandez, sans détour.</h2>
+    </div>
+    <div class="faq reveal" data-d="1" id="faq">
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Combien ça coûte, vraiment&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Leenkey propose <strong>trois formules transparentes</strong> à forfait fixe — jamais de commission au pourcentage. La formule <strong>Autonomie est gratuite</strong> pendant notre phase de lancement, et inclut l'analyse de votre bien, un call stratégique de 30 minutes et la mise en place du dossier de vente. Pour aller plus loin, la formule <strong>Accompagné à 990&nbsp;€ TTC</strong> et la formule <strong>Sérénité à 1&nbsp;500&nbsp;€ TTC</strong> sont payées <strong>à la souscription</strong>, en une fois, sans engagement de durée.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Suis-je vraiment accompagné, ou seul face à la plateforme&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Accompagné. Selon votre forfait, un conseiller Leenkey reste joignable à chaque étape : pour valider votre prix, relire une offre, ou répondre à un doute avant la signature. Vous gardez la main, sans jamais rester seul.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Mes données et mes documents sont-ils en sécurité&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Oui. Vos documents sont chiffrés et hébergés en France, conformément au RGPD. Vous seul décidez de ce qui est partagé, et avec qui. Aucune donnée n'est revendue.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Combien de temps pour vendre&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">En moyenne 42 jours entre la mise en ligne et le compromis, contre près de 90 jours sur le marché. Une annonce bien préparée et diffusée en exclusivité fait toute la différence. C'est exactement ce que nous outillons.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Quelle est la différence avec une agence&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Une agence facture une commission au pourcentage et gère la vente à votre place. Leenkey vous donne les mêmes outils (valorisation, diffusion, suivi) pour un forfait fixe, avec un conseiller à la demande. Vous gardez le contrôle et l'économie.</div></div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-q" type="button" aria-expanded="false">Et si je bloque en cours de route&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <div class="faq-a"><div class="faq-a-inner">Vous n'avancez jamais à l'aveugle. À chaque étape, vous pouvez solliciter votre conseiller, qui vous rappelle généralement sous 24 h. Le jargon est expliqué, les démarches détaillées. C'est le principe même de Leenkey.</div></div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Retour vers la homepage -->
+<section class="section">
+  <div class="container" style="text-align:center">
+    <a class="btn btn-ghost" href="/">← Retour à l'accueil</a>
+  </div>
+</section>
+</main>
+
+<script src="leenkey.js"></script>
+
+</body>
+</html>

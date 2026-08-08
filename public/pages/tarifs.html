@@ -1,0 +1,299 @@
+﻿<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Leenkey · Nos formules et tarifs</title>
+<meta name="description" content="Trois formules sans commission : Autonomie gratuite, Accompagné 990 € et Sérénité 1 500 €. Forfait fixe, jamais de pourcentage sur le prix de vente.">
+<link rel="stylesheet" href="leenkey.css?v=5">
+<style>
+  /* Override forcé pour le tableau comparatif (4 colonnes côte à côte) */
+  .compare {
+    display: grid !important;
+    grid-template-columns: 1fr !important;
+    gap: 18px !important;
+    max-width: 1200px !important;
+    margin: 0 auto !important;
+  }
+  @media (min-width: 680px) {
+    .compare {
+      grid-template-columns: 1.1fr 1fr 1fr 1fr !important;
+      gap: 0 !important;
+    }
+  }
+  /* Logo Leenkey dans le comparatif — proportionnel aux libellés Vente seul / Agence */
+  .cmp-logo-img {
+    height: 40px !important;
+    width: auto !important;
+  }
+  /* Titres de section H2 — agrandis pour plus d'impact */
+  .section-head h2,
+  .constat-head h2,
+  section h2,
+  h2.h2 {
+    font-size: clamp(34px, 4vw, 48px) !important;
+    line-height: 1.15 !important;
+    letter-spacing: -1.2px !important;
+  }
+  /* Photo hero à droite — forme ovale/organique côté gauche */
+  img.estimate-photo {
+    object-fit: cover !important;
+    object-position: center !important;
+    border-radius: 140px 24px 24px 140px / 220px 24px 24px 220px !important;
+    box-shadow: 0 24px 60px -20px rgba(0, 0, 0, 0.4) !important;
+  }
+  /* Sur mobile — courbe plus douce pour rester lisible */
+  @media (max-width: 720px) {
+    img.estimate-photo {
+      border-radius: 40px 20px 20px 40px / 60px 20px 20px 60px !important;
+    }
+  }
+  /* Chip "+5,2 %" toujours au premier plan (au-dessus de la carte estimation) */
+  .estimate-chip { z-index: 6 !important; }
+  .estimate-card { z-index: 5 !important; }
+  /* Étapes "Comment ça marche" — désactive les micro-animations parasites
+     sur mobile/tactile (pop, rotation, hover collant) qui gênent la lecture */
+  @media (max-width: 900px), (hover: none) {
+    .step .step-n,
+    .step .step-ic,
+    .reveal.in .step-n,
+    .reveal.in .step-ic,
+    .reveal.in .feat-icon {
+      animation: none !important;
+      transition: none !important;
+      transform: none !important;
+    }
+    .step:hover .step-n,
+    .step:hover .step-ic {
+      transform: none !important;
+      box-shadow: var(--shadow-cta) !important;
+    }
+  }
+  /* Toggle tarifs — scrollable + compact sur mobile (ne coupe plus l'écran) */
+  @media (max-width: 640px) {
+    #tarifs .reveal:has(.pricing-toggle) {
+      overflow-x: auto !important;
+      -webkit-overflow-scrolling: touch;
+      justify-content: flex-start !important;
+      padding: 0 16px 6px;
+      scrollbar-width: none;
+    }
+    .pricing-toggle {
+      flex-shrink: 0;
+      margin: 0 auto 32px !important;
+    }
+    .pricing-toggle button {
+      font-size: 12.5px !important;
+      padding: 9px 14px !important;
+    }
+  }
+  /* ───────────────────────────────────────────────────────
+     Tarifs — effet pop sur les prix (sur fond dark navy)
+     ─────────────────────────────────────────────────────── */
+  /* Prix : gradient blanc→bleu lumineux pour ressortir sur le navy */
+  .price-card .price-amount .pa-forfait {
+    background: linear-gradient(135deg, #ffffff 0%, #B8D4FF 50%, #6FA0FF 100%) !important;
+    -webkit-background-clip: text !important;
+    background-clip: text !important;
+    -webkit-text-fill-color: transparent !important;
+    color: transparent !important;
+    text-shadow: 0 0 30px rgba(17, 86, 252, 0.4);
+    font-weight: 900 !important;
+    letter-spacing: -1.5px !important;
+  }
+  /* Le "TTC" reste lisible mais discret en gris clair */
+  .price-card .price-amount .pa-forfait span {
+    background: none !important;
+    -webkit-background-clip: initial !important;
+    -webkit-text-fill-color: initial !important;
+    color: #94A3B8 !important;
+    text-shadow: none !important;
+    font-weight: 600 !important;
+  }
+  /* Note de prix : reste bien lisible, espacement normal */
+  .price-card .price-note.pa-forfait {
+    color: #B8D4FF !important;
+    letter-spacing: 0 !important;
+  }
+  /* ───────────────────────────────────────────────────────
+     Comparatif — alignement horizontal des lignes entre les 4 colonnes
+     ─────────────────────────────────────────────────────── */
+  .compare .cmp-col {
+    display: flex !important;
+    flex-direction: column !important;
+  }
+  /* Header (titre de colonne) — hauteur identique partout */
+  .compare .cmp-head {
+    min-height: 96px !important;
+    display: flex !important;
+    flex-direction: column !important;
+    justify-content: center !important;
+  }
+  /* Chaque ligne — hauteur fixe pour alignement perfect */
+  .compare .cmp-row {
+    min-height: 84px !important;
+    display: flex !important;
+    align-items: center !important;
+    gap: 12px !important;
+    box-sizing: border-box !important;
+  }
+  /* Colonne labels : texte aligné à gauche et bien centré verticalement */
+  .compare .cmp-col.feature-col .cmp-row {
+    font-weight: 600 !important;
+  }
+  /* Fond proptech Leenkey — gradient bleu/violet avec pattern technique */
+  .hero {
+    background:
+      radial-gradient(ellipse at top right, rgba(139, 92, 246, 0.18) 0%, transparent 55%),
+      radial-gradient(ellipse at bottom left, rgba(17, 86, 252, 0.22) 0%, transparent 55%),
+      radial-gradient(ellipse at center, rgba(59, 130, 246, 0.1) 0%, transparent 70%),
+      linear-gradient(135deg, #0F1E35 0%, #1A2B4A 45%, #1156FC 130%);
+    position: relative;
+    overflow: hidden;
+  }
+  /* Couche pattern : maillage de points subtil (effet "data/tech") */
+  .hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(rgba(255, 255, 255, 0.08) 1.2px, transparent 1.2px);
+    background-size: 28px 28px;
+    background-position: 0 0;
+    pointer-events: none;
+    z-index: 0;
+    opacity: 0.6;
+  }
+  /* Lignes obliques décoratives très subtiles (effet PropTech) */
+  .hero::after {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background:
+      linear-gradient(110deg, transparent 0%, transparent 45%, rgba(139, 92, 246, 0.06) 50%, transparent 55%, transparent 100%),
+      linear-gradient(70deg, transparent 0%, transparent 60%, rgba(59, 130, 246, 0.08) 65%, transparent 70%, transparent 100%);
+    pointer-events: none;
+    z-index: 0;
+  }
+  /* S'assurer que le contenu reste au-dessus */
+  .hero .container,
+  .hero-grid,
+  .hero-dots {
+    position: relative;
+    z-index: 2;
+  }
+  /* Texte hero en blanc pour bon contraste sur le fond sombre */
+  .hero h1,
+  .hero .h1-display,
+  .hero .hero-sub,
+  .hero .lead {
+    color: #ffffff !important;
+  }
+  .hero .hero-sub strong {
+    color: #ffffff !important;
+  }
+  .hero .reassure-item {
+    color: rgba(255, 255, 255, 0.85) !important;
+  }
+  .hero .reassure-item .ri-ic {
+    background: rgba(255, 255, 255, 0.1) !important;
+    color: #ffffff !important;
+  }
+</style>
+</head>
+</head>
+<body>
+
+<main>
+<!-- ===================== TARIFS ===================== -->
+<section class="section section-dark" id="tarifs" data-screen-label="Tarifs">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow" style="background:linear-gradient(135deg,#1156FC,#8B5CF6);color:#fff;padding:6px 14px;border-radius:100px">🎁 Phase de lancement · Freemium</span>
+      <h2 style="margin-top:16px">Une formule pour <span class="text-grad">chaque vendeur.</span></h2>
+      <p class="lead">Pendant notre phase pilote, accédez à la version gratuite de Leenkey. Aucun engagement, aucune carte bancaire demandée. Vendez votre bien et économisez réellement.</p>
+    </div>
+    <div style="display:flex; justify-content:center" class="reveal">
+      <div class="pricing-toggle" id="pricingToggle" role="tablist">
+        <button class="active" data-view="forfait" role="tab">Gratuit pendant le lancement</button>
+        <button data-view="economie" role="tab">Mon économie vs agence</button>
+      </div>
+    </div>
+    <div class="pricing-grid reveal" data-d="1" data-view="forfait" id="pricingGrid">
+      <!-- Accompagné (gauche) -->
+      <div class="price-card" style="position:relative">
+        <div class="price-name">Accompagné</div>
+        <p class="price-desc">Un conseiller dédié à vos côtés, du prix à la signature.</p>
+        <div class="price-amount">
+          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">990&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span>
+          <span class="pa-eco" hidden><span class="pa-num">−14 010</span><span class="pa-unit">€ vs agence</span></span>
+        </div>
+        <div class="price-note pa-forfait" style="color:#64748B">Forfait fixe TTC · payé à la souscription</div>
+        <div class="price-note pa-eco" hidden>Économie indicative sur un bien à 350 000 €</div>
+        <ul class="price-feats">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg><strong style="font-weight:600">Formule Autonomie + :</strong></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Création de votre espace personnel</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie de mise en vente avec un conseiller dédié en illimité</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Création et optimisation de l'annonce, diffusion en exclusivité</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Messagerie et agenda de visites</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Aide à la négociation</li>
+        </ul>
+        <a class="btn btn-ghost" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Choisir Accompagné</a>
+      </div>
+      <!-- Autonomie GRATUIT (centre - recommandé) -->
+      <div class="price-card featured" style="position:relative;transform:scale(1.04);box-shadow:0 24px 64px -16px rgba(17,86,252,0.35);border:2px solid #1156FC">
+        <span class="price-badge" style="background:#10B981;color:#fff;font-weight:700">✓ Disponible gratuitement</span>
+        <div class="price-name">Autonomie</div>
+        <p class="price-desc">Pour piloter votre vente en toute autonomie.</p>
+        <div class="price-amount">
+          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">Gratuit</span>
+        </div>
+        <div class="price-note pa-forfait" style="font-weight:600;color:#1156fc">Sans engagement · sans CB · TTC</div>
+        <ul class="price-feats">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Analyses et rapports de valeur illimités</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie de mise en vente avec un conseiller (call 30 min)</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Mise en place du dossier de vente, anticipation des futurs diagnostics</li>
+          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Création de votre espace personnel</li>
+          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Optimisation et diffusion annonce</li>
+          <li class="muted"><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M18 6 6 18M6 6l12 12"/></svg>Coordination notaire</li>
+        </ul>
+        <a class="btn btn-primary" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Commencer gratuitement
+          <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+        </a>
+      </div>
+      <!-- Sérénité (droite) -->
+      <div class="price-card" style="position:relative">
+        <div class="price-name">Sérénité</div>
+        <p class="price-desc">Nous nous occupons de presque tout, vous gardez la décision.</p>
+        <div class="price-amount">
+          <span class="pa-forfait" style="font-size:44px;font-weight:800;color:#1156fc">1&nbsp;500&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span>
+          <span class="pa-eco" hidden><span class="pa-num">−13 500</span><span class="pa-unit">€ vs agence</span></span>
+        </div>
+        <div class="price-note pa-forfait" style="color:#64748B">Forfait fixe TTC · payé à la souscription</div>
+        <div class="price-note pa-eco" hidden>Économie indicative sur un bien à 350 000 €</div>
+        <ul class="price-feats">
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg><strong style="font-weight:600">Formule Accompagné + :</strong></li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Stratégie avec un conseiller dédié en illimité</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Mise en place du dossier de vente complet</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Anticipation des futurs diagnostics</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Coordination complète du notaire</li>
+          <li><svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 12l5 5L20 6"/></svg>Garantie juridique &amp; relecture des actes</li>
+        </ul>
+        <a class="btn btn-ghost" href="https://leenkey-estimator.vercel.app/" target="_blank" rel="noopener">Choisir Sérénité</a>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- Retour vers la homepage -->
+<section class="section">
+  <div class="container" style="text-align:center">
+    <a class="btn btn-ghost" href="/">← Retour à l'accueil</a>
+  </div>
+</section>
+</main>
+
+<script src="leenkey.js"></script>
+
+</body>
+</html>
