@@ -1,5 +1,6 @@
 import type { LeenkeyForm } from "./types";
 import { POSTES_TECHNIQUES, statsLocatives, totalCharges } from "./immeuble-calc";
+import { impactEnergie } from "./energie";
 
 export interface FactorImpact {
   label: string;
@@ -1990,8 +1991,19 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
   const auditManquant = passoire && form.audit_energetique === "Non réalisé";
   const auditMult = auditManquant ? 0.98 : 1;
 
+  // Isolation, ventilation, équipements et travaux : ces postes étaient portés
+  // par l'étape Prestations, ils sont désormais collectés à l'étape Énergie.
+  const energieMult = 1 + impactEnergie(form);
+
   const globalMult =
-    typeMult * etatEntry.mult * dpeEntry.mult * extMult * prestMult * etageMult * auditMult;
+    typeMult *
+    etatEntry.mult *
+    dpeEntry.mult *
+    extMult *
+    prestMult *
+    etageMult *
+    auditMult *
+    energieMult;
   const prixM2 = Math.round(prixM2Marche * globalMult);
   // Les travaux chiffrés par le vendeur sont déduits tels quels : un devis vaut
   // mieux qu'un pourcentage, et évite de compter deux fois ce que le DPE traduit
@@ -2076,7 +2088,7 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
     },
     {
       label: "Performance énergétique",
-      impact: Math.round((dpeEntry.mult - 1) * 100),
+      impact: Math.round((dpeEntry.mult * energieMult - 1) * 100),
       detail: dpeEntry.label,
     },
     {

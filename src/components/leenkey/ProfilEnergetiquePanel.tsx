@@ -8,6 +8,12 @@ import type { LeenkeyForm } from "./types";
  * Le vendeur découvrait jusqu'ici l'effet du DPE seulement à la fin, dans le
  * rapport.
  */
+/** « −2 % à 0 % », « +4 % » : le signe est porté par chaque borne. */
+function formatImpact(min: number, max: number): string {
+  const signe = (n: number) => `${n > 0 ? "+" : ""}${n} %`;
+  return min === max ? signe(max) : `${signe(min)} à ${signe(max)}`;
+}
+
 export function ProfilEnergetiquePanel({ form }: { form: LeenkeyForm }) {
   const p = profilEnergetique(form);
 
@@ -99,17 +105,20 @@ export function ProfilEnergetiquePanel({ form }: { form: LeenkeyForm }) {
 
       <div className="mt-5 border-t border-border pt-4">
         <div className="text-xs font-semibold text-sub">Impact estimé sur la valeur</div>
-        <div className="mt-1 font-display text-xl font-bold text-success">
-          {p.impactMax === 0
-            ? "À calculer"
-            : p.impactMin === p.impactMax
-              ? `+${p.impactMax} %`
-              : `+${p.impactMin} % à +${p.impactMax} %`}
+        <div
+          className={
+            "mt-1 font-display text-xl font-bold " +
+            (!p.calculable ? "text-sub" : p.impactMax < 0 ? "text-destructive" : "text-success")
+          }
+        >
+          {!p.calculable ? "À calculer" : formatImpact(p.impactMin, p.impactMax)}
         </div>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-          {p.impactMax > 0
-            ? "Gain atteignable en traitant les points ci-dessus."
-            : "L'estimation se met à jour selon vos réponses."}
+          {!p.calculable
+            ? "L'estimation se met à jour selon vos réponses."
+            : p.impactMax < 0
+              ? "Un ajustement du prix ou des travaux ciblés peut être nécessaire."
+              : "Effet des réponses énergétiques sur la valeur de votre bien."}
         </p>
       </div>
 

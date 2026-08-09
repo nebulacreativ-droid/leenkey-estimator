@@ -103,6 +103,46 @@ const EAU_CHAUDE_VERTUEUSE = ["Ballon thermodynamique", "Chauffe-eau solaire"];
 const ANNEES_RECENTES = ["2011–2020", "Après 2020"];
 const ANNEES_ANCIENNES = ["Avant 1950", "1950–1970"];
 
+/**
+ * Effet des réponses énergétiques sur la valeur, en plus du multiplicateur DPE
+ * déjà appliqué par le moteur.
+ *
+ * Ces postes étaient portés par l'étape Prestations ; en les déplaçant vers
+ * l'étape Énergie, leur poids avait disparu du calcul. Ils y reviennent, en
+ * plus fin : l'isolation des combles et des murs pèse plus qu'un volet
+ * roulant.
+ */
+export function impactEnergie(form: EntreeProfil): number {
+  let m = 0;
+
+  if (form.isolation_combles === "Oui") m += 0.01;
+  else if (form.isolation_combles === "Non") m -= 0.02;
+
+  if (form.isolation_murs === "Isolation extérieure") m += 0.02;
+  else if (form.isolation_murs === "Isolation intérieure") m += 0.01;
+  else if (form.isolation_murs === "Aucune") m -= 0.02;
+
+  if (form.fenetres === "Triple vitrage") m += 0.015;
+  else if (form.fenetres === "Double vitrage récent") m += 0.01;
+  else if (form.fenetres === "Double vitrage ancien") m -= 0.005;
+  else if (form.fenetres === "Simple vitrage") m -= 0.02;
+
+  if (form.ventilation === "VMC double flux") m += 0.015;
+  else if (form.ventilation === "VMC simple flux") m += 0.005;
+  else if (form.ventilation === "Aucune") m -= 0.01;
+
+  if (CHAUFFAGES_VERTUEUX.includes(form.chauffage ?? "")) m += 0.015;
+  else if (CHAUFFAGES_PENALISANTS.includes(form.chauffage ?? "")) m -= 0.02;
+
+  for (const e of form.equipements_energie) {
+    m += e === "Panneaux photovoltaïques" ? 0.02 : 0.005;
+  }
+  m += Math.min(form.travaux_energie.length * 0.005, 0.02);
+
+  // Borné : ce volet affine l'estimation, il ne doit pas la piloter.
+  return Math.max(-0.08, Math.min(0.08, m));
+}
+
 export interface ProfilEnergetique {
   score: number;
   mention: string;
@@ -114,6 +154,8 @@ export interface ProfilEnergetique {
   manquants: string[];
   impactMin: number;
   impactMax: number;
+  /** Faux tant qu'aucune réponse ne permet de chiffrer l'impact. */
+  calculable: boolean;
   /** Conseil principal, déduit du poste le plus pénalisant. */
   recommandation: string | null;
 }
@@ -160,7 +202,7 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
   // ── Étiquettes ──
   if (dpeConnu) {
     const d = form.dpe as string;
-    if (["A", "B", "C"].includes(d)) forts.push(`Étiquette DPE ${d}`);
+    if (["A", "B", "C"].includes(d)) forts.push(`DPE ${d} favorable`);
     else if (d === "D") forts.push("Étiquette DPE D — dans la moyenne du parc");
     else ameliorer.push(`Étiquette DPE ${d}${d === "G" ? " — location interdite" : ""}`);
   } else manquants.push("l'étiquette DPE");
@@ -229,7 +271,7 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
     forts.push("Combles isolés");
     score += 6;
   } else if (form.isolation_combles === "Non") {
-    ameliorer.push("Combles non isolés — jusqu'à 30 % des déperditions");
+    ameliorer.push("Combles non isolés");
     score -= 7;
   } else manquants.push("l'isolation des combles");
 
@@ -240,7 +282,7 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
     forts.push("Murs isolés par l'intérieur");
     score += 4;
   } else if (form.isolation_murs === "Aucune") {
-    ameliorer.push("Murs non isolés");
+    ameliorer.push("Isolation des murs absente");
     score -= 7;
   } else manquants.push("l'isolation des murs");
 
@@ -262,7 +304,7 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
     forts.push("VMC simple flux");
     score += 2;
   } else if (form.ventilation === "Aucune") {
-    ameliorer.push("Aucune ventilation mécanique");
+    ameliorer.push("Absence de ventilation mécanique");
     score -= 4;
   } else manquants.push("la ventilation");
 
@@ -310,17 +352,21 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
   score = Math.max(0, Math.min(100, Math.round(score)));
 
   // ── Gain atteignable ──
+  // Impact réel des réponses sur la valeur : l'étiquette DPE, plus les postes
+  // d'isolation, de ventilation et d'équipement. Il peut être négatif.
   const gainParLettre: Record<string, number> = { A: 6, B: 4, C: 1, D: 0, E: -4, F: -9, G: -13 };
-  let impactMin = 0;
-  let impactMax = 0;
+  const pct = (dpeConnu ? (gainParLettre[form.dpe as string] ?? 0) : 0) + impactEnergie(form) * 100;
+  // Fourchette d'un point de part et d'autre : c'est une estimation, pas une
+  // mesure. « −2 % à 0 % » se lit mieux et se défend mieux que « −1 % ».
+  let impactMin = Math.round(pct) - 1;
+  let impactMax = Math.round(pct) + 1;
+  // Un objectif de travaux chiffré remplace le constat par le gain visé.
   if (form.dpe_vise && form.dpe_vise !== "inconnu" && dpeConnu) {
     const gain = (gainParLettre[form.dpe_vise] ?? 0) - (gainParLettre[form.dpe as string] ?? 0);
     impactMin = Math.max(0, Math.round(gain * 0.6));
     impactMax = Math.max(0, gain);
-  } else {
-    impactMax = Math.min(12, ameliorer.length * 3);
-    impactMin = ameliorer.length > 2 ? Math.round(impactMax / 3) : 0;
   }
+  const calculable = dpeConnu || manquants.length < 8;
 
   // ── Recommandation : le poste le plus rentable en premier ──
   let recommandation: string | null = null;
@@ -344,20 +390,20 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
       "Le bien est bien positionné : mettez ces atouts en avant dans l'annonce, ils rassurent sur les charges à venir.";
 
   const mention =
-    score >= 80 ? "Excellent" : score >= 60 ? "Bon" : score >= 40 ? "Moyen" : "Faible";
+    score >= 80 ? "Excellent" : score >= 60 ? "Moyen" : score >= 40 ? "Faible" : "Critique";
   const titre =
     score >= 80
-      ? "Profil énergétique excellent"
+      ? "Profil énergétique favorable"
       : score >= 60
-        ? "Profil énergétique satisfaisant"
+        ? "Profil à optimiser"
         : score >= 40
-          ? "Profil énergétique perfectible"
+          ? "Profil à renforcer"
           : "Profil énergétique défavorable";
   const description =
     score >= 80
       ? "Le bien se situe parmi les plus performants du marché : c'est un argument de vente à mettre en avant."
       : score >= 60
-        ? "Le bien est globalement rassurant, avec quelques optimisations possibles."
+        ? "Certains critères peuvent ralentir la décision des acquéreurs."
         : score >= 40
           ? "Des travaux ciblés amélioreraient nettement la perception du bien à la vente."
           : "La performance énergétique va peser dans la négociation. Mieux vaut la documenter que la subir.";
@@ -372,6 +418,7 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
     manquants,
     impactMin,
     impactMax,
+    calculable,
     recommandation,
   };
 }
