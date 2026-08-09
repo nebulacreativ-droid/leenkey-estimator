@@ -39,6 +39,9 @@ BIEN À ESTIMER :
 - Chauffage : ${energie.chauffage ?? "NC"}${energie.chauffage_mode ? ` (${energie.chauffage_mode})` : ""}
 - Année construction : ${energie.annee_construction ?? "NC"}
 - Dernière rénovation énergétique : ${energie.derniere_renovation ?? "NC"}
+- Isolation : combles ${energie.isolation_combles ?? "NC"} · murs ${energie.isolation_murs ?? "NC"} · fenêtres ${energie.fenetres ?? "NC"} · ventilation ${energie.ventilation ?? "NC"}
+- Équipements énergétiques : ${Array.isArray(energie.equipements_energie) && energie.equipements_energie.length ? energie.equipements_energie.join(", ") : "aucun"}
+- Travaux énergétiques réalisés : ${Array.isArray(energie.travaux_energie) && energie.travaux_energie.length ? energie.travaux_energie.join(", ") : "aucun"}
 
 SITUATION JURIDIQUE :
 - Propriétaire : ${situation.proprietaire}
@@ -326,7 +329,7 @@ ${
     ${result.analyse ? `<h2 style="margin:24px 0 12px;font-size:16px;color:#1156FC;">📊 Analyse IA</h2><p style="font-size:14px;line-height:1.6;color:#475569;margin:0;background:#F8FAFC;padding:14px;border-radius:8px;border-left:3px solid #1156FC;">${esc(result.analyse)}</p>` : ""}
 
     <div style="margin-top:24px;padding:14px;background:#FEF3C7;border-radius:8px;border:1px solid #FCD34D;text-align:center">
-      <p style="margin:0;font-size:13px;color:#78350F"><strong>💡 Action recommandée :</strong> contacter le prospect sous 48h</p>
+      <p style="margin:0;font-size:13px;color:#78350F"><strong>💡 Action recommandée :</strong> contacter le prospect sous 24 h</p>
     </div>
   </div>
   <div style="background:#f8fafc;padding:14px 24px;color:#64748B;font-size:11px;text-align:center;border-top:1px solid #e2e8f0">
@@ -375,7 +378,7 @@ ${
     ${
       contact.contact_conseiller
         ? `<div style="background:#D1FAE5;border:2px solid #10B981;border-radius:12px;padding:16px;margin:24px 0">
-      <p style="margin:0;font-size:14px;color:#065F46"><strong>📞 Votre demande de rappel est enregistrée.</strong><br>Un conseiller Leenkey vous appelle sous 48 h ouvrées au ${esc(contact.telephone)}${
+      <p style="margin:0;font-size:14px;color:#065F46"><strong>📞 Votre demande de rappel est enregistrée.</strong><br>Un conseiller Leenkey vous appelle sous 24 h au ${esc(contact.telephone)}${
         Array.isArray(contact.disponibilites) && contact.disponibilites.length
           ? `, selon vos disponibilités (${esc((contact.disponibilites as string[]).join(", "))})`
           : ""

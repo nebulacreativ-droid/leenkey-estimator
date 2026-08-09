@@ -213,7 +213,7 @@ export function EstimationDashboard({
                 Votre demande de rappel est enregistrée
               </div>
               <p className="mt-1 text-sm text-sub">
-                Un conseiller Leenkey vous appelle sous 48&nbsp;h ouvrées
+                Un conseiller Leenkey vous appelle sous 24&nbsp;h
                 {form.telephone ? ` au ${form.telephone}` : ""}
                 {form.disponibilites.length
                   ? `, selon vos disponibilités (${form.disponibilites.join(", ")})`
@@ -663,7 +663,7 @@ export function EstimationDashboard({
                         📞 Prendre contact avec un conseiller
                       </h3>
                       <p className="mt-1 text-sm text-sub">
-                        Un conseiller Leenkey vous contactera sous 48h, 7j/7.
+                        Un conseiller Leenkey vous contactera sous 24 h.
                       </p>
                     </div>
                     <button

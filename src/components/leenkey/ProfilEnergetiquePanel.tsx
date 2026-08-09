@@ -67,9 +67,7 @@ export function ProfilEnergetiquePanel({ form }: { form: LeenkeyForm }) {
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-xs italic text-muted-foreground">
-            Aucun atout énergétique identifié pour l'instant.
-          </p>
+          <p className="mt-2 text-xs italic text-muted-foreground">Ils apparaîtront ici.</p>
         )}
       </div>
 
@@ -85,9 +83,7 @@ export function ProfilEnergetiquePanel({ form }: { form: LeenkeyForm }) {
             ))}
           </ul>
         ) : (
-          <p className="mt-2 text-xs italic text-muted-foreground">
-            Rien à signaler sur les réponses données.
-          </p>
+          <p className="mt-2 text-xs italic text-muted-foreground">Ils apparaîtront ici.</p>
         )}
       </div>
 
@@ -104,14 +100,24 @@ export function ProfilEnergetiquePanel({ form }: { form: LeenkeyForm }) {
       <div className="mt-5 border-t border-border pt-4">
         <div className="text-xs font-semibold text-sub">Impact estimé sur la valeur</div>
         <div className="mt-1 font-display text-xl font-bold text-success">
-          {p.impactMin === p.impactMax
-            ? `+${p.impactMax} %`
-            : `+${p.impactMin} % à +${p.impactMax} %`}
+          {p.impactMax === 0
+            ? "À calculer"
+            : p.impactMin === p.impactMax
+              ? `+${p.impactMax} %`
+              : `+${p.impactMin} % à +${p.impactMax} %`}
         </div>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
           {p.impactMax > 0
             ? "Gain atteignable en traitant les points ci-dessus."
-            : "Aucun levier énergétique identifié à ce stade."}
+            : "L'estimation se met à jour selon vos réponses."}
+        </p>
+      </div>
+
+      <div className="mt-5 rounded-[12px] border-2 border-primary/25 bg-primary/5 p-4">
+        <div className="text-xs font-bold text-primary">Recommandation Leenkey</div>
+        <p className="mt-1.5 text-xs leading-relaxed text-navy">
+          {p.recommandation ??
+            "Complétez quelques critères pour recevoir une recommandation personnalisée."}
         </p>
       </div>
     </aside>

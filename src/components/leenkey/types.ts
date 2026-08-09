@@ -179,6 +179,18 @@ export interface LeenkeyForm {
   travaux_energie_budget: number | null;
   /** Classement visé après travaux, pour chiffrer le gain plutôt que l'estimer. */
   dpe_vise: DpeLetter | null;
+  // Précisions conditionnelles sur le chauffage
+  pac_type: string | null;
+  chaudiere_gaz_type: string | null;
+  bois_type: string | null;
+  // Isolation et ventilation
+  isolation_combles: string | null;
+  isolation_murs: string | null;
+  fenetres: string | null;
+  ventilation: string | null;
+  // Équipements présents et travaux déjà réalisés
+  equipements_energie: string[];
+  travaux_energie: string[];
 
   // 9
   proprietaire: string | null;
@@ -343,6 +355,15 @@ export const initialForm: LeenkeyForm = {
   audit_energetique: null,
   travaux_energie_budget: null,
   dpe_vise: null,
+  pac_type: null,
+  chaudiere_gaz_type: null,
+  bois_type: null,
+  isolation_combles: null,
+  isolation_murs: null,
+  fenetres: null,
+  ventilation: null,
+  equipements_energie: [],
+  travaux_energie: [],
   proprietaire: null,
   occupation: null,
   bail_expiration: "",

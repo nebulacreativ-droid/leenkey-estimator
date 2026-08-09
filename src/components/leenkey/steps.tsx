@@ -3,6 +3,7 @@ import {
   Field,
   OptionCard,
   PillGroup,
+  PillMulti,
   SectionTitle,
   StepHeader,
   Stepper,
@@ -11,7 +12,24 @@ import {
 } from "./ui";
 import type { BienType, DpeLetter, EtatGeneral, LeenkeyForm } from "./types";
 import { cn } from "@/lib/utils";
-import { CHAUFFAGE_MODES, CHAUFFAGE_OPTS } from "./energie";
+import {
+  ANNEES_CONSTRUCTION,
+  AUDIT_OPTS,
+  BOIS_TYPES,
+  CHAUDIERE_GAZ_TYPES,
+  CHAUFFAGE_MODES,
+  CHAUFFAGE_OPTS,
+  DPE_DATES,
+  EAU_CHAUDE_OPTS,
+  EQUIPEMENTS_ENERGIE,
+  FENETRES_OPTS,
+  ISOLATION_COMBLES,
+  ISOLATION_MURS,
+  PAC_TYPES,
+  RENOVATIONS,
+  TRAVAUX_ENERGIE,
+  VENTILATION_OPTS,
+} from "./energie";
 import { ProfilEnergetiquePanel } from "./ProfilEnergetiquePanel";
 
 type SetForm = (patch: Partial<LeenkeyForm>) => void;
@@ -665,19 +683,6 @@ const PRESTATIONS: {
     ],
   },
   {
-    section: "♨️ Chauffage & énergie",
-    items: [
-      { v: "plancher_chauffant", l: "Chauffage au sol" },
-      { v: "pac", l: "Pompe à chaleur (PAC)" },
-      { v: "chaudiere_recente", l: "Chaudière récente (< 5 ans)" },
-      { v: "poele_bois", l: "Poêle à bois / cheminée fonctionnelle" },
-      { v: "clim_reversible", l: "Climatisation réversible" },
-      { v: "photovoltaique", l: "Panneaux solaires photovoltaïques" },
-      { v: "chauffe_eau_solaire", l: "Chauffe-eau solaire ou thermodynamique" },
-      { v: "ite", l: "Isolation thermique renforcée (ITE)" },
-    ],
-  },
-  {
     section: "🌐 Connectivité & domotique",
     items: [
       { v: "fibre", l: "Fibre optique disponible" },
@@ -750,26 +755,6 @@ const DPE_LETTERS: { v: DpeLetter; bg: string }[] = [
   { v: "F", bg: "#EE7A2F" },
   { v: "G", bg: "#E52D27" },
 ];
-const EAU_CHAUDE_OPTS = [
-  "Chauffe-eau électrique",
-  "Chauffe-eau gaz",
-  "Ballon thermodynamique",
-  "Chauffe-eau solaire",
-  "Production instantanée gaz",
-  "Autre",
-];
-const ANNEES = [
-  "Avant 1950",
-  "1950-1970",
-  "1971-1990",
-  "1991-2000",
-  "2001-2010",
-  "2011-2020",
-  "Après 2020",
-];
-const DPE_DATES = ["Avant juillet 2021", "Depuis juillet 2021", "Je ne sais pas"];
-const AUDIT_OPTS = ["Réalisé", "Non réalisé", "Je ne sais pas"];
-const RENOV = ["Jamais", "Il y a plus de 10 ans", "Il y a 5 à 10 ans", "Il y a moins de 5 ans"];
 
 export function DpeRow({
   value,
@@ -812,6 +797,8 @@ export function DpeRow({
 
 export function Step8({ form, set }: P) {
   const passoire = form.dpe === "F" || form.dpe === "G";
+  const bascule = (liste: string[], v: string) =>
+    liste.includes(v) ? liste.filter((x) => x !== v) : [...liste, v];
 
   return (
     <div className="space-y-8">
@@ -828,21 +815,16 @@ export function Step8({ form, set }: P) {
           <Field label="Étiquette énergie (DPE)">
             <DpeRow value={form.dpe} onChange={(v) => set({ dpe: v })} />
           </Field>
-          <Field label="Étiquette GES (gaz à effet de serre)">
+          <Field label="Étiquette GES">
             <DpeRow value={form.ges} onChange={(v) => set({ ges: v })} />
           </Field>
-
-          <Field
-            label="Date du DPE"
-            hint="un DPE d\'avant juillet 2021 relève de l\'ancienne méthode et n\'est plus opposable"
-          >
+          <Field label="Date du DPE">
             <PillGroup
               value={form.dpe_date}
               onChange={(v) => set({ dpe_date: v })}
               options={DPE_DATES}
             />
           </Field>
-
           {passoire && (
             <Field
               label="Audit énergétique réalisé ?"
@@ -864,17 +846,42 @@ export function Step8({ form, set }: P) {
               options={CHAUFFAGE_OPTS}
             />
           </Field>
-          <Field
-            label="Chauffage individuel ou collectif ?"
-            hint="un chauffage collectif limite la maîtrise des charges et pèse sur la valeur"
-          >
+          {/* Précisions ouvertes seulement quand elles ont un sens. */}
+          {form.chauffage === "Pompe à chaleur" && (
+            <Field label="Quel type de pompe à chaleur ?">
+              <PillGroup
+                value={form.pac_type}
+                onChange={(v) => set({ pac_type: v })}
+                options={PAC_TYPES}
+              />
+            </Field>
+          )}
+          {form.chauffage === "Gaz naturel" && (
+            <Field label="Quel type de chaudière gaz ?">
+              <PillGroup
+                value={form.chaudiere_gaz_type}
+                onChange={(v) => set({ chaudiere_gaz_type: v })}
+                options={CHAUDIERE_GAZ_TYPES}
+              />
+            </Field>
+          )}
+          {form.chauffage === "Bois" && (
+            <Field label="Quel équipement bois ?">
+              <PillGroup
+                value={form.bois_type}
+                onChange={(v) => set({ bois_type: v })}
+                options={BOIS_TYPES}
+              />
+            </Field>
+          )}
+          <Field label="Chauffage individuel ou collectif ?">
             <PillGroup
               value={form.chauffage_mode}
               onChange={(v) => set({ chauffage_mode: v })}
               options={CHAUFFAGE_MODES}
             />
           </Field>
-          <Field label="Production d\'eau chaude">
+          <Field label="Production d'eau chaude">
             <PillGroup
               value={form.eau_chaude}
               onChange={(v) => set({ eau_chaude: v })}
@@ -882,32 +889,60 @@ export function Step8({ form, set }: P) {
             />
           </Field>
 
-          <SectionTitle>Le bâti</SectionTitle>
-          <Field label="Année de construction estimée">
+          <SectionTitle>Isolation et ventilation</SectionTitle>
+          <Field label="Les combles sont-ils isolés ?">
             <PillGroup
-              value={form.annee_construction}
-              onChange={(v) => set({ annee_construction: v })}
-              options={ANNEES}
+              value={form.isolation_combles}
+              onChange={(v) => set({ isolation_combles: v })}
+              options={ISOLATION_COMBLES}
             />
           </Field>
-          <Field label="Dernière rénovation énergétique">
+          <Field label="Les murs sont-ils isolés ?">
             <PillGroup
-              value={form.derniere_renovation}
-              onChange={(v) => set({ derniere_renovation: v })}
-              options={RENOV}
+              value={form.isolation_murs}
+              onChange={(v) => set({ isolation_murs: v })}
+              options={ISOLATION_MURS}
+            />
+          </Field>
+          <Field label="Fenêtres">
+            <PillGroup
+              value={form.fenetres}
+              onChange={(v) => set({ fenetres: v })}
+              options={FENETRES_OPTS}
+            />
+          </Field>
+          <Field label="Ventilation">
+            <PillGroup
+              value={form.ventilation}
+              onChange={(v) => set({ ventilation: v })}
+              options={VENTILATION_OPTS}
             />
           </Field>
 
-          <SectionTitle>Travaux de rénovation énergétique</SectionTitle>
+          <SectionTitle>Équipements et travaux</SectionTitle>
+          <Field label="Équipements énergétiques présents" hint="plusieurs choix possibles">
+            <PillMulti
+              values={form.equipements_energie}
+              onToggle={(v) => set({ equipements_energie: bascule(form.equipements_energie, v) })}
+              options={EQUIPEMENTS_ENERGIE}
+            />
+          </Field>
+          <Field label="Travaux énergétiques réalisés" hint="plusieurs choix possibles">
+            <PillMulti
+              values={form.travaux_energie}
+              onToggle={(v) => set({ travaux_energie: bascule(form.travaux_energie, v) })}
+              options={TRAVAUX_ENERGIE}
+            />
+          </Field>
           <Field
             label="Classement DPE visé après travaux"
-            hint="pour chiffrer le gain réel plutôt que l\'estimer"
+            hint="pour chiffrer le gain réel plutôt que l'estimer"
           >
             <DpeRow value={form.dpe_vise} onChange={(v) => set({ dpe_vise: v })} />
           </Field>
           <Field
             label="Budget de travaux chiffré"
-            hint="€ — si vous avez un devis, il est déduit tel quel au lieu d\'un pourcentage"
+            hint="€ — si vous avez un devis, il est déduit tel quel au lieu d'un pourcentage"
           >
             <TextInput
               type="number"
@@ -920,11 +955,27 @@ export function Step8({ form, set }: P) {
             />
           </Field>
 
+          <SectionTitle>Contexte du bien</SectionTitle>
+          <Field label="Année de construction estimée">
+            <PillGroup
+              value={form.annee_construction}
+              onChange={(v) => set({ annee_construction: v })}
+              options={ANNEES_CONSTRUCTION}
+            />
+          </Field>
+          <Field label="Dernière rénovation énergétique">
+            <PillGroup
+              value={form.derniere_renovation}
+              onChange={(v) => set({ derniere_renovation: v })}
+              options={RENOVATIONS}
+            />
+          </Field>
+
           <p className="flex items-start gap-3 rounded-[12px] border-2 border-sky-mid bg-sky/50 p-4 text-sm text-navy">
             <span>💡</span>
             <span>
               Depuis 2025, les logements classés G ne peuvent plus être mis en location. Un DPE
-              défavorable impacte directement le nombre d\'acheteurs potentiels et votre prix de
+              défavorable impacte directement le nombre d'acheteurs potentiels et votre prix de
               vente. Leenkey peut vous orienter vers des aides à la rénovation.
             </span>
           </p>

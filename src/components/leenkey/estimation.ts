@@ -348,11 +348,6 @@ const ETAT_MULT: Record<string, { mult: number; label: string }> = {
  */
 const PRESTATION_POIDS: Record<string, number> = {
   // Fort impact — équipements coûteux à installer
-  pac: 0.015,
-  photovoltaique: 0.015,
-  ite: 0.015,
-  plancher_chauffant: 0.012,
-  clim_reversible: 0.012,
   vue_degagee: 0.015,
   ilot: 0.01,
   // Impact moyen
@@ -360,8 +355,6 @@ const PRESTATION_POIDS: Record<string, number> = {
   sdb_renovee: 0.008,
   douche_italienne: 0.008,
   plan_pierre: 0.008,
-  chaudiere_recente: 0.008,
-  chauffe_eau_solaire: 0.008,
   double_vitrage: 0.008,
   parquet: 0.008,
   calme: 0.008,
@@ -380,7 +373,6 @@ const PRESTATION_POIDS: Record<string, number> = {
   cuisine_amenagee: 0.006,
   baignoire_ilot: 0.004,
   double_vasque: 0.004,
-  poele_bois: 0.004,
   fibre: 0.004,
   domotique: 0.004,
   alarme: 0.004,
