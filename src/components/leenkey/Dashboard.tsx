@@ -203,6 +203,27 @@ export function EstimationDashboard({
       </header>
 
       <main className="mx-auto max-w-6xl px-5 py-10">
+        {/* Demande de rappel : la case cochée à l'étape coordonnées ne
+            produisait aucun retour visible. */}
+        {form.contact_conseiller && (
+          <div className="mb-8 flex items-start gap-3 rounded-[14px] border-2 border-success/40 bg-success/10 p-5">
+            <span className="text-xl">📞</span>
+            <div>
+              <div className="font-display text-base font-bold text-navy">
+                Votre demande de rappel est enregistrée
+              </div>
+              <p className="mt-1 text-sm text-sub">
+                Un conseiller Leenkey vous appelle sous 48&nbsp;h ouvrées
+                {form.telephone ? ` au ${form.telephone}` : ""}
+                {form.disponibilites.length
+                  ? `, selon vos disponibilités (${form.disponibilites.join(", ")})`
+                  : ""}
+                .
+              </p>
+            </div>
+          </div>
+        )}
+
         {/* Intro */}
         <div className="fade-up mb-8">
           <p className="text-sm font-semibold uppercase tracking-wider text-primary">

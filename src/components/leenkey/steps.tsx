@@ -329,7 +329,8 @@ export function Step3({ form, set, errors }: P) {
 }
 
 /* ============ STEP 4 — Composition ============ */
-const CUISINES = ["Ouverte", "Fermée", "Semi-ouverte", "Américaine"];
+// « Américaine » retiré : doublon fonctionnel de « Ouverte ».
+const CUISINES = ["Ouverte", "Fermée", "Semi-ouverte"];
 
 export function Step4({ form, set, errors }: P) {
   const isAppart = form.type === "appartement";
@@ -444,45 +445,77 @@ export function Step4({ form, set, errors }: P) {
 }
 
 /* ============ STEP 5 — Extérieur ============ */
-const EXT_COMMON = [
-  { v: "balcon", i: "🌿", l: "Balcon" },
-  { v: "terrasse", i: "☀️", l: "Terrasse" },
-  { v: "jardin", i: "🌳", l: "Jardin privatif" },
-  { v: "piscine", i: "🏊", l: "Piscine" },
-  { v: "parking", i: "🅿️", l: "Parking / Place" },
-  { v: "garage", i: "🚗", l: "Garage fermé (1 voiture)" },
-  { v: "garage_double", i: "🚗", l: "Garage double" },
-  { v: "box", i: "🚙", l: "Box fermé" },
-  { v: "cave", i: "🏠", l: "Cave / Sous-sol" },
-  { v: "grenier", i: "📦", l: "Grenier / Combles" },
-  { v: "dependance", i: "🏡", l: "Dépendance / Annexe" },
-  { v: "terrain_attenant", i: "🌲", l: "Terrain attenant" },
+/**
+ * Éléments extérieurs.
+ *
+ * Les listes sont propres au type de bien : un appartement n'a ni terrain
+ * attenant ni dépendance, une maison n'a ni ascenseur ni gardien. Seuls quatre
+ * éléments sont réellement communs.
+ *
+ * `champ` ouvre une saisie complémentaire quand la case est cochée : la
+ * superficie en m², ou le nombre de places de stationnement. Une terrasse de
+ * 6 m² et une de 40 m² ne valent pas la même chose.
+ */
+type ExtItem = { v: string; i: string; l: string; champ?: "surface" | "places" };
+
+const EXT_BASE: ExtItem[] = [
+  { v: "balcon", i: "🌿", l: "Balcon", champ: "surface" },
+  { v: "terrasse", i: "☀️", l: "Terrasse", champ: "surface" },
+  { v: "jardin", i: "🌳", l: "Jardin privatif", champ: "surface" },
+  { v: "parking", i: "🅿️", l: "Parking", champ: "places" },
 ];
-const EXT_APPART = [
+
+// En copropriété, l'emplacement fermé s'appelle un box, pas un garage.
+const EXT_APPART: ExtItem[] = [
+  { v: "box", i: "🚗", l: "Box", champ: "places" },
+  { v: "cave", i: "🏠", l: "Cave", champ: "surface" },
   { v: "ascenseur", i: "🛗", l: "Ascenseur" },
   { v: "gardien", i: "👮", l: "Gardien / Concierge" },
   { v: "digicode", i: "🔐", l: "Digicode / Interphone" },
   { v: "salle_sport_residence", i: "🏋️", l: "Salle de sport résidence" },
   { v: "piscine_residence", i: "🌊", l: "Piscine de résidence" },
 ];
-const EXT_MAISON = [
+
+// « Espace vert aménagé » et « Panneau solaire » ont été retirés : doublons de
+// « Jardin privatif » et des panneaux photovoltaïques de l'étape Prestations.
+const EXT_MAISON: ExtItem[] = [
+  { v: "piscine", i: "🏊", l: "Piscine", champ: "surface" },
+  { v: "garage", i: "🚗", l: "Garage fermé", champ: "places" },
+  { v: "cave", i: "🏠", l: "Cave / Sous-sol", champ: "surface" },
+  { v: "grenier", i: "📦", l: "Grenier / Combles", champ: "surface" },
+  { v: "dependance", i: "🏡", l: "Dépendance / Annexe", champ: "surface" },
+  { v: "terrain_attenant", i: "🌲", l: "Terrain attenant", champ: "surface" },
   { v: "cloture", i: "🏡", l: "Clôture / Portail" },
-  { v: "espace_vert", i: "🌿", l: "Espace vert aménagé" },
   { v: "abri_jardin", i: "🏗", l: "Abri de jardin / Pool house" },
-  { v: "solaire", i: "⚡", l: "Panneau solaire" },
   { v: "arrosage_auto", i: "🚿", l: "Arrosage automatique" },
 ];
-
 export function Step5({ form, set }: P) {
   const toggle = (v: string) => {
     const has = form.exterieur.includes(v);
-    set({ exterieur: has ? form.exterieur.filter((x) => x !== v) : [...form.exterieur, v] });
+    // En décochant, on oublie aussi la valeur saisie : la garder ferait
+    // réapparaître un chiffre fantôme si l'utilisateur recoche plus tard.
+    const details = { ...form.exterieur_details };
+    if (has) delete details[v];
+    set({
+      exterieur: has ? form.exterieur.filter((x) => x !== v) : [...form.exterieur, v],
+      exterieur_details: details,
+    });
   };
+
+  const majDetail = (v: string, valeur: string) =>
+    set({
+      exterieur_details: {
+        ...form.exterieur_details,
+        [v]: valeur ? Number(valeur) : null,
+      },
+    });
+
   const items = [
-    ...EXT_COMMON,
+    ...EXT_BASE,
     ...(form.type === "appartement" ? EXT_APPART : []),
     ...(form.type === "maison" ? EXT_MAISON : []),
   ];
+
   return (
     <div className="space-y-8">
       <StepHeader
@@ -490,24 +523,45 @@ export function Step5({ form, set }: P) {
         total={TOTAL}
         label="Extérieur"
         title="Votre bien dispose-t-il de ces éléments ?"
-        subtitle="Sélectionnez tout ce qui correspond."
+        subtitle="Sélectionnez tout ce qui correspond, puis précisez la superficie ou le nombre de places."
       />
       <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-3">
-        {items.map((o) => (
-          <ToggleCard
-            key={o.v}
-            selected={form.exterieur.includes(o.v)}
-            onClick={() => toggle(o.v)}
-            icon={o.i}
-            title={o.l}
-          />
-        ))}
+        {items.map((o) => {
+          const coche = form.exterieur.includes(o.v);
+          return (
+            <div key={o.v}>
+              <ToggleCard selected={coche} onClick={() => toggle(o.v)} icon={o.i} title={o.l} />
+              {coche && o.champ && (
+                <div className="mt-2 flex items-center gap-2 pl-1">
+                  <label htmlFor={`ext-${o.v}`} className="shrink-0 text-xs font-medium text-sub">
+                    {o.champ === "surface" ? "Superficie" : "Nombre de places"}
+                  </label>
+                  <TextInput
+                    id={`ext-${o.v}`}
+                    type="number"
+                    min={0}
+                    value={form.exterieur_details[o.v] ?? ""}
+                    onChange={(e) => majDetail(o.v, e.target.value)}
+                    placeholder={o.champ === "surface" ? "m²" : "1"}
+                    className="h-10 text-sm"
+                  />
+                </div>
+              )}
+            </div>
+          );
+        })}
       </div>
       <label className="flex cursor-pointer items-center gap-2 text-sm text-sub">
         <input
           type="checkbox"
           checked={form.exterieur.includes("aucun")}
-          onChange={() => set({ exterieur: form.exterieur.includes("aucun") ? [] : ["aucun"] })}
+          onChange={() =>
+            set(
+              form.exterieur.includes("aucun")
+                ? { exterieur: [], exterieur_details: {} }
+                : { exterieur: ["aucun"], exterieur_details: {} },
+            )
+          }
           className="h-4 w-4 accent-primary"
         />
         Aucun de ces éléments
@@ -595,8 +649,8 @@ const PRESTATIONS: {
   {
     section: "🍳 Cuisine",
     items: [
-      { v: "cuisine_equipee", l: "Cuisine entièrement équipée" },
-      { v: "cuisine_semi", l: "Cuisine semi-équipée" },
+      { v: "cuisine_amenagee", l: "Cuisine aménagée (meublée)" },
+      { v: "cuisine_equipee_electro", l: "Cuisine équipée (électroménager)" },
       { v: "plan_pierre", l: "Plan de travail en pierre (marbre, granit, quartz)" },
       { v: "ilot", l: "Îlot central" },
     ],

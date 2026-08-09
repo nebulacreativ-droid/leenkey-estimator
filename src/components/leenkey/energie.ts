@@ -81,7 +81,6 @@ export function profilEnergetique(form: {
   derniere_renovation: string | null;
   annee_construction: string | null;
   etat: string | null;
-  exterieur: string[];
   prestations: string[];
   dpe_vise: string | null;
 }): ProfilEnergetique {
@@ -196,7 +195,6 @@ export function profilEnergetique(form: {
     if (!form.prestations.includes("double_vitrage")) ameliorer.push("Double vitrage absent");
     if (!form.prestations.includes("ite")) ameliorer.push("Isolation des murs à renforcer");
   }
-  if (form.exterieur.includes("solaire")) forts.push("Panneaux solaires");
 
   score = Math.max(0, Math.min(100, Math.round(score)));
 

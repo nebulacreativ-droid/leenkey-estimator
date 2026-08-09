@@ -281,6 +281,14 @@ function fourchette(opts: {
 }
 
 /**
+ * Module un barème selon la taille déclarée, rapportée à une taille de
+ * référence. Borné : une saisie farfelue ne doit pas emporter l'estimation.
+ */
+function facteurTaille(valeur: number, reference: number): number {
+  return Math.max(0.5, Math.min(1.8, valeur / reference));
+}
+
+/**
  * Mélange le prix au m² issu de DVF avec la table de référence.
  *
  * DVF pèse 70 % car ce sont de vraies transactions, la table compensant le
@@ -348,7 +356,7 @@ const PRESTATION_POIDS: Record<string, number> = {
   vue_degagee: 0.015,
   ilot: 0.01,
   // Impact moyen
-  cuisine_equipee: 0.008,
+  cuisine_equipee_electro: 0.01,
   sdb_renovee: 0.008,
   douche_italienne: 0.008,
   plan_pierre: 0.008,
@@ -369,7 +377,7 @@ const PRESTATION_POIDS: Record<string, number> = {
   moulures: 0.004,
   dressing: 0.004,
   placards: 0.004,
-  cuisine_semi: 0.004,
+  cuisine_amenagee: 0.006,
   baignoire_ilot: 0.004,
   double_vasque: 0.004,
   poele_bois: 0.004,
@@ -1930,28 +1938,37 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
   const etatEntry = ETAT_MULT[form.etat ?? "bon"] ?? ETAT_MULT.bon;
   const dpeEntry = DPE_MULT[form.dpe ?? "inconnu"] ?? DPE_MULT.inconnu;
 
-  // Extérieur
+  // Extérieur — les superficies saisies modulent le barème de base : une
+  // terrasse de 6 m² et une de 40 m² ne valent pas la même chose.
   let extMult = 1;
   const extDetail: string[] = [];
-  if (form.exterieur.includes("jardin")) {
-    extMult += 0.04;
-    extDetail.push("jardin");
-  }
-  if (form.exterieur.includes("terrasse")) {
-    extMult += 0.03;
-    extDetail.push("terrasse");
-  }
-  if (form.exterieur.includes("balcon")) {
-    extMult += 0.015;
-    extDetail.push("balcon");
-  }
-  if (form.exterieur.includes("piscine")) {
-    extMult += 0.05;
-    extDetail.push("piscine");
-  }
-  if (form.exterieur.includes("garage")) {
-    extMult += 0.02;
-    extDetail.push("garage");
+
+  const ajouteExt = (cle: string, base: number, libelle: string, reference?: number) => {
+    if (!form.exterieur.includes(cle)) return;
+    const saisi = form.exterieur_details[cle];
+    const facteur = reference && saisi && saisi > 0 ? facteurTaille(saisi, reference) : 1;
+    extMult += base * facteur;
+    extDetail.push(saisi && saisi > 0 ? `${libelle} ${saisi} m²` : libelle);
+  };
+
+  ajouteExt("jardin", 0.04, "jardin", 250);
+  ajouteExt("terrasse", 0.03, "terrasse", 20);
+  ajouteExt("balcon", 0.015, "balcon", 8);
+  ajouteExt("piscine", 0.05, "piscine");
+  ajouteExt("cave", 0.01, "cave", 12);
+  ajouteExt("grenier", 0.01, "grenier", 25);
+  ajouteExt("dependance", 0.02, "dépendance", 30);
+
+  // Stationnement : chaque place compte, avec un rendement décroissant.
+  for (const [cle, base, libelle] of [
+    ["garage", 0.025, "garage"],
+    ["box", 0.025, "box"],
+    ["parking", 0.015, "parking"],
+  ] as const) {
+    if (!form.exterieur.includes(cle)) continue;
+    const places = Math.max(1, Math.min(4, form.exterieur_details[cle] ?? 1));
+    extMult += base * (1 + (places - 1) * 0.6);
+    extDetail.push(places > 1 ? `${libelle} ${places} places` : libelle);
   }
 
   // Prestations

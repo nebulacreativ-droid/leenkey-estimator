@@ -155,6 +155,8 @@ export interface LeenkeyForm {
 
   // 5
   exterieur: string[];
+  /** Superficie en m² ou nombre de places, saisie quand l'élément est coché. */
+  exterieur_details: Record<string, number | null>;
 
   // 6
   etat: EtatGeneral | null;
@@ -327,6 +329,7 @@ export const initialForm: LeenkeyForm = {
   revenus_existants: null,
   charges_atypique: null,
   exterieur: [],
+  exterieur_details: {},
   etat: null,
   prestations: [],
   dpe: null,

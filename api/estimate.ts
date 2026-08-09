@@ -26,7 +26,11 @@ BIEN À ESTIMER :
 ÉTAT & PRESTATIONS :
 - État général : ${etat.general}
 - Prestations : ${Array.isArray(etat.prestations) ? etat.prestations.join(", ") || "Aucune" : "NC"}
-- Extérieur : ${exterieur.join(", ") || "Aucun"}
+- Extérieur : ${exterieur.join(", ") || "Aucun"}${
+    payload.exterieur_details && Object.keys(payload.exterieur_details).length
+      ? ` (détail : ${JSON.stringify(payload.exterieur_details)})`
+      : ""
+  }
 
 ÉNERGIE :
 - DPE : ${energie.dpe ?? "NC"} | GES : ${energie.ges ?? "NC"}${energie.dpe_date ? ` (${energie.dpe_date})` : ""}
@@ -263,7 +267,24 @@ async function sendLeadEmail({
     <p style="margin:6px 0 0;opacity:.9;font-size:13px;">Réf. ${esc(ref)} · ${new Date().toLocaleString("fr-FR", { timeZone: "Europe/Paris" })}</p>
   </div>
   <div style="padding:24px;">
-
+${
+  contact.contact_conseiller
+    ? `
+    <div style="background:#FEF3C7;border:2px solid #F59E0B;border-radius:12px;padding:18px;margin-bottom:24px">
+      <div style="font-size:15px;font-weight:800;color:#92400E">📞 RAPPEL DEMANDÉ — ce prospect attend votre appel</div>
+      <div style="margin-top:10px;font-size:22px;font-weight:800">
+        <a href="tel:${esc(contact.telephone)}" style="color:#92400E;text-decoration:none">${esc(contact.telephone) || "numéro non renseigné"}</a>
+      </div>
+      <div style="margin-top:6px;font-size:13px;color:#78350F">
+        ${esc(contact.prenom)} ${esc(contact.nom)}${
+          Array.isArray(contact.disponibilites) && contact.disponibilites.length
+            ? ` · disponible : ${esc((contact.disponibilites as string[]).join(", "))}`
+            : ""
+        }
+      </div>
+    </div>`
+    : ""
+}
     <h2 style="margin:0 0 12px;font-size:16px;color:#1156FC;">📞 Coordonnées du prospect</h2>
     <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px;background:#F8FAFC;border-radius:8px;overflow:hidden;">
       <tr><td style="padding:10px 12px;color:#64748B;width:35%;border-bottom:1px solid #E2E8F0;">Nom complet</td><td style="padding:10px 12px;font-weight:600;border-bottom:1px solid #E2E8F0;">${esc(contact.prenom)} ${esc(contact.nom)}</td></tr>
@@ -351,6 +372,17 @@ async function sendLeadEmail({
       <p style="font-size:12px;color:#94A3B8;margin:12px 0 0">Cliquez pour accéder à votre tableau de bord et télécharger votre rapport détaillé (4 pages).</p>
     </div>
 
+    ${
+      contact.contact_conseiller
+        ? `<div style="background:#D1FAE5;border:2px solid #10B981;border-radius:12px;padding:16px;margin:24px 0">
+      <p style="margin:0;font-size:14px;color:#065F46"><strong>📞 Votre demande de rappel est enregistrée.</strong><br>Un conseiller Leenkey vous appelle sous 48 h ouvrées au ${esc(contact.telephone)}${
+        Array.isArray(contact.disponibilites) && contact.disponibilites.length
+          ? `, selon vos disponibilités (${esc((contact.disponibilites as string[]).join(", "))})`
+          : ""
+      }.</p>
+    </div>`
+        : ""
+    }
     <p style="font-size:14px;line-height:1.7;color:#475569;margin:24px 0">Notre équipe reste à votre disposition pour vous accompagner dans votre projet de vente.</p>
     <p style="font-size:14px;color:#0F172A;margin:0"><strong>L'équipe Leenkey</strong></p>
 
@@ -371,7 +403,7 @@ async function sendLeadEmail({
     body: JSON.stringify({
       from: FROM_EMAIL,
       to: [ADMIN_EMAIL],
-      subject: `🏠 Nouvelle estimation Leenkey — ${contact.prenom ?? ""} ${contact.nom ?? ""} (${result.prix_median} €)`,
+      subject: `${contact.contact_conseiller ? "📞 RAPPEL DEMANDÉ · " : ""}🏠 Nouvelle estimation Leenkey — ${contact.prenom ?? ""} ${contact.nom ?? ""} (${result.prix_median} €)`,
       html: htmlAdmin,
       reply_to: userEmail || undefined,
     }),

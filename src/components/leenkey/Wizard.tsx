@@ -161,6 +161,7 @@ function buildPayload(form: LeenkeyForm) {
       },
     }),
     exterieur: form.exterieur,
+    exterieur_details: form.exterieur_details,
     etat: { general: form.etat, prestations: form.prestations },
     energie: {
       dpe: form.dpe,
