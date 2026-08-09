@@ -74,8 +74,10 @@ export function OptionCard({
           {icon}
         </span>
       )}
-      <span className="flex-1 space-y-1">
-        <span className="block font-display text-base font-semibold text-navy">{title}</span>
+      <span className="min-w-0 flex-1 space-y-1">
+        <span className="block break-words font-display text-base font-semibold text-navy">
+          {title}
+        </span>
         {description && (
           <span className="block text-sm leading-relaxed text-sub">{description}</span>
         )}
@@ -129,7 +131,7 @@ export function ToggleCard({
       )}
     >
       {icon && <span className="text-xl">{icon}</span>}
-      <span className="flex-1">
+      <span className="min-w-0 flex-1">
         {title}
         {desc && (
           <span className="mt-0.5 block text-xs font-normal leading-relaxed text-sub">{desc}</span>
