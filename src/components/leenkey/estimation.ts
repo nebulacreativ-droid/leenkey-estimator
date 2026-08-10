@@ -1954,7 +1954,7 @@ export function computeEstimation(
   ajouteExt("jardin", 0.04, "jardin", 250);
   ajouteExt("terrasse", 0.03, "terrasse", 20);
   ajouteExt("balcon", 0.015, "balcon", 8);
-  ajouteExt("piscine", 0.05, "piscine");
+  ajouteExt("piscine", 0.05, "piscine", 35);
   ajouteExt("cave", 0.01, "cave", 12);
   ajouteExt("grenier", 0.01, "grenier", 25);
   ajouteExt("dependance", 0.02, "dépendance", 30);
