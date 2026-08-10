@@ -242,7 +242,7 @@ export function LeenkeyWizard() {
           submitted: { ref: string; aiAnalyse?: string; dvfData?: DvfResult | null };
         };
         if (dash.form && dash.submitted) {
-          setForm(dash.form);
+          setForm({ ...initialForm, ...dash.form });
           setSubmitted(dash.submitted);
           setHydrated(true);
           return;
@@ -254,7 +254,7 @@ export function LeenkeyWizard() {
         const saved = JSON.parse(raw) as { form: LeenkeyForm; step: number };
         if (saved.step > 1) {
           setResumePrompt(true);
-          setForm(saved.form);
+          setForm({ ...initialForm, ...saved.form });
           setStep(saved.step);
         }
       }

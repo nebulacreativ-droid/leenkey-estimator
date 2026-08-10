@@ -1,4 +1,4 @@
-import type { LeenkeyForm } from "./types";
+import { initialForm, type LeenkeyForm } from "./types";
 import { POSTES_TECHNIQUES, statsLocatives, totalCharges } from "./immeuble-calc";
 import { impactEnergie } from "./energie";
 
@@ -1909,7 +1909,14 @@ function computeAtypiqueEstimation(form: LeenkeyForm, dvfPrixM2?: number | null)
   };
 }
 
-export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null): EstimationResult {
+export function computeEstimation(
+  formBrut: LeenkeyForm,
+  dvfPrixM2?: number | null,
+): EstimationResult {
+  // Un brouillon restauré depuis le navigateur peut dater d'avant l'ajout d'un
+  // champ : le compléter ici protège toutes les branches d'un coup, plutôt que
+  // d'égrener des accès optionnels dans chaque modèle.
+  const form = { ...initialForm, ...formBrut };
   // Un terrain n'a ni surface habitable, ni DPE, ni prestations : il a son
   // propre modèle, fondé sur la constructibilité et la viabilisation.
   if (form.type === "terrain") return computeTerrainEstimation(form);
@@ -1938,7 +1945,7 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
 
   const ajouteExt = (cle: string, base: number, libelle: string, reference?: number) => {
     if (!form.exterieur.includes(cle)) return;
-    const saisi = form.exterieur_details[cle];
+    const saisi = form.exterieur_details?.[cle];
     const facteur = reference && saisi && saisi > 0 ? facteurTaille(saisi, reference) : 1;
     extMult += base * facteur;
     extDetail.push(saisi && saisi > 0 ? `${libelle} ${saisi} m²` : libelle);
@@ -1959,7 +1966,7 @@ export function computeEstimation(form: LeenkeyForm, dvfPrixM2?: number | null):
     ["parking", 0.015, "parking"],
   ] as const) {
     if (!form.exterieur.includes(cle)) continue;
-    const places = Math.max(1, Math.min(4, form.exterieur_details[cle] ?? 1));
+    const places = Math.max(1, Math.min(4, form.exterieur_details?.[cle] ?? 1));
     extMult += base * (1 + (places - 1) * 0.6);
     extDetail.push(places > 1 ? `${libelle} ${places} places` : libelle);
   }

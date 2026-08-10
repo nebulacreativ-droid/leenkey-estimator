@@ -134,10 +134,10 @@ export function impactEnergie(form: EntreeProfil): number {
   if (CHAUFFAGES_VERTUEUX.includes(form.chauffage ?? "")) m += 0.015;
   else if (CHAUFFAGES_PENALISANTS.includes(form.chauffage ?? "")) m -= 0.02;
 
-  for (const e of form.equipements_energie) {
+  for (const e of form.equipements_energie ?? []) {
     m += e === "Panneaux photovoltaïques" ? 0.02 : 0.005;
   }
-  m += Math.min(form.travaux_energie.length * 0.005, 0.02);
+  m += Math.min((form.travaux_energie ?? []).length * 0.005, 0.02);
 
   // Borné : ce volet affine l'estimation, il ne doit pas la piloter.
   return Math.max(-0.08, Math.min(0.08, m));
@@ -309,15 +309,15 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
   } else manquants.push("la ventilation");
 
   // ── Équipements et travaux ──
-  for (const e of form.equipements_energie) {
+  for (const e of form.equipements_energie ?? []) {
     forts.push(e);
     score += e === "Panneaux photovoltaïques" ? 5 : 2;
   }
-  for (const t of form.travaux_energie) {
+  for (const t of form.travaux_energie ?? []) {
     forts.push(`Travaux réalisés : ${t.toLowerCase()}`);
     score += 2;
   }
-  if (!form.equipements_energie.length && !form.travaux_energie.length)
+  if (!(form.equipements_energie ?? []).length && !(form.travaux_energie ?? []).length)
     manquants.push("les équipements et travaux");
 
   // ── Contexte du bâti ──
