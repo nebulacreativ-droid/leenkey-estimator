@@ -196,6 +196,20 @@
     background: rgba(255, 255, 255, 0.1) !important;
     color: #ffffff !important;
   }
+
+  /* Le parcours est passé de quatre à trois étapes : la grille suivait
+     encore quatre colonnes, ce qui décalait le bloc vers la gauche. */
+  @media (min-width:900px) {
+    #comment .steps { grid-template-columns: repeat(3, 1fr) !important; }
+  }
+  @media (max-width:899px) {
+    #comment .steps { grid-template-columns: 1fr !important; }
+  }
+  /* Le point de départ compte quatre cartes, pour trois colonnes : la
+     quatrième tombait seule sur une deuxième ligne. */
+  @media (min-width:1100px) {
+    #fonctionnalites .feat-grid { grid-template-columns: repeat(4, 1fr) !important; }
+  }
 </style>
 </head>
 <body>
