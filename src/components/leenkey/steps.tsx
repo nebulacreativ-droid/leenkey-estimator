@@ -369,17 +369,8 @@ export function Step3({ form, set, errors }: P) {
             )}
           </Field>
         )}
-        <Field label="Surface des annexes" hint="cave, grenier, dépendances (m²)">
-          <TextInput
-            type="number"
-            min={0}
-            value={form.surface_annexes ?? ""}
-            onChange={(e) =>
-              set({ surface_annexes: e.target.value ? Number(e.target.value) : null })
-            }
-            placeholder="0"
-          />
-        </Field>
+        {/* Pas de « surface des annexes » ici : cave, grenier et dépendance sont
+            demandés un par un, avec leur surface, à l'étape extérieur. */}
         {showShob && (
           <Field label="SHOB / Surface plancher" hint="m²">
             <TextInput

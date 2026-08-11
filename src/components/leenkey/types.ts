@@ -36,7 +36,6 @@ export interface LeenkeyForm {
   // 3
   surface_habitable: number | null;
   surface_terrain: number | null;
-  surface_annexes: number | null;
   surface_carrez: number | null;
   shob: number | null;
 
@@ -235,7 +234,6 @@ export const initialForm: LeenkeyForm = {
   departement: "",
   surface_habitable: null,
   surface_terrain: null,
-  surface_annexes: null,
   surface_carrez: null,
   shob: null,
   pieces: null,
