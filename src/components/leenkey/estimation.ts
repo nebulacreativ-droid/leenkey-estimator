@@ -510,6 +510,9 @@ const PRIX_M2_TERRAIN: Record<string, number> = {
 };
 const PRIX_M2_TERRAIN_DEFAUT = 70;
 
+/** Surface de parcelle déjà comprise dans le prix du m² bâti d'une maison. */
+const TERRAIN_INCLUS = 400;
+
 /** Nature du terrain : rapport au prix d'un terrain à bâtir équivalent. */
 const NATURE_MULT: Record<string, { mult: number; label: string }> = {
   a_batir: { mult: 1, label: "Terrain à bâtir" },
@@ -1959,6 +1962,39 @@ export function computeEstimation(
   ajouteExt("grenier", 0.01, "grenier", 25);
   ajouteExt("dependance", 0.02, "dépendance", 30);
 
+  // ── Le terrain ──
+  // Le prix du m² bâti intègre déjà une parcelle d'usage courant : seul
+  // l'excédent se valorise en plus, sinon on compte deux fois. En dessous du
+  // seuil, un terrain exigu se paie au contraire une petite décote.
+  let valeurTerrain = 0;
+  const terrainDetail: string[] = [];
+  if (form.type === "maison") {
+    const prixTerrain = basePrixM2Terrain(form);
+    const parcelle = form.surface_terrain ?? 0;
+    if (parcelle > 0) {
+      const excedent = Math.max(0, parcelle - TERRAIN_INCLUS);
+      // Paliers décroissants : au-delà du jardin d'agrément, le surplus ne se
+      // paie plus au prix de l'assiette constructible.
+      const pondere =
+        Math.min(excedent, 600) +
+        Math.max(0, Math.min(excedent - 600, 2400)) * 0.35 +
+        Math.max(0, excedent - 3000) * 0.12;
+      valeurTerrain += pondere * prixTerrain;
+      if (pondere > 0) terrainDetail.push(`${parcelle.toLocaleString("fr-FR")} m² de terrain`);
+      else if (parcelle < TERRAIN_INCLUS / 2) extMult -= 0.03;
+    }
+    // Un terrain attenant est une parcelle supplémentaire, éventuellement
+    // détachée : elle s'ajoute, mais se négocie moins bien qu'un jardin
+    // attaché à la maison.
+    const attenant = form.exterieur.includes("terrain_attenant")
+      ? (form.exterieur_details?.terrain_attenant ?? 0)
+      : 0;
+    if (attenant > 0) {
+      valeurTerrain += attenant * prixTerrain * 0.6;
+      terrainDetail.push(`${attenant.toLocaleString("fr-FR")} m² attenants`);
+    }
+  }
+
   // Stationnement : chaque place compte, avec un rendement décroissant.
   for (const [cle, base, libelle] of [
     ["garage", 0.025, "garage"],
@@ -2016,7 +2052,10 @@ export function computeEstimation(
   // mieux qu'un pourcentage, et évite de compter deux fois ce que le DPE traduit
   // déjà en décote.
   const budgetTravaux = form.travaux_energie_budget ?? 0;
-  const prixEstime = Math.max(0, Math.round((prixM2 * surface - budgetTravaux) / 1000) * 1000);
+  const prixEstime = Math.max(
+    0,
+    Math.round((prixM2 * surface + valeurTerrain - budgetTravaux) / 1000) * 1000,
+  );
   const deltaMarche = Math.round(((prixM2 - prixM2Marche) / prixM2Marche) * 100);
 
   // Score attractivité
@@ -2111,6 +2150,13 @@ export function computeEstimation(
         : "Standard",
     },
   ];
+  if (valeurTerrain > 0) {
+    facteurs.push({
+      label: "Terrain",
+      impact: Math.round((valeurTerrain / (prixM2 * surface)) * 100),
+      detail: `${terrainDetail.join(" + ")} · ${(Math.round(valeurTerrain / 1000) * 1000).toLocaleString("fr-FR")} € ajoutés`,
+    });
+  }
   if (form.type === "appartement") {
     facteurs.push({
       label: "Étage & exposition",

@@ -3,7 +3,7 @@ import { computeEstimation, formatEUR, type EstimationResult } from "./estimatio
 import type { LeenkeyForm } from "./types";
 import { prixM2Dvf, type DvfResult } from "./dvf";
 import { useState } from "react";
-import { downloadReportPDF, generateReportPDFBase64 } from "./generatePDF";
+import { generateReportPDFBase64 } from "./generatePDF";
 
 const monthLabel = (months: number): string => {
   if (months === 0) return "ce mois-ci";
@@ -146,6 +146,18 @@ export function EstimationDashboard({
   const sendEmailRecap = async () => {
     setEmailStatus("sending");
     try {
+      // Le PDF est généré côté navigateur puis joint à l'email : c'est le seul
+      // moyen d'obtenir le rapport, le téléchargement direct ayant été retiré.
+      let pdfBase64: string | undefined;
+      let pdfFilename: string | undefined;
+      try {
+        const pdf = await generateReportPDFBase64({ form, ref: ref_, r, aiAnalyse, dvfData });
+        pdfBase64 = pdf.base64;
+        pdfFilename = pdf.filename;
+      } catch (e) {
+        console.warn("Génération PDF échouée, envoi du récapitulatif seul:", e);
+      }
+
       const res = await fetch("/api/send-report", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
@@ -172,6 +184,8 @@ export function EstimationDashboard({
             delai_vente: r.delaiVente,
             analyse: aiAnalyse ?? "",
           },
+          pdfBase64,
+          pdfFilename,
         }),
       });
       if (!res.ok) throw new Error("Send failed");
@@ -578,44 +592,28 @@ export function EstimationDashboard({
           <Card>
             <h2 className="mb-2 font-display text-lg font-bold text-navy">Aller plus loin</h2>
             <p className="mb-4 text-sm text-sub">
-              Recevez le rapport complet ou échangez avec un conseiller pour affiner votre projet.
+              Recevez le rapport complet en PDF par email, ou échangez avec un conseiller pour
+              affiner votre projet.
             </p>
             <div className="flex flex-col gap-3">
-              {/* Actions principales en grille 2 colonnes */}
-              <div className="grid grid-cols-1 gap-3 sm:grid-cols-2">
-                <button
-                  onClick={() => {
-                    void downloadReportPDF({
-                      form,
-                      ref: ref_,
-                      r,
-                      aiAnalyse,
-                      dvfData,
-                    });
-                  }}
-                  className="rounded-[12px] bg-primary px-5 py-3 font-display text-sm font-semibold text-primary-foreground shadow-[0_10px_24px_-8px_rgba(17,86,252,0.5)] transition hover:translate-y-[-1px]"
-                >
-                  📄 Télécharger le PDF
-                </button>
-                <button
-                  onClick={sendEmailRecap}
-                  disabled={emailStatus === "sending" || emailStatus === "sent"}
-                  className={cn(
-                    "rounded-[12px] border-2 px-5 py-3 font-display text-sm font-semibold transition hover:translate-y-[-1px]",
-                    emailStatus === "sent"
-                      ? "border-success bg-success/10 text-success cursor-default"
-                      : emailStatus === "error"
-                        ? "border-destructive bg-destructive/10 text-destructive"
-                        : "border-primary bg-primary/5 text-primary hover:bg-primary/10",
-                    emailStatus === "sending" && "opacity-60 cursor-wait",
-                  )}
-                >
-                  {emailStatus === "sending" && "⏳ Envoi en cours…"}
-                  {emailStatus === "sent" && "✓ Email envoyé !"}
-                  {emailStatus === "error" && "❌ Erreur, réessayer"}
-                  {emailStatus === "idle" && "📧 Recevoir le récap par email"}
-                </button>
-              </div>
+              <button
+                onClick={sendEmailRecap}
+                disabled={emailStatus === "sending" || emailStatus === "sent"}
+                className={cn(
+                  "rounded-[12px] px-5 py-3.5 font-display text-sm font-semibold transition hover:translate-y-[-1px]",
+                  emailStatus === "sent"
+                    ? "cursor-default border-2 border-success bg-success/10 text-success"
+                    : emailStatus === "error"
+                      ? "border-2 border-destructive bg-destructive/10 text-destructive"
+                      : "bg-primary text-primary-foreground shadow-[0_10px_24px_-8px_rgba(17,86,252,0.5)]",
+                  emailStatus === "sending" && "cursor-wait opacity-60",
+                )}
+              >
+                {emailStatus === "sending" && "⏳ Envoi en cours…"}
+                {emailStatus === "sent" && "✓ Rapport envoyé — vérifiez votre boîte mail"}
+                {emailStatus === "error" && "❌ Erreur, réessayer"}
+                {emailStatus === "idle" && "📧 Recevoir mon rapport complet par email"}
+              </button>
 
               <button
                 onClick={() => setContactOpen(true)}

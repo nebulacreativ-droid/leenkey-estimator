@@ -24,7 +24,7 @@ export function ProfilEnergetiquePanel({ form }: { form: LeenkeyForm }) {
     p.score >= 80 ? "#16a34a" : p.score >= 60 ? "#16a34a" : p.score >= 40 ? "#f59e0b" : "#dc2626";
 
   return (
-    <aside className="rounded-[16px] border-2 border-sky-mid bg-card p-5 lg:sticky lg:top-40">
+    <aside className="sticky top-32 z-20 rounded-[16px] border-2 border-sky-mid bg-card p-5 shadow-[0_10px_30px_-18px_rgba(15,30,53,0.35)] lg:top-40">
       <div className="text-[11px] font-bold uppercase tracking-wider text-primary">
         Votre profil énergétique
       </div>

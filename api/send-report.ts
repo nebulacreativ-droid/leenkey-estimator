@@ -1,9 +1,12 @@
 import type { VercelRequest, VercelResponse } from "@vercel/node";
 
 /**
- * Endpoint : renvoie le rapport de valorisation par email au client.
- * Body attendu : { contact: {...}, bien: {...}, result: {...}, ref: string }
+ * Endpoint : envoie le rapport de valorisation par email au client, avec le
+ * PDF en pièce jointe, et prévient Leenkey dans la foulée.
+ *
+ * Body attendu : { contact, bien, result, ref, pdfBase64?, pdfFilename? }
  */
+const ADMIN_EMAIL = "contact.leenkey@gmail.com";
 export default async function handler(req: VercelRequest, res: VercelResponse) {
   res.setHeader("Access-Control-Allow-Origin", "*");
   res.setHeader("Access-Control-Allow-Methods", "POST, OPTIONS");
@@ -23,6 +26,8 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       bien?: Record<string, unknown>;
       result?: Record<string, unknown>;
       ref?: string;
+      pdfBase64?: string;
+      pdfFilename?: string;
     };
 
     const contact = body.contact ?? {};
@@ -93,18 +98,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
 </div>
 </body></html>`.trim();
 
-    const resendRes = await fetch("https://api.resend.com/emails", {
-      method: "POST",
-      headers: {
-        Authorization: `Bearer ${apiKey}`,
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({
-        from: FROM_EMAIL,
-        to: [userEmail],
-        subject: `Votre rapport de valorisation Leenkey — ${result.prix_median} €`,
-        html,
-      }),
+    // Le rapport complet part en pièce jointe : c'est désormais le seul moyen
+    // de l'obtenir, le téléchargement direct ayant été retiré.
+    const pieceJointe = body.pdfBase64
+      ? [{ filename: body.pdfFilename || `rapport-leenkey-${ref}.pdf`, content: body.pdfBase64 }]
+      : undefined;
+
+    const envoyer = (payload: Record<string, unknown>) =>
+      fetch("https://api.resend.com/emails", {
+        method: "POST",
+        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+        body: JSON.stringify(payload),
+      });
+
+    const resendRes = await envoyer({
+      from: FROM_EMAIL,
+      to: [userEmail],
+      subject: `Votre rapport de valorisation Leenkey — ${result.prix_median} €`,
+      html,
+      ...(pieceJointe ? { attachments: pieceJointe } : {}),
     });
 
     if (!resendRes.ok) {
@@ -112,6 +124,25 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       console.error("Resend error:", errText);
       return res.status(502).json({ error: "Email non envoyé", detail: errText });
     }
+
+    // Alerte Leenkey : un rapport demandé est un signal d'intention fort.
+    // Non bloquant — l'échec de cette notification ne doit pas priver le
+    // vendeur de son rapport.
+    void envoyer({
+      from: FROM_EMAIL,
+      to: [ADMIN_EMAIL],
+      reply_to: userEmail,
+      subject: `📄 Rapport envoyé — ${esc(contact.prenom)} ${esc(contact.nom)} (${result.prix_median} €)`,
+      html: `<div style="font-family:-apple-system,sans-serif;color:#0F172A;padding:20px">
+        <h2 style="color:#1156FC;margin:0 0 12px">Un rapport de valorisation vient d'être envoyé</h2>
+        <p style="margin:0 0 6px"><strong>${esc(contact.prenom)} ${esc(contact.nom)}</strong></p>
+        <p style="margin:0 0 6px">${esc(userEmail)} · ${esc(contact.telephone) || "téléphone non renseigné"}</p>
+        <p style="margin:0 0 6px">${esc(bien.type)} · ${esc(bien.surface_habitable)} m² · ${esc(bien.ville)}</p>
+        <p style="margin:12px 0 0;font-size:18px;font-weight:700;color:#1156FC">${esc(result.prix_median)} €</p>
+        <p style="margin:12px 0 0;font-size:12px;color:#64748B">Réf. ${esc(ref)}</p>
+      </div>`,
+      ...(pieceJointe ? { attachments: pieceJointe } : {}),
+    }).catch((e) => console.error("Alerte admin non envoyée (non bloquant):", e));
 
     return res.status(200).json({ ok: true });
   } catch (error) {

@@ -12,6 +12,7 @@ import {
 } from "./ui";
 import type { BienType, DpeLetter, EtatGeneral, LeenkeyForm } from "./types";
 import { cn } from "@/lib/utils";
+import { chercherParcelle, type Parcelle } from "./cadastre";
 import {
   ANNEES_CONSTRUCTION,
   AUDIT_OPTS,
@@ -234,6 +235,25 @@ export function Step2({ form, set, errors }: P) {
 /* ============ STEP 3 — Surface ============ */
 export function Step3({ form, set, errors }: P) {
   const t = form.type;
+  const [parcelle, setParcelle] = useState<Parcelle | null>(null);
+
+  // La contenance cadastrale ne vaut que pour un bien posé sur sa propre
+  // parcelle. Sur un appartement, c'est le terrain de tout l'immeuble.
+  const cadastrable = t === "maison" || t === "terrain";
+  useEffect(() => {
+    if (!cadastrable || !form.adresse) {
+      setParcelle(null);
+      return;
+    }
+    let annule = false;
+    chercherParcelle(form.adresse).then((p) => {
+      if (!annule) setParcelle(p);
+    });
+    return () => {
+      annule = true;
+    };
+  }, [cadastrable, form.adresse]);
+
   const isAppart = t === "appartement";
   const showHabitable = t !== "terrain";
   const showTerrain = t === "maison" || t === "terrain";
@@ -318,6 +338,25 @@ export function Step3({ form, set, errors }: P) {
               }
               placeholder="350"
             />
+            {parcelle && (
+              <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-sub">
+                <span>
+                  Cadastre : parcelle {parcelle.section} {parcelle.numero} —{" "}
+                  <strong className="text-navy">
+                    {parcelle.contenance.toLocaleString("fr-FR")} m²
+                  </strong>
+                </span>
+                {form.surface_terrain !== parcelle.contenance && (
+                  <button
+                    type="button"
+                    onClick={() => set({ surface_terrain: parcelle.contenance })}
+                    className="rounded-full border-2 border-primary/40 px-3 py-1 font-semibold text-primary transition hover:bg-primary/10"
+                  >
+                    Utiliser cette valeur
+                  </button>
+                )}
+              </p>
+            )}
           </Field>
         )}
         <Field label="Surface des annexes" hint="cave, grenier, dépendances (m²)">
@@ -811,7 +850,7 @@ export function Step8({ form, set }: P) {
       />
 
       <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
-        <div className="space-y-6">
+        <div className="order-2 space-y-6 lg:order-1">
           <Field label="Étiquette énergie (DPE)">
             <DpeRow value={form.dpe} onChange={(v) => set({ dpe: v })} />
           </Field>
@@ -934,27 +973,6 @@ export function Step8({ form, set }: P) {
               options={TRAVAUX_ENERGIE}
             />
           </Field>
-          <Field
-            label="Classement DPE visé après travaux"
-            hint="pour chiffrer le gain réel plutôt que l'estimer"
-          >
-            <DpeRow value={form.dpe_vise} onChange={(v) => set({ dpe_vise: v })} />
-          </Field>
-          <Field
-            label="Budget de travaux chiffré"
-            hint="€ — si vous avez un devis, il est déduit tel quel au lieu d'un pourcentage"
-          >
-            <TextInput
-              type="number"
-              min={0}
-              value={form.travaux_energie_budget ?? ""}
-              onChange={(e) =>
-                set({ travaux_energie_budget: e.target.value ? Number(e.target.value) : null })
-              }
-              placeholder="25000"
-            />
-          </Field>
-
           <SectionTitle>Contexte du bien</SectionTitle>
           <Field label="Année de construction estimée">
             <PillGroup
@@ -981,7 +999,9 @@ export function Step8({ form, set }: P) {
           </p>
         </div>
 
-        <ProfilEnergetiquePanel form={form} />
+        <div className="order-1 lg:order-2">
+          <ProfilEnergetiquePanel form={form} />
+        </div>
       </div>
     </div>
   );
