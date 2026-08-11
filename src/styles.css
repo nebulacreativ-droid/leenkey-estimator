@@ -191,9 +191,104 @@ html {
   animation: lk-error-shake 0.4s cubic-bezier(0.36, 0.07, 0.19, 0.97);
 }
 @keyframes lk-error-shake {
-  10%, 90%   { transform: translateX(-2px); }
-  20%, 80%   { transform: translateX(3px); }
-  30%, 50%, 70% { transform: translateX(-4px); }
-  40%, 60%   { transform: translateX(4px); }
+  10%,
+  90% {
+    transform: translateX(-2px);
+  }
+  20%,
+  80% {
+    transform: translateX(3px);
+  }
+  30%,
+  50%,
+  70% {
+    transform: translateX(-4px);
+  }
+  40%,
+  60% {
+    transform: translateX(4px);
+  }
 }
 
+/* ─── Confirmation d'envoi du rapport ───
+   L'ancien retour se limitait à un changement de couleur qui s'effaçait au bout
+   de cinq secondes : le vendeur revoyait un bouton bleu et pouvait croire que
+   rien n'était parti. */
+
+/* Le bloc apparaît. */
+@keyframes lk-sent-in {
+  from {
+    opacity: 0;
+    transform: translateY(6px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
+}
+
+/* La pastille verte surgit avec un léger rebond. */
+@keyframes lk-check-pop {
+  0% {
+    transform: scale(0);
+  }
+  60% {
+    transform: scale(1.15);
+  }
+  100% {
+    transform: scale(1);
+  }
+}
+
+/* La coche se dessine, trait après trait. */
+@keyframes lk-check-draw {
+  from {
+    stroke-dashoffset: 28;
+  }
+  to {
+    stroke-dashoffset: 0;
+  }
+}
+
+/* Une onde part de la pastille, une seule fois. */
+@keyframes lk-check-ring {
+  from {
+    opacity: 0.55;
+    transform: scale(1);
+  }
+  to {
+    opacity: 0;
+    transform: scale(1.9);
+  }
+}
+
+.lk-sent {
+  animation: lk-sent-in 0.4s ease-out both;
+}
+.lk-sent-badge {
+  animation: lk-check-pop 0.45s cubic-bezier(0.34, 1.56, 0.64, 1) 0.1s both;
+}
+.lk-sent-ring {
+  animation: lk-check-ring 0.9s ease-out 0.3s both;
+}
+.lk-sent-check {
+  stroke-dasharray: 28;
+  animation: lk-check-draw 0.4s ease-out 0.35s both;
+}
+
+/* Respecte les préférences système : on garde le fond vert et la coche, sans
+   mouvement. */
+@media (prefers-reduced-motion: reduce) {
+  .lk-sent,
+  .lk-sent-badge,
+  .lk-sent-ring,
+  .lk-sent-check {
+    animation: none;
+  }
+  .lk-sent-check {
+    stroke-dashoffset: 0;
+  }
+  .lk-sent-ring {
+    display: none;
+  }
+}

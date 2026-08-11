@@ -189,9 +189,11 @@ export function EstimationDashboard({
         }),
       });
       if (!res.ok) throw new Error("Send failed");
+      // Pas de retour automatique à l'état initial : la confirmation reste, sans
+      // quoi le vendeur retrouve un bouton bleu et doute que l'envoi ait eu lieu.
       setEmailStatus("sent");
-      setTimeout(() => setEmailStatus("idle"), 5000);
     } catch {
+      // L'erreur, elle, se réarme : il faut pouvoir réessayer.
       setEmailStatus("error");
       setTimeout(() => setEmailStatus("idle"), 5000);
     }
@@ -596,24 +598,86 @@ export function EstimationDashboard({
               affiner votre projet.
             </p>
             <div className="flex flex-col gap-3">
-              <button
-                onClick={sendEmailRecap}
-                disabled={emailStatus === "sending" || emailStatus === "sent"}
-                className={cn(
-                  "rounded-[12px] px-5 py-3.5 font-display text-sm font-semibold transition hover:translate-y-[-1px]",
-                  emailStatus === "sent"
-                    ? "cursor-default border-2 border-success bg-success/10 text-success"
-                    : emailStatus === "error"
+              {/* La confirmation reste affichée : elle remplace le bouton au lieu
+                  de le recolorer quelques secondes. Un CTA redevenu bleu laisse
+                  croire que l'envoi n'a pas eu lieu. */}
+              {emailStatus === "sent" ? (
+                <div className="lk-sent flex items-start gap-3 rounded-[12px] border-2 border-success bg-success/10 p-4">
+                  <span className="relative mt-0.5 flex h-8 w-8 shrink-0 items-center justify-center">
+                    <span className="lk-sent-ring absolute inset-0 rounded-full bg-success" />
+                    <span className="lk-sent-badge relative flex h-8 w-8 items-center justify-center rounded-full bg-success">
+                      <svg viewBox="0 0 24 24" className="h-4 w-4" aria-hidden="true">
+                        <path
+                          className="lk-sent-check"
+                          d="M5 12.5l4.5 4.5L19 7.5"
+                          fill="none"
+                          stroke="white"
+                          strokeWidth="2.75"
+                          strokeLinecap="round"
+                          strokeLinejoin="round"
+                        />
+                      </svg>
+                    </span>
+                  </span>
+                  <div className="min-w-0">
+                    <p className="font-display text-sm font-bold text-success">Rapport envoyé</p>
+                    <p className="mt-0.5 break-words text-xs text-sub">
+                      Votre rapport complet en PDF vient de partir
+                      {form.email ? (
+                        <>
+                          {" "}
+                          à <strong className="text-navy">{form.email}</strong>
+                        </>
+                      ) : null}
+                      . Pensez à vérifier vos spams.
+                    </p>
+                    <button
+                      onClick={sendEmailRecap}
+                      className="mt-2 text-xs font-semibold text-primary underline-offset-2 hover:underline"
+                    >
+                      Renvoyer
+                    </button>
+                  </div>
+                </div>
+              ) : (
+                <button
+                  onClick={sendEmailRecap}
+                  disabled={emailStatus === "sending"}
+                  className={cn(
+                    "rounded-[12px] px-5 py-3.5 font-display text-sm font-semibold transition hover:translate-y-[-1px]",
+                    emailStatus === "error"
                       ? "border-2 border-destructive bg-destructive/10 text-destructive"
                       : "bg-primary text-primary-foreground shadow-[0_10px_24px_-8px_rgba(17,86,252,0.5)]",
-                  emailStatus === "sending" && "cursor-wait opacity-60",
-                )}
-              >
-                {emailStatus === "sending" && "⏳ Envoi en cours…"}
-                {emailStatus === "sent" && "✓ Rapport envoyé — vérifiez votre boîte mail"}
-                {emailStatus === "error" && "❌ Erreur, réessayer"}
-                {emailStatus === "idle" && "📧 Recevoir mon rapport complet par email"}
-              </button>
+                    emailStatus === "sending" && "cursor-wait opacity-60",
+                  )}
+                >
+                  {emailStatus === "sending" && (
+                    <span className="inline-flex items-center gap-2">
+                      <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" aria-hidden="true">
+                        <circle
+                          cx="12"
+                          cy="12"
+                          r="9"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeOpacity="0.3"
+                          strokeWidth="3"
+                        />
+                        <path
+                          d="M21 12a9 9 0 0 0-9-9"
+                          fill="none"
+                          stroke="currentColor"
+                          strokeWidth="3"
+                          strokeLinecap="round"
+                        />
+                      </svg>
+                      Préparation de votre rapport…
+                    </span>
+                  )}
+                  {emailStatus === "error" && "❌ Envoi impossible — réessayer"}
+                  {emailStatus === "idle" && "📧 Recevoir mon rapport complet par email"}
+                </button>
+              )}
 
               <button
                 onClick={() => setContactOpen(true)}
