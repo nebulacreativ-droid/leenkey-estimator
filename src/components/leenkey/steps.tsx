@@ -339,23 +339,33 @@ export function Step3({ form, set, errors }: P) {
               placeholder="350"
             />
             {parcelle && (
-              <p className="mt-2 flex flex-wrap items-center gap-2 text-xs text-sub">
-                <span>
-                  Cadastre : parcelle {parcelle.section} {parcelle.numero} —{" "}
-                  <strong className="text-navy">
-                    {parcelle.contenance.toLocaleString("fr-FR")} m²
-                  </strong>
-                </span>
-                {form.surface_terrain !== parcelle.contenance && (
-                  <button
-                    type="button"
-                    onClick={() => set({ surface_terrain: parcelle.contenance })}
-                    className="rounded-full border-2 border-primary/40 px-3 py-1 font-semibold text-primary transition hover:bg-primary/10"
-                  >
-                    Utiliser cette valeur
-                  </button>
+              <div className="mt-2 text-xs text-sub">
+                <p className="flex flex-wrap items-center gap-2">
+                  <span>
+                    Cadastre : parcelle {parcelle.section} {parcelle.numero} —{" "}
+                    <strong className="text-navy">
+                      {parcelle.contenance.toLocaleString("fr-FR")} m²
+                    </strong>
+                  </span>
+                  {form.surface_terrain !== parcelle.contenance && (
+                    <button
+                      type="button"
+                      onClick={() => set({ surface_terrain: parcelle.contenance })}
+                      className="rounded-full border-2 border-primary/40 px-3 py-1 font-semibold text-primary transition hover:bg-primary/10"
+                    >
+                      Utiliser cette valeur
+                    </button>
+                  )}
+                </p>
+                {/* L'adresse trouvée n'est pas toujours celle saisie : la BAN
+                    rapproche « 14 rue des Lilas » de « 14 rue des Esclops ».
+                    L'afficher permet de repérer la mauvaise correspondance. */}
+                {parcelle.adresseReconnue && (
+                  <p className="mt-1 text-[11px] text-muted-foreground">
+                    D'après l'adresse {parcelle.adresseReconnue}
+                  </p>
                 )}
-              </p>
+              </div>
             )}
           </Field>
         )}
