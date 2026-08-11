@@ -173,8 +173,6 @@ function buildPayload(form: LeenkeyForm) {
       derniere_renovation_energetique: form.derniere_renovation,
       dpe_date: form.dpe_date,
       audit_energetique: form.audit_energetique,
-      travaux_energie_budget: form.travaux_energie_budget,
-      dpe_vise: form.dpe_vise,
       pac_type: form.pac_type,
       chaudiere_gaz_type: form.chaudiere_gaz_type,
       bois_type: form.bois_type,

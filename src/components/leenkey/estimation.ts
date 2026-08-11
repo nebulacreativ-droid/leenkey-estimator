@@ -2048,14 +2048,9 @@ export function computeEstimation(
     auditMult *
     energieMult;
   const prixM2 = Math.round(prixM2Marche * globalMult);
-  // Les travaux chiffrés par le vendeur sont déduits tels quels : un devis vaut
-  // mieux qu'un pourcentage, et évite de compter deux fois ce que le DPE traduit
-  // déjà en décote.
-  const budgetTravaux = form.travaux_energie_budget ?? 0;
-  const prixEstime = Math.max(
-    0,
-    Math.round((prixM2 * surface + valeurTerrain - budgetTravaux) / 1000) * 1000,
-  );
+  // L'état du bien joue via etatMult et les postes à reprendre, pas par une
+  // déduction en euros : le vendeur ne chiffre plus ses travaux ici.
+  const prixEstime = Math.max(0, Math.round((prixM2 * surface + valeurTerrain) / 1000) * 1000);
   const deltaMarche = Math.round(((prixM2 - prixM2Marche) / prixM2Marche) * 100);
 
   // Score attractivité

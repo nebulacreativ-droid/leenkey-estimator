@@ -35,7 +35,6 @@ BIEN À ESTIMER :
 ÉNERGIE :
 - DPE : ${energie.dpe ?? "NC"} | GES : ${energie.ges ?? "NC"}${energie.dpe_date ? ` (${energie.dpe_date})` : ""}
 - Audit énergétique : ${energie.audit_energetique ?? "NC"}
-- Objectif DPE après travaux : ${energie.dpe_vise ?? "NC"}${energie.travaux_energie_budget ? ` · budget chiffré ${energie.travaux_energie_budget} €` : ""}
 - Chauffage : ${energie.chauffage ?? "NC"}${energie.chauffage_mode ? ` (${energie.chauffage_mode})` : ""}
 - Année construction : ${energie.annee_construction ?? "NC"}
 - Dernière rénovation énergétique : ${energie.derniere_renovation ?? "NC"}

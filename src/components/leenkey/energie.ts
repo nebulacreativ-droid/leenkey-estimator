@@ -180,7 +180,6 @@ type EntreeProfil = {
   derniere_renovation: string | null;
   annee_construction: string | null;
   etat: string | null;
-  dpe_vise: string | null;
 };
 
 /**
@@ -358,14 +357,8 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
   const pct = (dpeConnu ? (gainParLettre[form.dpe as string] ?? 0) : 0) + impactEnergie(form) * 100;
   // Fourchette d'un point de part et d'autre : c'est une estimation, pas une
   // mesure. « −2 % à 0 % » se lit mieux et se défend mieux que « −1 % ».
-  let impactMin = Math.round(pct) - 1;
-  let impactMax = Math.round(pct) + 1;
-  // Un objectif de travaux chiffré remplace le constat par le gain visé.
-  if (form.dpe_vise && form.dpe_vise !== "inconnu" && dpeConnu) {
-    const gain = (gainParLettre[form.dpe_vise] ?? 0) - (gainParLettre[form.dpe as string] ?? 0);
-    impactMin = Math.max(0, Math.round(gain * 0.6));
-    impactMax = Math.max(0, gain);
-  }
+  const impactMin = Math.round(pct) - 1;
+  const impactMax = Math.round(pct) + 1;
   const calculable = dpeConnu || manquants.length < 8;
 
   // ── Recommandation : le poste le plus rentable en premier ──
