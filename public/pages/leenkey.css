@@ -487,3 +487,86 @@ image-slot { border-radius:12px; }
 .section-dark .faq-q { color:#fff; }
 .section-dark .faq-chev { color:#93B4FF; }
 .section-dark .faq-a-inner { color:rgba(255,255,255,0.72); }
+
+/* ═══════════ Où en êtes-vous — sélecteur d'étape ═══════════
+   Quatre situations, une réponse immédiate : le visiteur qui ne sait pas
+   encore s'il vend doit lire autre chose que celui dont le bien est déjà
+   en ligne. */
+.stages { display:grid; grid-template-columns:repeat(4,1fr); gap:14px; margin-bottom:28px; }
+.stage {
+  display:flex; flex-direction:column; align-items:flex-start; gap:8px;
+  padding:20px 18px; text-align:left; cursor:pointer; font-family:inherit;
+  background:var(--bg-surface); border:2px solid var(--border-default);
+  border-radius:calc(var(--radius-lg)*var(--radius-scale));
+  transition:border-color var(--duration-base) var(--ease-out),
+             box-shadow var(--duration-base) var(--ease-out),
+             transform var(--duration-base) var(--ease-out);
+}
+.stage:hover { border-color:var(--border-strong); transform:translateY(-2px); }
+.stage:focus-visible { outline:3px solid var(--color-blue); outline-offset:2px; }
+.stage small {
+  font-size:12px; font-weight:800; letter-spacing:0.1em;
+  color:var(--color-blue); font-variant-numeric:tabular-nums;
+}
+.stage strong { font-size:15px; font-weight:700; color:var(--color-navy); line-height:1.3; }
+.stage.active {
+  border-color:var(--color-blue); background:var(--bg-tint);
+  box-shadow:var(--shadow-card);
+}
+.stage-result {
+  display:flex; align-items:center; justify-content:space-between; gap:28px; flex-wrap:wrap;
+  padding:26px 28px; background:var(--bg-surface);
+  border:1px solid var(--border-default);
+  border-radius:calc(var(--radius-lg)*var(--radius-scale));
+  box-shadow:var(--shadow-card);
+}
+.stage-result > div { flex:1 1 320px; min-width:0; }
+.stage-result strong { display:block; font-size:19px; font-weight:750; color:var(--color-navy); margin-bottom:6px; }
+.stage-result p { margin:0; color:var(--fg-2); font-size:15px; }
+@media (max-width:900px) { .stages { grid-template-columns:repeat(2,1fr); } }
+@media (max-width:520px) { .stages { grid-template-columns:1fr; } }
+
+/* ═══════════ Aperçu du tableau de bord ═══════════ */
+.dash { display:grid; grid-template-columns:1.55fr 1fr; gap:22px; align-items:start; }
+.dash-panel {
+  background:rgba(255,255,255,0.055); border:1px solid rgba(255,255,255,0.12);
+  border-radius:calc(var(--radius-lg)*var(--radius-scale)); padding:24px;
+}
+.dash-panel > h3 {
+  font-size:12px; font-weight:800; letter-spacing:0.12em; text-transform:uppercase;
+  color:#93B4FF; margin:0 0 18px;
+}
+.dash-next {
+  background:rgba(17,86,252,0.18); border:1px solid rgba(147,180,255,0.35);
+  border-radius:calc(var(--radius-md)*var(--radius-scale)); padding:18px 20px; margin-bottom:18px;
+}
+.dash-next small { display:block; font-size:11px; font-weight:700; letter-spacing:0.1em; text-transform:uppercase; color:#93B4FF; }
+.dash-next h4 { margin:6px 0 4px; font-size:18px; font-weight:700; color:#fff; }
+.dash-next span { font-size:13px; color:var(--fg-on-dark-2); }
+.dash-grid { display:grid; grid-template-columns:repeat(2,1fr); gap:12px; }
+.dash-mini {
+  background:rgba(255,255,255,0.05); border:1px solid rgba(255,255,255,0.09);
+  border-radius:calc(var(--radius-md)*var(--radius-scale)); padding:14px 16px;
+}
+.dash-mini span { display:block; font-size:12.5px; color:var(--fg-on-dark-2); margin-bottom:4px; }
+.dash-mini strong { font-size:24px; font-weight:750; color:#fff; font-variant-numeric:tabular-nums; }
+.dash-steps { list-style:none; margin:0; padding:0; display:flex; flex-direction:column; gap:2px; }
+.dash-steps li {
+  display:flex; align-items:center; gap:12px; padding:13px 4px;
+  font-size:14.5px; color:var(--fg-on-dark-2);
+  border-bottom:1px solid rgba(255,255,255,0.07);
+}
+.dash-steps li:last-child { border-bottom:0; }
+.dash-steps li b { color:#fff; font-weight:650; }
+.dash-steps .mark {
+  flex-shrink:0; width:22px; height:22px; border-radius:50%;
+  display:grid; place-items:center; font-size:11px; font-weight:800;
+  background:rgba(255,255,255,0.1); color:var(--fg-on-dark-2);
+}
+.dash-steps li.done .mark { background:#22C55E; color:#062B16; }
+.dash-steps li.now .mark { background:#93B4FF; color:var(--color-navy-deep); }
+.dash-note { margin:22px 0 0; font-size:13.5px; color:var(--fg-on-dark-2); text-align:center; }
+@media (max-width:860px) {
+  .dash { grid-template-columns:1fr; }
+  .dash-grid { grid-template-columns:repeat(2,1fr); }
+}

@@ -132,4 +132,58 @@
       grid.querySelectorAll('.pa-eco').forEach(function (el) { el.hidden = showForfait; });
     });
   }
+
+  /* ---- Où en êtes-vous : le message s'adapte à la situation déclarée ----
+     Le visiteur qui hésite encore n'a pas besoin du même appel à l'action que
+     celui dont le bien est déjà en ligne. */
+  var stages = document.getElementById('stages');
+  if (stages) {
+    var SITUATIONS = {
+      reflexion: [
+        'Commencez par comprendre votre marché.',
+        'Une première analyse de valeur, et les étapes à anticiper avant toute mise en vente.',
+        'Commencer gratuitement',
+        '/estimer'
+      ],
+      prix: [
+        'Situez votre bien au bon prix.',
+        'Renseignez ses caractéristiques : vous verrez le montant, sa fourchette, et ce qui le fait monter ou baisser.',
+        'Valoriser mon bien',
+        '/estimer'
+      ],
+      preparation: [
+        'Préparez votre vente sans rien oublier.',
+        'Diagnostics, documents, annonce : le parcours vous indique ce qui reste à faire avant de publier.',
+        'Préparer ma vente',
+        '/estimer'
+      ],
+      en_vente: [
+        'Faites le point sur votre vente en cours.',
+        'Vérifiez votre positionnement face au marché, et voyez quels leviers actionner si les visites ne suivent pas.',
+        'Faire le point',
+        '/estimer'
+      ]
+    };
+    var titre = document.querySelector('[data-stage-titre]');
+    var texte = document.querySelector('[data-stage-texte]');
+    var cta = document.querySelector('[data-stage-cta]');
+    stages.addEventListener('click', function (e) {
+      var btn = e.target.closest('.stage');
+      if (!btn) return;
+      var v = SITUATIONS[btn.dataset.k];
+      if (!v) return;
+      stages.querySelectorAll('.stage').forEach(function (b) {
+        var actif = b === btn;
+        b.classList.toggle('active', actif);
+        b.setAttribute('aria-pressed', String(actif));
+      });
+      if (titre) titre.textContent = v[0];
+      if (texte) texte.textContent = v[1];
+      if (cta) {
+        // Le libellé se remplace sans toucher à la flèche, qui suit le texte.
+        cta.childNodes[0].nodeValue = v[2] + ' ';
+        cta.setAttribute('href', v[3]);
+      }
+    });
+  }
 })();

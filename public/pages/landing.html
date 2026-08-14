@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leenkey · Vendez votre bien autrement</title>
-<link rel="stylesheet" href="leenkey.css?v=5">
+<link rel="stylesheet" href="leenkey.css?v=6">
 <style>
   /* Override forcé pour le tableau comparatif (4 colonnes côte à côte) */
   .compare {
@@ -274,7 +274,33 @@
   </div>
 </header>
 
-<!-- ===================== COMMENT ÇA MARCHE ===================== -->
+<!-- ===================== OÙ EN ÊTES-VOUS ===================== -->
+<section class="section section-alt" id="etape" data-screen-label="Où en êtes-vous">
+  <div class="container">
+    <div class="section-head reveal">
+      <span class="eyebrow">Votre projet</span>
+      <h2>Où en êtes-vous dans <span class="text-grad">votre vente&nbsp;?</span></h2>
+      <p class="lead">Choisissez votre situation. Leenkey vous indique par où commencer.</p>
+    </div>
+    <div class="stages reveal" id="stages">
+      <button type="button" class="stage active" data-k="reflexion" aria-pressed="true"><small>01</small><strong>Je réfléchis</strong></button>
+      <button type="button" class="stage" data-k="prix" aria-pressed="false"><small>02</small><strong>Je veux connaître mon prix</strong></button>
+      <button type="button" class="stage" data-k="preparation" aria-pressed="false"><small>03</small><strong>Je prépare ma vente</strong></button>
+      <button type="button" class="stage" data-k="en_vente" aria-pressed="false"><small>04</small><strong>Mon bien est déjà en vente</strong></button>
+    </div>
+    <div class="stage-result reveal" aria-live="polite">
+      <div>
+        <strong data-stage-titre>Commencez par comprendre votre marché.</strong>
+        <p data-stage-texte>Une première analyse de valeur, et les étapes à anticiper avant toute mise en vente.</p>
+      </div>
+      <a class="btn btn-primary" href="/estimer" data-stage-cta>Commencer gratuitement
+        <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+  </div>
+</section>
+
+
 <!-- ===================== COMMENT ÇA MARCHE ===================== -->
 <section class="section" id="comment" data-screen-label="Comment ça marche">
   <div class="container">
@@ -347,25 +373,39 @@
   </div>
 </section>
 <!-- ===================== ESPACE LEENKEY (à venir) ===================== -->
-<section class="section" data-screen-label="Votre espace">
+<section class="section section-dark" data-screen-label="Votre espace">
   <div class="container">
     <div class="section-head reveal">
-      <span class="eyebrow">Bientôt disponible</span>
-      <h2>Toute votre vente, <span class="text-grad">au même endroit.</span></h2>
-      <p class="lead">Nous construisons l'espace qui pilote votre vente de bout en bout : dossier, annonce, visites et offres, avec la prochaine action toujours affichée. L'analyse de valeur, elle, est déjà disponible.</p>
+      <span class="eyebrow">Votre espace Leenkey</span>
+      <h2>Vous savez toujours <span class="text-grad">quoi faire ensuite.</span></h2>
+      <p class="lead">Votre vente se pilote depuis un seul endroit : le dossier, l'annonce, les visites et les offres, avec la prochaine action toujours affichée.</p>
     </div>
-    <div class="feat-grid">
-      <div class="card feat-card reveal">
-        <h4>Votre dossier vendeur</h4>
-        <p>Diagnostics, documents et pièces du notaire réunis, avec ce qu'il reste à fournir.</p>
+
+    <div class="dash reveal">
+      <div class="dash-panel">
+        <h3>Tableau de bord vendeur</h3>
+        <div class="dash-next">
+          <small>Prochaine étape</small>
+          <h4>Programmer les diagnostics</h4>
+          <span>À faire avant la mise en ligne</span>
+        </div>
+        <div class="dash-grid">
+          <div class="dash-mini"><span>Visites cette semaine</span><strong>3</strong></div>
+          <div class="dash-mini"><span>Contacts qualifiés</span><strong>8</strong></div>
+          <div class="dash-mini"><span>Documents prêts</span><strong>12 / 15</strong></div>
+          <div class="dash-mini"><span>Offres reçues</span><strong>1</strong></div>
+        </div>
       </div>
-      <div class="card feat-card reveal" data-d="1">
-        <h4>Annonce et visites</h4>
-        <p>Publication, demandes de visite et échanges avec les acquéreurs, centralisés.</p>
-      </div>
-      <div class="card feat-card reveal" data-d="2">
-        <h4>Offres et signature</h4>
-        <p>Comparaison des offres reçues et suivi jusqu'à la signature chez le notaire.</p>
+
+      <div class="dash-panel">
+        <h3>Votre parcours</h3>
+        <ul class="dash-steps">
+          <li class="done"><span class="mark">✓</span><b>Valeur validée</b></li>
+          <li class="now"><span class="mark">2</span><b>Dossier vendeur</b></li>
+          <li><span class="mark">3</span>Annonce &amp; visites</li>
+          <li><span class="mark">4</span>Offres &amp; notaire</li>
+        </ul>
+        <p class="dash-note">Aperçu de l'espace vendeur.</p>
       </div>
     </div>
   </div>
