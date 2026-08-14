@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leenkey · Vendez votre bien autrement</title>
-<link rel="stylesheet" href="leenkey.css?v=6">
+<link rel="stylesheet" href="leenkey.css?v=7">
 <style>
   /* Override forcé pour le tableau comparatif (4 colonnes côte à côte) */
   .compare {
@@ -207,9 +207,6 @@
   }
   /* Le point de départ compte quatre cartes, pour trois colonnes : la
      quatrième tombait seule sur une deuxième ligne. */
-  @media (min-width:1100px) {
-    #fonctionnalites .feat-grid { grid-template-columns: repeat(4, 1fr) !important; }
-  }
 </style>
 </head>
 <body>
@@ -345,26 +342,46 @@
       <h2>Ce que vous obtenez <span class="text-grad">en quelques minutes.</span></h2>
       <p class="lead">Tout commence par une analyse sérieuse de votre bien. Gratuite, sans engagement, et sans carte bancaire.</p>
     </div>
-    <div class="feat-grid">
-      <div class="card card-hover feat-card reveal">
-        <div class="feat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></div>
+    <div class="flow">
+      <span class="flow-axe">Précision de l'estimation</span>
+      <svg class="flow-curve" viewBox="0 0 100 130" preserveAspectRatio="none" aria-hidden="true" focusable="false">
+        <defs>
+          <linearGradient id="flowGrad" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0" stop-color="#1156FC"/><stop offset="1" stop-color="#93B4FF"/>
+          </linearGradient>
+          <linearGradient id="flowFill" x1="0" y1="0" x2="0" y2="1">
+            <stop offset="0" stop-color="#93B4FF" stop-opacity="0.20"/>
+            <stop offset="1" stop-color="#93B4FF" stop-opacity="0"/>
+          </linearGradient>
+        </defs>
+        <path class="aire" d="M0,110 C5,104 8,99 12.5,96 C22,89 28,80 37.5,72 C47,64 53,55 62.5,46 C72,37 78,30 87.5,24 C92,21 96,18 100,16 L100,130 L0,130 Z"/>
+        <path class="trace" d="M0,110 C5,104 8,99 12.5,96 C22,89 28,80 37.5,72 C47,64 53,55 62.5,46 C72,37 78,30 87.5,24 C92,21 96,18 100,16"/>
+      </svg>
+      <div class="flow-steps">
+      <div class="flow-step reveal" style="--y:0.738">
+        <span class="flow-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><path d="m7 14 4-4 3 3 5-6"/></svg></span>
+        <span class="flow-num">01</span>
         <h4>Une fourchette, pas un chiffre magique</h4>
-        <p>Une valeur estimée et sa fourchette, dont la largeur dépend de ce que vous avez renseigné. Plus votre dossier est complet, plus elle se resserre.</p>
+        <p>Une valeur estimée et sa fourchette, dont la largeur dépend de ce que vous avez renseigné.</p>
       </div>
-      <div class="card card-hover feat-card reveal" data-d="1">
-        <div class="feat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg></div>
+      <div class="flow-step reveal" data-d="1" style="--y:0.554">
+        <span class="flow-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l7-4 7 4v14"/><path d="M9 21v-6h6v6"/></svg></span>
+        <span class="flow-num">02</span>
         <h4>Les ventes réelles de votre quartier</h4>
-        <p>Les transactions publiées par l'administration fiscale, à l'adresse près, nettoyées des ventes atypiques qui faussent les moyennes.</p>
+        <p>Les transactions publiées par l'administration fiscale, à l'adresse près, nettoyées des ventes atypiques.</p>
       </div>
-      <div class="card card-hover feat-card reveal" data-d="2">
-        <div class="feat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></div>
+      <div class="flow-step reveal" data-d="2" style="--y:0.354">
+        <span class="flow-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M12 20V10"/><path d="M18 20V4"/><path d="M6 20v-4"/></svg></span>
+        <span class="flow-num">03</span>
         <h4>Ce qui fait monter ou baisser le prix</h4>
-        <p>État, DPE, extérieurs, prestations, étage : chaque critère est chiffré séparément. Vous voyez d'où vient le montant.</p>
+        <p>État, DPE, extérieurs, prestations, étage : chaque critère est chiffré séparément.</p>
       </div>
-      <div class="card card-hover feat-card reveal" data-d="3">
-        <div class="feat-icon"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></div>
+      <div class="flow-step reveal" data-d="3" style="--y:0.185">
+        <span class="flow-dot"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"/><path d="M14 2v6h6"/></svg></span>
+        <span class="flow-num">04</span>
         <h4>Un rapport complet en PDF</h4>
-        <p>Quatre pages reçues par email : valorisation, analyse du marché local, stratégie de vente et plan d'action. À garder ou à transmettre.</p>
+        <p>Quatre pages reçues par email : valorisation, marché local, stratégie de vente et plan d'action.</p>
+      </div>
       </div>
     </div>
     <div class="reveal" style="text-align:center;margin-top:36px">
@@ -466,20 +483,20 @@
       <div class="price-card">
         <div class="price-name">Autonomie</div>
         <p class="price-desc">Pour piloter votre vente en toute autonomie.</p>
-        <div class="price-amount"><span style="font-size:44px;font-weight:800;color:#1156fc">Gratuit</span></div>
-        <div class="price-note" style="color:#64748B">Sans engagement · sans carte bancaire</div>
+        <div class="price-amount"><span class="pa-num">Gratuit</span></div>
+        <div class="price-note">Sans engagement · sans carte bancaire</div>
       </div>
       <div class="price-card" style="position:relative">
         <div class="price-name">Accompagné</div>
         <p class="price-desc">Un conseiller dédié à vos côtés, du prix à la signature.</p>
-        <div class="price-amount"><span style="font-size:44px;font-weight:800;color:#1156fc">990&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span></div>
-        <div class="price-note" style="color:#64748B">Forfait fixe · payé à la souscription</div>
+        <div class="price-amount"><span class="pa-num">990&nbsp;€</span><span class="pa-unit">TTC</span></div>
+        <div class="price-note">Forfait fixe · payé à la souscription</div>
       </div>
       <div class="price-card">
         <div class="price-name">Sérénité</div>
         <p class="price-desc">Nous nous occupons de presque tout, vous gardez la décision.</p>
-        <div class="price-amount"><span style="font-size:44px;font-weight:800;color:#1156fc">1&nbsp;500&nbsp;€<span style="font-size:18px;font-weight:600;color:#64748B;margin-left:4px">TTC</span></span></div>
-        <div class="price-note" style="color:#64748B">Forfait fixe · payé à la souscription</div>
+        <div class="price-amount"><span class="pa-num">1&nbsp;500&nbsp;€</span><span class="pa-unit">TTC</span></div>
+        <div class="price-note">Forfait fixe · payé à la souscription</div>
       </div>
     </div>
     <div class="reveal" style="text-align:center;margin-top:36px">
@@ -497,16 +514,16 @@
       <h2>Les trois questions <span class="text-grad">essentielles.</span></h2>
     </div>
     <div class="faq reveal" data-d="1">
-      <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Est-ce vraiment gratuit pour commencer&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+      <div class="faq-item open">
+        <button class="faq-q" type="button" aria-expanded="true">Est-ce vraiment gratuit pour commencer&nbsp;?<span class="faq-plus" aria-hidden="true"></span></button>
         <div class="faq-a"><div class="faq-a-inner">Oui. La formule <strong>Autonomie est gratuite</strong> pendant la phase pilote, sans engagement et sans carte bancaire. Elle inclut l'analyse de votre bien, un call stratégique de 30 minutes et la mise en place du dossier de vente.</div></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Suis-je vraiment accompagné, ou seul face à la plateforme&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button class="faq-q" type="button" aria-expanded="false">Suis-je vraiment accompagné, ou seul face à la plateforme&nbsp;?<span class="faq-plus" aria-hidden="true"></span></button>
         <div class="faq-a"><div class="faq-a-inner">Accompagné. Selon votre forfait, un conseiller Leenkey reste joignable à chaque étape : pour valider votre prix, relire une offre, ou répondre à un doute avant la signature. Vous gardez la main, sans jamais rester seul.</div></div>
       </div>
       <div class="faq-item">
-        <button class="faq-q" type="button" aria-expanded="false">Quelle différence avec une agence&nbsp;?<svg class="faq-chev" width="22" height="22" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round"><path d="m6 9 6 6 6-6"/></svg></button>
+        <button class="faq-q" type="button" aria-expanded="false">Quelle différence avec une agence&nbsp;?<span class="faq-plus" aria-hidden="true"></span></button>
         <div class="faq-a"><div class="faq-a-inner">Vous restez décisionnaire. Leenkey apporte les outils, le parcours guidé et l'accompagnement, avec un <strong>forfait fixe</strong> plutôt qu'une commission au pourcentage sur le prix de vente.</div></div>
       </div>
     </div>

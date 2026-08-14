@@ -115,6 +115,18 @@
         btn.setAttribute('aria-expanded', 'true');
       }
     });
+
+    // La première question est ouverte dans le HTML : sa hauteur doit être
+    // posée à l'affichage, et reprise à chaque redimensionnement, sinon le
+    // texte se retrouve coupé quand il se réagence sur une ligne de plus.
+    var ajusteOuverts = function () {
+      faq.querySelectorAll('.faq-item.open .faq-a').forEach(function (a) {
+        a.style.maxHeight = a.firstElementChild.offsetHeight + 'px';
+      });
+    };
+    requestAnimationFrame(ajusteOuverts);
+    window.addEventListener('resize', ajusteOuverts);
+    if (document.fonts && document.fonts.ready) document.fonts.ready.then(ajusteOuverts);
   }
 
   /* ---- Pricing toggle ---- */
@@ -159,9 +171,9 @@
       ],
       en_vente: [
         'Faites le point sur votre vente en cours.',
-        'Vérifiez votre positionnement face au marché, et voyez quels leviers actionner si les visites ne suivent pas.',
-        'Faire le point',
-        '/estimer'
+        'Un conseiller regarde votre positionnement face au marché et vous dit quels leviers actionner si les visites ne suivent pas.',
+        'Parler à un conseiller',
+        '#contact'
       ]
     };
     var titre = document.querySelector('[data-stage-titre]');
