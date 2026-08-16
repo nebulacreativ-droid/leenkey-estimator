@@ -2,8 +2,18 @@ import { cn } from "@/lib/utils";
 import { computeEstimation, formatEUR, type EstimationResult } from "./estimation";
 import type { LeenkeyForm } from "./types";
 import { prixM2Dvf, type DvfResult } from "./dvf";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { generateReportPDFBase64 } from "./generatePDF";
+
+/** Mêmes libellés que l'étape Coordonnées, pour que le vendeur retrouve
+ *  exactement ce qu'il a coché. */
+const DISPO_LABELS: Record<string, string> = {
+  matin: "Matin (8h–12h)",
+  dejeuner: "Déjeuner (12h–14h)",
+  apres_midi: "Après-midi (14h–17h)",
+  soir: "Soir (17h–19h)",
+  peu_importe: "Peu importe",
+};
 
 const monthLabel = (months: number): string => {
   if (months === 0) return "ce mois-ci";
@@ -87,7 +97,24 @@ export function EstimationDashboard({
   const [contactOpen, setContactOpen] = useState(false);
   const [contactStatus, setContactStatus] = useState<"idle" | "sending" | "sent" | "error">("idle");
   const [contactMsg, setContactMsg] = useState("");
-  const [contactDispo, setContactDispo] = useState("Dès que possible");
+  const [contactDispo, setContactDispo] = useState(
+    () =>
+      (form.disponibilites ?? [])
+        .map((d) => DISPO_LABELS[d])
+        .filter(Boolean)
+        .join(", ") || "Dès que possible",
+  );
+
+  // Cocher « je souhaite être contacté » ne déclenchait rien de visible : le
+  // vendeur arrivait sur son rapport sans savoir si sa demande était partie.
+  // La fenêtre s'ouvre donc d'elle-même, une seule fois, pour qu'il confirme.
+  const [rappelPropose, setRappelPropose] = useState(false);
+  useEffect(() => {
+    if (form.contact_conseiller && !rappelPropose) {
+      setRappelPropose(true);
+      setContactOpen(true);
+    }
+  }, [form.contact_conseiller, rappelPropose]);
 
   const sendContactRequest = async () => {
     setContactStatus("sending");
@@ -725,7 +752,9 @@ export function EstimationDashboard({
                         📞 Prendre contact avec un conseiller
                       </h3>
                       <p className="mt-1 text-sm text-sub">
-                        Un conseiller Leenkey vous contactera sous 24 h.
+                        {form.contact_conseiller
+                          ? "Vous avez demandé à être rappelé. Confirmez et un conseiller vous contactera sous 24 h."
+                          : "Un conseiller Leenkey vous contactera sous 24 h."}
                       </p>
                     </div>
                     <button
@@ -760,10 +789,13 @@ export function EstimationDashboard({
                         className="h-[44px] w-full rounded-[10px] border-2 border-border bg-card px-3 text-sm text-navy focus:border-primary focus:outline-none"
                       >
                         <option>Dès que possible</option>
-                        <option>Matin (9h - 12h)</option>
-                        <option>Après-midi (14h - 17h)</option>
-                        <option>Fin de journée (17h - 19h)</option>
-                        <option>Week-end</option>
+                        {Object.values(DISPO_LABELS).map((l) => (
+                          <option key={l}>{l}</option>
+                        ))}
+                        {contactDispo !== "Dès que possible" &&
+                          !Object.values(DISPO_LABELS).includes(contactDispo) && (
+                            <option>{contactDispo}</option>
+                          )}
                       </select>
                     </div>
 
