@@ -4,7 +4,7 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Leenkey · Vendez votre bien autrement</title>
-<link rel="stylesheet" href="leenkey.css?v=8">
+<link rel="stylesheet" href="leenkey.css?v=9">
 <style>
   /* Override forcé pour le tableau comparatif (4 colonnes côte à côte) */
   .compare {
@@ -47,6 +47,7 @@
       border-radius: 40px 20px 20px 40px / 60px 20px 20px 60px !important;
     }
   }
+  .estimate-chip { z-index: 6 !important; }
   .estimate-card { z-index: 5 !important; }
   /* Étapes "Comment ça marche" — désactive les micro-animations parasites
      sur mobile/tactile (pop, rotation, hover collant) qui gênent la lecture */
@@ -243,6 +244,10 @@
       <div class="hero-visual">
         <div class="estimate-wrap">
           <img class="estimate-photo" src="https://images.unsplash.com/photo-1613490493576-7fde63acd811?auto=format&fit=crop&w=1200&q=80" alt="Maison contemporaine" loading="eager" />
+        <div class="estimate-chip">
+            <span class="ec-ic"><svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.5" stroke-linecap="round" stroke-linejoin="round"><path d="m22 7-9 9-5-5-7 7"/><path d="M16 7h6v6"/></svg></span>
+            <div><div class="ec-big">+ 5,2&nbsp;%</div><div class="ec-cap">vs prix agence</div></div>
+          </div>
         <div class="estimate-card">
             <div class="ec-top">
               <div>
