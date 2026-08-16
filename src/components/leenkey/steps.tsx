@@ -29,7 +29,6 @@ import {
   ISOLATION_MURS,
   PAC_TYPES,
   RENOVATIONS,
-  TRAVAUX_ENERGIE,
   VENTILATION_OPTS,
 } from "./energie";
 import { ProfilEnergetiquePanel } from "./ProfilEnergetiquePanel";
@@ -973,13 +972,6 @@ export function Step8({ form, set }: P) {
               values={form.equipements_energie}
               onToggle={(v) => set({ equipements_energie: bascule(form.equipements_energie, v) })}
               options={EQUIPEMENTS_ENERGIE}
-            />
-          </Field>
-          <Field label="Travaux énergétiques réalisés" hint="plusieurs choix possibles">
-            <PillMulti
-              values={form.travaux_energie}
-              onToggle={(v) => set({ travaux_energie: bascule(form.travaux_energie, v) })}
-              options={TRAVAUX_ENERGIE}
             />
           </Field>
           <SectionTitle>Contexte du bien</SectionTitle>

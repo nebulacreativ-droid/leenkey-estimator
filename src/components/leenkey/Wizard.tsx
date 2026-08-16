@@ -182,7 +182,6 @@ function buildPayload(form: LeenkeyForm) {
       fenetres: form.fenetres,
       ventilation: form.ventilation,
       equipements_energie: form.equipements_energie,
-      travaux_energie: form.travaux_energie,
     },
     situation: {
       proprietaire: form.proprietaire,

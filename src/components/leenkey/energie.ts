@@ -66,16 +66,6 @@ export const EQUIPEMENTS_ENERGIE = [
   "Batterie domestique",
   "Borne de recharge véhicule électrique",
 ];
-export const TRAVAUX_ENERGIE = [
-  "Isolation toiture",
-  "Isolation murs",
-  "Isolation plancher bas",
-  "Fenêtres",
-  "Pompe à chaleur",
-  "Ballon thermodynamique",
-  "Panneaux photovoltaïques",
-  "VMC",
-];
 
 export const ANNEES_CONSTRUCTION = [
   "Avant 1950",
@@ -143,7 +133,6 @@ export function impactEnergie(form: EntreeProfil): number {
   for (const e of form.equipements_energie ?? []) {
     m += e === "Panneaux photovoltaïques" ? 0.02 : 0.005;
   }
-  m += Math.min((form.travaux_energie ?? []).length * 0.005, 0.02);
 
   // Borné : ce volet affine l'estimation, il ne doit pas la piloter.
   return Math.max(-0.08, Math.min(0.08, m));
@@ -182,7 +171,6 @@ type EntreeProfil = {
   fenetres: string | null;
   ventilation: string | null;
   equipements_energie: string[];
-  travaux_energie: string[];
   derniere_renovation: string | null;
   annee_construction: string | null;
   etat: string | null;
@@ -318,12 +306,7 @@ export function profilEnergetique(form: EntreeProfil): ProfilEnergetique {
     forts.push(e);
     score += e === "Panneaux photovoltaïques" ? 5 : 2;
   }
-  for (const t of form.travaux_energie ?? []) {
-    forts.push(`Travaux réalisés : ${t.toLowerCase()}`);
-    score += 2;
-  }
-  if (!(form.equipements_energie ?? []).length && !(form.travaux_energie ?? []).length)
-    manquants.push("les équipements et travaux");
+  if (!(form.equipements_energie ?? []).length) manquants.push("les équipements");
 
   // ── Contexte du bâti ──
   if (form.annee_construction) {

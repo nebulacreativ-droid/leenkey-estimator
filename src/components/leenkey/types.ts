@@ -188,7 +188,6 @@ export interface LeenkeyForm {
   ventilation: string | null;
   // Équipements présents et travaux déjà réalisés
   equipements_energie: string[];
-  travaux_energie: string[];
 
   // 9
   proprietaire: string | null;
@@ -359,7 +358,6 @@ export const initialForm: LeenkeyForm = {
   fenetres: null,
   ventilation: null,
   equipements_energie: [],
-  travaux_energie: [],
   proprietaire: null,
   occupation: null,
   bail_expiration: "",

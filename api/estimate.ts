@@ -40,7 +40,6 @@ BIEN À ESTIMER :
 - Dernière rénovation énergétique : ${energie.derniere_renovation ?? "NC"}
 - Isolation : combles ${energie.isolation_combles ?? "NC"} · murs ${energie.isolation_murs ?? "NC"} · fenêtres ${energie.fenetres ?? "NC"} · ventilation ${energie.ventilation ?? "NC"}
 - Équipements énergétiques : ${Array.isArray(energie.equipements_energie) && energie.equipements_energie.length ? energie.equipements_energie.join(", ") : "aucun"}
-- Travaux énergétiques réalisés : ${Array.isArray(energie.travaux_energie) && energie.travaux_energie.length ? energie.travaux_energie.join(", ") : "aucun"}
 
 SITUATION JURIDIQUE :
 - Propriétaire : ${situation.proprietaire}
