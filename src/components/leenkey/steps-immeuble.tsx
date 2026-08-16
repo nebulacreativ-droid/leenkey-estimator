@@ -10,6 +10,7 @@ import {
   ToggleCard,
 } from "./ui";
 import { DpeRow, type P } from "./steps";
+import { RentabilitePanel } from "./RentabilitePanel";
 import { CHAUFFAGE_MODES, CHAUFFAGE_OPTS } from "./energie";
 import type { DpeLetter, LeenkeyForm, Lot } from "./types";
 import {
@@ -293,115 +294,104 @@ export function ImmeubleStep3({ form, set }: P) {
         subtitle="C'est le revenu net qui fixe le prix d'un immeuble de rapport — bien plus que la surface."
       />
 
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        {[
-          { l: "Revenus annuels", v: `${stats.revenusAnnuels.toLocaleString("fr-FR")} €` },
-          { l: "Taux d'occupation", v: `${stats.tauxOccupation} %` },
-          { l: "Loyer moyen", v: `${stats.loyerMoyen.toLocaleString("fr-FR")} €/mois` },
-          { l: "Loyer au m²", v: stats.loyerM2 ? `${stats.loyerM2} €/m²` : "—" },
-        ].map((s) => (
-          <div key={s.l} className="rounded-[12px] border-2 border-sky-mid bg-sky/40 p-4">
-            <div className="text-xs font-semibold uppercase tracking-wide text-sub">{s.l}</div>
-            <div className="mt-1 font-display text-xl font-bold text-navy">{s.v}</div>
-          </div>
-        ))}
-      </div>
-      {stats.tauxOccupation < 100 && (
-        <p className="rounded-[10px] border-2 border-amber-200 bg-amber-50 px-4 py-3 text-sm text-amber-900">
-          {100 - stats.tauxOccupation} % de vacance. Un acquéreur y verra soit un risque, soit un
-          potentiel de revalorisation — les lots libres sont ceux qu'il faut savoir expliquer.
-        </p>
-      )}
-
-      <div className="space-y-4">
-        {form.lots.map((lot, i) => {
-          const annexe = ANNEXES.has(lot.typologie);
-          const rang = form.lots
-            .slice(0, i + 1)
-            .filter((l) => l.typologie === lot.typologie).length;
-          return (
-            <div key={lot.id} className="rounded-[14px] border-2 border-border bg-card p-5">
-              <div className="mb-4 flex items-center justify-between">
-                <span className="font-display text-base font-semibold text-navy">
-                  {lot.typologie} n°{rang}
-                </span>
-                <span
-                  className={
-                    "rounded-full px-3 py-1 text-xs font-semibold " +
-                    (lot.statut === "occupe"
-                      ? "bg-success/15 text-success"
-                      : "bg-amber-100 text-amber-700")
-                  }
-                >
-                  {lot.statut === "occupe" ? "Occupé" : "Libre"}
-                </span>
-              </div>
-              <div className="grid gap-4 md:grid-cols-2">
-                <Field label="Surface" hint="m²">
-                  <TextInput
-                    type="number"
-                    min={0}
-                    value={lot.surface ?? ""}
-                    onChange={(e) =>
-                      maj(lot.id, { surface: e.target.value ? Number(e.target.value) : null })
+      {/* Deux colonnes : la saisie à gauche, les chiffres à droite. Ils suivent
+          le défilement, sinon ils disparaissent dès le troisième lot — au moment
+          précis où le vendeur veut voir l'effet du loyer qu'il saisit. */}
+      <div className="grid gap-8 lg:grid-cols-[minmax(0,1fr)_320px]">
+        <div className="order-2 space-y-4 lg:order-1">
+          {form.lots.map((lot, i) => {
+            const annexe = ANNEXES.has(lot.typologie);
+            const rang = form.lots
+              .slice(0, i + 1)
+              .filter((l) => l.typologie === lot.typologie).length;
+            return (
+              <div key={lot.id} className="rounded-[14px] border-2 border-border bg-card p-5">
+                <div className="mb-4 flex items-center justify-between">
+                  <span className="font-display text-base font-semibold text-navy">
+                    {lot.typologie} n°{rang}
+                  </span>
+                  <span
+                    className={
+                      "rounded-full px-3 py-1 text-xs font-semibold " +
+                      (lot.statut === "occupe"
+                        ? "bg-success/15 text-success"
+                        : "bg-amber-100 text-amber-700")
                     }
-                  />
-                </Field>
-                <Field label="Loyer hors charges" hint="€ / mois">
-                  <TextInput
-                    type="number"
-                    min={0}
-                    value={lot.loyer_hc ?? ""}
-                    onChange={(e) =>
-                      maj(lot.id, { loyer_hc: e.target.value ? Number(e.target.value) : null })
-                    }
-                  />
-                </Field>
-                {lot.statut === "occupe" && (
-                  <>
-                    <Field label="Charges" hint="€ / mois">
-                      <TextInput
-                        type="number"
-                        min={0}
-                        value={lot.charges ?? ""}
-                        onChange={(e) =>
-                          maj(lot.id, { charges: e.target.value ? Number(e.target.value) : null })
-                        }
-                      />
-                    </Field>
-                    <Field label="Date de début du bail">
-                      <TextInput
-                        type="date"
-                        value={lot.bail_debut}
-                        onChange={(e) => maj(lot.id, { bail_debut: e.target.value })}
-                      />
-                    </Field>
+                  >
+                    {lot.statut === "occupe" ? "Occupé" : "Libre"}
+                  </span>
+                </div>
+                <div className="grid gap-4 md:grid-cols-2">
+                  <Field label="Surface" hint="m²">
+                    <TextInput
+                      type="number"
+                      min={0}
+                      value={lot.surface ?? ""}
+                      onChange={(e) =>
+                        maj(lot.id, { surface: e.target.value ? Number(e.target.value) : null })
+                      }
+                    />
+                  </Field>
+                  <Field label="Loyer hors charges" hint="€ / mois">
+                    <TextInput
+                      type="number"
+                      min={0}
+                      value={lot.loyer_hc ?? ""}
+                      onChange={(e) =>
+                        maj(lot.id, { loyer_hc: e.target.value ? Number(e.target.value) : null })
+                      }
+                    />
+                  </Field>
+                  {lot.statut === "occupe" && (
+                    <>
+                      <Field label="Charges" hint="€ / mois">
+                        <TextInput
+                          type="number"
+                          min={0}
+                          value={lot.charges ?? ""}
+                          onChange={(e) =>
+                            maj(lot.id, { charges: e.target.value ? Number(e.target.value) : null })
+                          }
+                        />
+                      </Field>
+                      <Field label="Date de début du bail">
+                        <TextInput
+                          type="date"
+                          value={lot.bail_debut}
+                          onChange={(e) => maj(lot.id, { bail_debut: e.target.value })}
+                        />
+                      </Field>
+                      <div className="md:col-span-2">
+                        <Field label="Durée restante du bail">
+                          <PillGroup
+                            value={lot.bail_duree_restante}
+                            onChange={(v) => maj(lot.id, { bail_duree_restante: v })}
+                            options={DUREES}
+                          />
+                        </Field>
+                      </div>
+                    </>
+                  )}
+                  {!annexe && (
                     <div className="md:col-span-2">
-                      <Field label="Durée restante du bail">
+                      <Field label="DPE du lot">
                         <PillGroup
-                          value={lot.bail_duree_restante}
-                          onChange={(v) => maj(lot.id, { bail_duree_restante: v })}
-                          options={DUREES}
+                          value={lot.dpe}
+                          onChange={(v) => maj(lot.id, { dpe: v as DpeLetter })}
+                          options={DPE_CHOIX.map((d) => (d === "inconnu" ? "Je ne sais pas" : d))}
                         />
                       </Field>
                     </div>
-                  </>
-                )}
-                {!annexe && (
-                  <div className="md:col-span-2">
-                    <Field label="DPE du lot">
-                      <PillGroup
-                        value={lot.dpe}
-                        onChange={(v) => maj(lot.id, { dpe: v as DpeLetter })}
-                        options={DPE_CHOIX.map((d) => (d === "inconnu" ? "Je ne sais pas" : d))}
-                      />
-                    </Field>
-                  </div>
-                )}
+                  )}
+                </div>
               </div>
-            </div>
-          );
-        })}
+            );
+          })}
+        </div>
+
+        <div className="order-1 lg:order-2">
+          <RentabilitePanel stats={stats} />
+        </div>
       </div>
     </div>
   );

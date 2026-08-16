@@ -267,7 +267,7 @@ const PARCOURS_IMMEUBLE: FlowStep[] = [
     // Sans lot déclaré, ni le revenu ni le taux d'occupation ne sont calculables.
     validate: (f) => (f.lots.length ? {} : { lots: "Déclarez au moins un lot" }),
   },
-  { label: "Situation locative", render: (p) => <ImmeubleStep3 {...p} /> },
+  { label: "Situation locative", render: (p) => <ImmeubleStep3 {...p} />, large: true },
   { label: "Charges", render: (p) => <ImmeubleStep4 {...p} /> },
   { label: "État technique", render: (p) => <ImmeubleStep5 {...p} /> },
   { label: "Potentiel", render: (p) => <ImmeubleStep6 {...p} /> },
