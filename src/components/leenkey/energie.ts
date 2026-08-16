@@ -23,6 +23,9 @@ export const CHAUDIERE_GAZ_TYPES = ["À condensation", "Classique", "Je ne sais 
 export const BOIS_TYPES = ["Poêle", "Insert", "Chaudière", "Je ne sais pas"];
 
 export const EAU_CHAUDE_OPTS = [
+  // Distinct du ballon thermodynamique : ici la pompe à chaleur du logement
+  // assure aussi l'eau chaude, au lieu d'un ballon dédié.
+  "Pompe à chaleur",
   "Ballon thermodynamique",
   "Chauffe-eau électrique",
   "Chauffe-eau gaz",
@@ -91,6 +94,9 @@ export const RENOVATIONS = [
 ];
 
 export const CHAUFFAGE_MODES = ["Individuel", "Collectif", "Je ne sais pas"];
+/** L'eau chaude peut être collective quand le chauffage ne l'est pas, et
+ *  l'inverse : les deux questions se posent séparément. */
+export const EAU_CHAUDE_MODES = CHAUFFAGE_MODES;
 
 /* ------------------------------------------------------------------ */
 /* Profil énergétique                                                  */

@@ -169,6 +169,7 @@ function buildPayload(form: LeenkeyForm) {
       chauffage: form.chauffage,
       chauffage_mode: form.chauffage_mode,
       eau_chaude: form.eau_chaude,
+      eau_chaude_mode: form.eau_chaude_mode,
       annee_construction: form.annee_construction,
       derniere_renovation_energetique: form.derniere_renovation,
       dpe_date: form.dpe_date,

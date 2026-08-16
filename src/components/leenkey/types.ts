@@ -169,6 +169,7 @@ export interface LeenkeyForm {
   chauffage: string | null;
   chauffage_mode: string | null; // individuel | collectif
   eau_chaude: string | null;
+  eau_chaude_mode: string | null; // individuel | collectif
   annee_construction: string | null;
   derniere_renovation: string | null;
   /** Un DPE d'avant juillet 2021 relève de l'ancienne méthode et n'est plus opposable. */
@@ -345,6 +346,7 @@ export const initialForm: LeenkeyForm = {
   chauffage: null,
   chauffage_mode: null,
   eau_chaude: null,
+  eau_chaude_mode: null,
   annee_construction: null,
   derniere_renovation: null,
   dpe_date: null,

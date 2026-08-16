@@ -21,6 +21,7 @@ import {
   CHAUFFAGE_MODES,
   CHAUFFAGE_OPTS,
   DPE_DATES,
+  EAU_CHAUDE_MODES,
   EAU_CHAUDE_OPTS,
   EQUIPEMENTS_ENERGIE,
   FENETRES_OPTS,
@@ -926,6 +927,13 @@ export function Step8({ form, set }: P) {
               value={form.eau_chaude}
               onChange={(v) => set({ eau_chaude: v })}
               options={EAU_CHAUDE_OPTS}
+            />
+          </Field>
+          <Field label="Eau chaude individuelle ou collective ?">
+            <PillGroup
+              value={form.eau_chaude_mode}
+              onChange={(v) => set({ eau_chaude_mode: v })}
+              options={EAU_CHAUDE_MODES}
             />
           </Field>
 
