@@ -342,7 +342,11 @@ export function Step3({ form, set, errors }: P) {
               <div className="mt-2 text-xs text-sub">
                 <p className="flex flex-wrap items-center gap-2">
                   <span>
-                    Cadastre : parcelle {parcelle.section} {parcelle.numero} —{" "}
+                    {/* Une parcelle retenue parce qu'elle était la plus proche
+                        reste probable, pas certaine : le dire évite qu'un
+                        chiffre voisin passe pour une donnée officielle. */}
+                    {parcelle.certaine ? "Cadastre" : "Cadastre, parcelle la plus proche"} :{" "}
+                    {parcelle.section} {parcelle.numero} —{" "}
                     <strong className="text-navy">
                       {parcelle.contenance.toLocaleString("fr-FR")} m²
                     </strong>
