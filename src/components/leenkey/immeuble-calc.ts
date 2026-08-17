@@ -90,9 +90,13 @@ export function statsLocatives(lots: Lot[]) {
   // Loyer de marché des lots vides, estimé au loyer au m² des lots occupés :
   // c'est le potentiel qu'un acquéreur valorisera.
   const loyerM2 = surfaceLouee ? loyerMensuel / surfaceLouee : 0;
-  const surfaceVide = lots
-    .filter((l) => l.statut === "libre")
-    .reduce((s, l) => s + (l.surface ?? 0), 0);
+  const vides = lots.filter((l) => l.statut === "libre");
+
+  // Loyer attendu des lots vides. Le propriétaire peut le déclarer lot par lot —
+  // son chiffre prime, il connaît son marché. À défaut on l'extrapole au loyer
+  // au m² des lots occupés, ce qui suppose qu'il y en ait.
+  const loyerVideDeclare = vides.reduce((s, l) => s + (l.loyer_hc ?? 0), 0);
+  const loyerVideEstime = vides.reduce((s, l) => s + (l.loyer_hc ?? (l.surface ?? 0) * loyerM2), 0);
 
   return {
     nbLots: lots.length,
@@ -102,8 +106,12 @@ export function statsLocatives(lots: Lot[]) {
     tauxOccupation: lots.length ? Math.round((occupes.length / lots.length) * 100) : 0,
     loyerMoyen: occupes.length ? Math.round(loyerMensuel / occupes.length) : 0,
     loyerM2: Math.round(loyerM2 * 10) / 10,
-    /** Revenu annuel supplémentaire si les lots vides étaient loués au même prix au m². */
-    potentielVacance: Math.round(loyerM2 * surfaceVide * 12),
+    /** Revenu annuel supplémentaire si les lots vides étaient loués. */
+    potentielVacance: Math.round(loyerVideEstime * 12),
+    /** Part de ce potentiel que le propriétaire a chiffrée lui-même. */
+    potentielDeclare: Math.round(loyerVideDeclare * 12),
+    /** Loyers annuels de l'immeuble une fois plein. */
+    revenusPotentiels: Math.round((loyerMensuel + loyerVideEstime) * 12),
   };
 }
 

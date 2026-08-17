@@ -332,7 +332,14 @@ export function ImmeubleStep3({ form, set }: P) {
                       }
                     />
                   </Field>
-                  <Field label="Loyer hors charges" hint="€ / mois">
+                  <Field
+                    label={lot.statut === "occupe" ? "Loyer hors charges" : "Loyer attendu"}
+                    hint={
+                      lot.statut === "occupe"
+                        ? "€ / mois"
+                        : "€ / mois — ce que le lot rapporterait une fois loué"
+                    }
+                  >
                     <TextInput
                       type="number"
                       min={0}

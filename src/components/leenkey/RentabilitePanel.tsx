@@ -28,6 +28,24 @@ export function RentabilitePanel({ stats }: { stats: Stats }) {
         </p>
       </div>
 
+      {/* Les loyers saisis sur les lots vides ne sont pas des revenus perçus :
+          ils ne peuvent pas grossir la ligne du dessus. Mais les taire donnait
+          l'impression qu'ils n'étaient pas pris en compte. */}
+      {stats.potentielVacance > 0 && (
+        <div className="mt-4 rounded-[10px] border border-dashed border-sky-mid bg-sky/30 p-3">
+          <div className="text-xs font-semibold text-sub">Une fois l'immeuble plein</div>
+          <div className="font-display text-lg font-bold text-navy">
+            {stats.revenusPotentiels.toLocaleString("fr-FR")} €
+            <span className="ml-1 text-xs font-semibold text-sub">par an</span>
+          </div>
+          <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
+            {stats.potentielVacance.toLocaleString("fr-FR")} € de loyers à récupérer sur les lots
+            libres
+            {stats.potentielDeclare > 0 ? ", d'après les loyers que vous avez indiqués." : "."}
+          </p>
+        </div>
+      )}
+
       <div className="mt-5 grid grid-cols-2 gap-3">
         {[
           { l: "Loyer moyen", v: `${stats.loyerMoyen.toLocaleString("fr-FR")} €`, u: "par mois" },
@@ -76,9 +94,8 @@ export function RentabilitePanel({ stats }: { stats: Stats }) {
         <div className="mt-4 rounded-[10px] border-2 border-amber-200 bg-amber-50 p-3">
           <div className="text-xs font-bold text-amber-900">{vacance} % de vacance</div>
           <p className="mt-1 text-[11px] leading-relaxed text-amber-900">
-            {stats.potentielVacance > 0
-              ? `Loués au prix au m² des autres lots, les lots libres rapporteraient ${stats.potentielVacance.toLocaleString("fr-FR")} € de plus par an.`
-              : "Un acquéreur y verra soit un risque, soit un potentiel de revalorisation."}
+            Un acquéreur y verra soit un risque, soit un potentiel de revalorisation. Renseignez le
+            loyer attendu de chaque lot libre pour montrer le second.
           </p>
         </div>
       )}
