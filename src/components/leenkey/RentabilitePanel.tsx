@@ -18,20 +18,33 @@ export function RentabilitePanel({ stats }: { stats: Stats }) {
         Rentabilité de l'immeuble
       </div>
 
+      {/* Quand rien n'est loué, « Revenus annuels : 0 € » restait figé pendant
+          la saisie des loyers attendus — le vendeur croyait le panneau cassé.
+          Le chiffre principal bascule alors sur le revenu attendu, qui se met
+          à jour à chaque frappe. */}
       <div className="mt-4">
-        <div className="text-xs font-semibold text-sub">Revenus annuels</div>
+        <div className="text-xs font-semibold text-sub">
+          {stats.surLoyersAttendus ? "Revenus annuels attendus" : "Revenus annuels"}
+        </div>
         <div className="font-display text-[26px] font-bold leading-tight text-navy">
-          {stats.revenusAnnuels.toLocaleString("fr-FR")} €
+          {(stats.surLoyersAttendus
+            ? stats.revenusPotentiels
+            : stats.revenusAnnuels
+          ).toLocaleString("fr-FR")}{" "}
+          €
         </div>
         <p className="mt-1 text-[11px] leading-relaxed text-muted-foreground">
-          C'est ce revenu, plus que la surface, qui fixe le prix d'un immeuble de rapport.
+          {stats.surLoyersAttendus
+            ? "Aucun lot loué aujourd'hui : montant calculé à partir des loyers attendus que vous saisissez."
+            : "C'est ce revenu, plus que la surface, qui fixe le prix d'un immeuble de rapport."}
         </p>
       </div>
 
       {/* Les loyers saisis sur les lots vides ne sont pas des revenus perçus :
-          ils ne peuvent pas grossir la ligne du dessus. Mais les taire donnait
-          l'impression qu'ils n'étaient pas pris en compte. */}
-      {stats.potentielVacance > 0 && (
+          ils ne peuvent pas grossir la ligne des revenus réels. Mais les taire
+          donnait l'impression qu'ils n'étaient pas pris en compte. Redondant
+          quand le chiffre principal affiche déjà le potentiel. */}
+      {stats.potentielVacance > 0 && !stats.surLoyersAttendus && (
         <div className="mt-4 rounded-[10px] border border-dashed border-sky-mid bg-sky/30 p-3">
           <div className="text-xs font-semibold text-sub">Une fois l'immeuble plein</div>
           <div className="font-display text-lg font-bold text-navy">
@@ -111,11 +124,13 @@ export function RentabilitePanel({ stats }: { stats: Stats }) {
       <div className="mt-5 rounded-[12px] border-2 border-primary/25 bg-primary/5 p-4">
         <div className="text-xs font-bold text-primary">À retenir</div>
         <p className="mt-1.5 text-xs leading-relaxed text-navy">
-          {stats.revenusAnnuels === 0
-            ? "Sans loyer déclaré, l'immeuble sera valorisé sur son seul patrimoine, ce qui le dessert le plus souvent."
-            : stats.tauxOccupation === 100
-              ? "Immeuble entièrement loué : le revenu est démontré, c'est l'argument le plus solide face à un investisseur."
-              : "Renseignez les loyers de tous les lots, y compris libres, pour montrer le revenu atteignable."}
+          {stats.surLoyersAttendus
+            ? "Immeuble vide mais loyers attendus chiffrés : un acquéreur y lira le revenu atteignable. Pensez à renseigner chaque lot."
+            : stats.revenusAnnuels === 0
+              ? "Sans loyer déclaré, l'immeuble sera valorisé sur son seul patrimoine, ce qui le dessert le plus souvent."
+              : stats.tauxOccupation === 100
+                ? "Immeuble entièrement loué : le revenu est démontré, c'est l'argument le plus solide face à un investisseur."
+                : "Renseignez les loyers de tous les lots, y compris libres, pour montrer le revenu atteignable."}
         </p>
       </div>
     </aside>
