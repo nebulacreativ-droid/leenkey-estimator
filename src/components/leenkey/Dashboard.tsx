@@ -105,16 +105,30 @@ export function EstimationDashboard({
         .join(", ") || "Dès que possible",
   );
 
-  // Cocher « je souhaite être contacté » ne déclenchait rien de visible : le
-  // vendeur arrivait sur son rapport sans savoir si sa demande était partie.
-  // La fenêtre s'ouvre donc d'elle-même, une seule fois, pour qu'il confirme.
-  const [rappelPropose, setRappelPropose] = useState(false);
-  useEffect(() => {
-    if (form.contact_conseiller && !rappelPropose) {
-      setRappelPropose(true);
-      setContactOpen(true);
+  // Cocher « je souhaite être contacté » suffit : la demande part toute seule,
+  // sans fenêtre de confirmation. Le bandeau vert du rapport et l'email de
+  // confirmation informent le vendeur ; Cédric reçoit l'alerte et rappelle.
+  // Garde en localStorage : sans elle, chaque rechargement de la page
+  // renverrait la demande (le state React ne survit pas au reload).
+  const [rappelEnvoye, setRappelEnvoye] = useState(() => {
+    try {
+      return localStorage.getItem(`lk_rappel_${ref_}`) === "1";
+    } catch {
+      return false;
     }
-  }, [form.contact_conseiller, rappelPropose]);
+  });
+  useEffect(() => {
+    if (form.contact_conseiller && !rappelEnvoye) {
+      setRappelEnvoye(true);
+      try {
+        localStorage.setItem(`lk_rappel_${ref_}`, "1");
+      } catch {
+        /* stockage indisponible : on tente quand même l'envoi unique */
+      }
+      void sendContactRequest();
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [form.contact_conseiller, rappelEnvoye]);
 
   const sendContactRequest = async () => {
     setContactStatus("sending");
