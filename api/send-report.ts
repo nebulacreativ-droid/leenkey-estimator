@@ -126,9 +126,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     }
 
     // Alerte Leenkey : un rapport demandé est un signal d'intention fort.
-    // Non bloquant — l'échec de cette notification ne doit pas priver le
-    // vendeur de son rapport.
-    void envoyer({
+    // Non bloquant pour le RÉSULTAT (une erreur n'empêche pas le 200), mais
+    // il faut await : Vercel gèle la fonction dès que la réponse part, un
+    // envoi lancé sans await est tué avant d'aboutir.
+    await envoyer({
       from: FROM_EMAIL,
       to: [ADMIN_EMAIL],
       reply_to: userEmail,

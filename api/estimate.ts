@@ -151,8 +151,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     return undefined;
   });
 
-  // Non bloquant : on n'attend pas l'envoi pour répondre au client.
-  sendLeadEmail({ payload, analyse, ref }).catch((e) =>
+  // Non bloquant pour le RÉSULTAT (une erreur n'empêche pas le 200), mais il
+  // faut await : Vercel gèle la fonction dès que la réponse part, un envoi
+  // lancé sans await est tué avant d'aboutir et le lead est perdu.
+  await sendLeadEmail({ payload, analyse, ref }).catch((e) =>
     console.error("sendLeadEmail failed (non-blocking):", e),
   );
 

@@ -177,8 +177,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       };
       if (attachments) clientPayload.attachments = attachments;
 
-      // Non-bloquant : on envoie au client mais on ne bloque pas l'admin si ça échoue
-      fetch("https://api.resend.com/emails", {
+      // Non bloquant pour le RÉSULTAT (une erreur n'empêche pas le 200), mais
+      // il faut await : Vercel gèle la fonction dès que la réponse part, un
+      // envoi lancé sans await est tué avant d'aboutir.
+      await fetch("https://api.resend.com/emails", {
         method: "POST",
         headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
         body: JSON.stringify(clientPayload),
