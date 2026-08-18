@@ -48,8 +48,16 @@ export function RentabilitePanel({ stats }: { stats: Stats }) {
 
       <div className="mt-5 grid grid-cols-2 gap-3">
         {[
-          { l: "Loyer moyen", v: `${stats.loyerMoyen.toLocaleString("fr-FR")} €`, u: "par mois" },
-          { l: "Loyer au m²", v: stats.loyerM2 ? `${stats.loyerM2} €` : "—", u: "par mois" },
+          {
+            l: stats.surLoyersAttendus ? "Loyer moyen attendu" : "Loyer moyen",
+            v: `${stats.loyerMoyen.toLocaleString("fr-FR")} €`,
+            u: "par mois",
+          },
+          {
+            l: stats.surLoyersAttendus ? "Loyer attendu au m²" : "Loyer au m²",
+            v: stats.loyerM2 ? `${stats.loyerM2} €` : "—",
+            u: "par mois",
+          },
         ].map((s) => (
           <div key={s.l} className="rounded-[10px] bg-sky/50 p-3">
             <div className="text-[11px] font-semibold text-sub">{s.l}</div>

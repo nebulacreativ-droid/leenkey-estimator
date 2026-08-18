@@ -98,14 +98,28 @@ export function statsLocatives(lots: Lot[]) {
   const loyerVideDeclare = vides.reduce((s, l) => s + (l.loyer_hc ?? 0), 0);
   const loyerVideEstime = vides.reduce((s, l) => s + (l.loyer_hc ?? (l.surface ?? 0) * loyerM2), 0);
 
+  // Quand rien n'est encore loué mais que des loyers attendus sont saisis sur
+  // les lots libres, « Loyer moyen » et « Loyer au m² » affichaient 0 € / — :
+  // le vendeur croyait ses saisies ignorées. On bascule alors ces deux tuiles
+  // sur les loyers attendus, et surLoyersAttendus permet de l'étiqueter.
+  // Affichage seulement : revenusAnnuels reste le revenu réellement perçu.
+  const videsChiffres = vides.filter((l) => (l.loyer_hc ?? 0) > 0);
+  const surLoyersAttendus = occupes.length === 0 && videsChiffres.length > 0;
+  const baseLots = surLoyersAttendus ? videsChiffres : occupes;
+  const baseMensuel = surLoyersAttendus ? loyerVideDeclare : loyerMensuel;
+  const baseSurface = baseLots.reduce((s, l) => s + (l.surface ?? 0), 0);
+  const loyerM2Affiche = baseSurface ? baseMensuel / baseSurface : 0;
+
   return {
     nbLots: lots.length,
     nbOccupes: occupes.length,
     revenusAnnuels: loyerMensuel * 12,
     chargesRecuperees: chargesMensuelles * 12,
     tauxOccupation: lots.length ? Math.round((occupes.length / lots.length) * 100) : 0,
-    loyerMoyen: occupes.length ? Math.round(loyerMensuel / occupes.length) : 0,
-    loyerM2: Math.round(loyerM2 * 10) / 10,
+    loyerMoyen: baseLots.length ? Math.round(baseMensuel / baseLots.length) : 0,
+    loyerM2: Math.round(loyerM2Affiche * 10) / 10,
+    /** true : loyerMoyen et loyerM2 reposent sur les loyers attendus des lots libres. */
+    surLoyersAttendus,
     /** Revenu annuel supplémentaire si les lots vides étaient loués. */
     potentielVacance: Math.round(loyerVideEstime * 12),
     /** Part de ce potentiel que le propriétaire a chiffrée lui-même. */
