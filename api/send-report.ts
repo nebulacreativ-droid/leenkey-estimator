@@ -82,7 +82,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     ${result.analyse ? `<h2 style="font-size:16px;color:#1156FC;margin:0 0 12px">📊 Analyse du marché</h2><p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 24px">${esc(result.analyse)}</p>` : ""}
 
     <div style="text-align:center;margin:32px 0">
-      <a href="https://leenkey-estimator-main.vercel.app/estimer" style="display:inline-block;background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">Retourner sur mon tableau de bord</a>
+      <a href="https://leenkey.fr/estimer" style="display:inline-block;background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">Retourner sur mon tableau de bord</a>
     </div>
 
     <p style="font-size:14px;line-height:1.7;color:#475569;margin:24px 0">Notre équipe reste à votre disposition pour vous accompagner.</p>

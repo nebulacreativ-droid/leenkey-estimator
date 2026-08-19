@@ -143,7 +143,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       return res.status(502).json({ error: "Email admin non envoyé", detail: errText });
     }
 
-    // ───── EMAIL 2 : Confirmation au client (avec PDF si fourni) ─────
+    // ───── EMAIL 2 : Confirmation au client ─────
+    // Le PDF fourni sert à l'alerte admin (Cédric prépare son appel avec) mais
+    // ne part JAMAIS au client ici : lui ne reçoit son rapport que s'il clique
+    // « Recevoir par email » (send-report). Cet email confirme la demande.
     if (sendToClient && clientEmail) {
       const htmlClient = `
 <!DOCTYPE html>
@@ -159,7 +162,6 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
       Nous avons bien reçu votre demande de contact. Un conseiller Leenkey vous contactera
       <strong>sous 48 heures, 7 j/7</strong> pour échanger avec vous sur votre projet de vente.
     </p>
-    ${pdfBase64 ? `<p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 18px">📎 Vous trouverez également <strong>votre rapport de valorisation complet en pièce jointe</strong> de cet email, à conserver précieusement.</p>` : ""}
     <p style="font-size:14px;line-height:1.7;color:#475569;margin:24px 0 0">À très vite,</p>
     <p style="font-size:14px;color:#0F172A;margin:4px 0 0"><strong>L'équipe Leenkey</strong></p>
   </div>
@@ -175,7 +177,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
         subject: `Votre demande de contact Leenkey est bien reçue`,
         html: htmlClient,
       };
-      if (attachments) clientPayload.attachments = attachments;
+      // Pas de pièce jointe côté client : le rapport ne part que via send-report.
 
       // Non bloquant pour le RÉSULTAT (une erreur n'empêche pas le 200), mais
       // il faut await : Vercel gèle la fonction dès que la réponse part, un

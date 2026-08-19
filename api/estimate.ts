@@ -338,69 +338,14 @@ ${
 </div>
 </body></html>`.trim();
 
-  // ───── EMAIL 2 : Propriétaire (son rapport) ─────
+  // Un seul email : l'alerte lead pour Leenkey. Le propriétaire, lui, ne
+  // reçoit rien à ce stade — son rapport ne part que s'il clique
+  // « Recevoir par email » (send-report), et la confirmation de rappel ne
+  // part que s'il a coché la case (contact, source rappel-conseiller).
+  // L'ancien email automatique « Votre rapport de valorisation » promettait
+  // un téléchargement qui n'existait pas et court-circuitait ce choix.
   const userEmail = String(contact.email ?? "").trim();
-  const htmlUser = `
-<!DOCTYPE html>
-<html><body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,sans-serif;color:#0F172A;">
-<div style="max-width:640px;margin:0 auto;background:#fff;border-radius:12px;overflow:hidden;border:1px solid #e2e8f0;">
-  <div style="background:linear-gradient(135deg,#3B82F6,#8B5CF6);padding:32px 24px;color:#fff;text-align:center;">
-    <div style="font-size:14px;font-weight:600;opacity:.85;letter-spacing:1.5px;text-transform:uppercase">Leenkey</div>
-    <h1 style="margin:8px 0 0;font-size:24px;">Votre rapport de valorisation</h1>
-    <p style="margin:8px 0 0;opacity:.9;font-size:14px;">Réf. ${esc(ref)}</p>
-  </div>
-  <div style="padding:32px 24px;">
-    <p style="font-size:15px;line-height:1.6;color:#0F172A;margin:0 0 20px">Bonjour <strong>${esc(contact.prenom)}</strong>,</p>
-    <p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 24px">Merci d'avoir utilisé Leenkey pour analyser la valeur de votre bien. Voici la synthèse de votre rapport personnalisé.</p>
-
-    <div style="background:linear-gradient(135deg,rgba(59,130,246,.08),rgba(139,92,246,.08));border-radius:12px;padding:24px;text-align:center;margin-bottom:24px">
-      <div style="font-size:13px;font-weight:600;color:#64748B;text-transform:uppercase;letter-spacing:1px">Valeur estimée</div>
-      <div style="font-size:38px;font-weight:800;color:#1156FC;margin:8px 0">${esc(result.prix_median)} €</div>
-      <div style="font-size:14px;color:#64748B">Fourchette : ${esc(result.prix_bas)} € — ${esc(result.prix_haut)} €</div>
-      <div style="font-size:14px;color:#64748B;margin-top:4px">${esc(result.prix_m2)} €/m² · ${esc(est.surface ?? bien.surface_habitable)} m²</div>
-    </div>
-
-    <h2 style="font-size:16px;color:#1156FC;margin:0 0 12px">🏡 Votre bien</h2>
-    <table style="width:100%;border-collapse:collapse;font-size:14px;margin-bottom:24px">
-      <tr><td style="padding:6px 8px;color:#64748B">Type</td><td style="padding:6px 8px;text-align:right;font-weight:600">${esc(bien.type)}</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B">Adresse</td><td style="padding:6px 8px;text-align:right">${esc(bien.adresse)}, ${esc(bien.code_postal)} ${esc(bien.ville)}</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B">Surface</td><td style="padding:6px 8px;text-align:right">${esc(est.surface ?? bien.surface_habitable)} m²</td></tr>
-      <tr><td style="padding:6px 8px;color:#64748B">Délai de vente estimé</td><td style="padding:6px 8px;text-align:right;font-weight:600">${esc(result.delai_vente)}</td></tr>
-    </table>
-
-    ${result.analyse ? `<h2 style="font-size:16px;color:#1156FC;margin:0 0 12px">📊 Analyse du marché</h2><p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 24px">${esc(result.analyse)}</p>` : ""}
-
-    <div style="text-align:center;margin:32px 0">
-      <a href="https://leenkey-estimator-main.vercel.app/estimer" style="display:inline-block;background:linear-gradient(135deg,#3B82F6,#8B5CF6);color:#fff;padding:14px 28px;border-radius:10px;text-decoration:none;font-weight:600;font-size:14px">Télécharger mon rapport PDF complet →</a>
-      <p style="font-size:12px;color:#94A3B8;margin:12px 0 0">Cliquez pour accéder à votre tableau de bord et télécharger votre rapport détaillé (4 pages).</p>
-    </div>
-
-    ${
-      contact.contact_conseiller
-        ? `<div style="background:#D1FAE5;border:2px solid #10B981;border-radius:12px;padding:16px;margin:24px 0">
-      <p style="margin:0;font-size:14px;color:#065F46"><strong>📞 Votre demande de rappel est enregistrée.</strong><br>Un conseiller Leenkey vous appelle sous 24 h au ${esc(contact.telephone)}${
-        Array.isArray(contact.disponibilites) && contact.disponibilites.length
-          ? `, selon vos disponibilités (${esc((contact.disponibilites as string[]).join(", "))})`
-          : ""
-      }.</p>
-    </div>`
-        : ""
-    }
-    <p style="font-size:14px;line-height:1.7;color:#475569;margin:24px 0">Notre équipe reste à votre disposition pour vous accompagner dans votre projet de vente.</p>
-    <p style="font-size:14px;color:#0F172A;margin:0"><strong>L'équipe Leenkey</strong></p>
-
-    <div style="margin-top:32px;padding:14px;background:#FEF3C7;border-radius:8px;border:1px solid #FCD34D">
-      <p style="font-size:11px;line-height:1.5;color:#78350F;margin:0"><strong>⚠️ Avertissement :</strong> ${esc(DISCLAIMER)} Les valeurs indiquées sont des ordres de grandeur basés sur des modèles statistiques et peuvent différer significativement du prix réel de vente. Pour une évaluation officielle opposable, consultez un expert immobilier agréé.</p>
-    </div>
-  </div>
-  <div style="background:#f8fafc;padding:16px 24px;color:#64748B;font-size:11px;text-align:center;border-top:1px solid #e2e8f0">
-    Leenkey · Vendez votre bien autrement · Moins de frais, plus de contrôle
-  </div>
-</div>
-</body></html>`.trim();
-
-  // Envoi parallèle des 2 emails
-  const adminEmailPromise = fetch("https://api.resend.com/emails", {
+  const adminRes = await fetch("https://api.resend.com/emails", {
     method: "POST",
     headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
@@ -411,19 +356,7 @@ ${
       reply_to: userEmail || undefined,
     }),
   });
-
-  const userEmailPromise = userEmail
-    ? fetch("https://api.resend.com/emails", {
-        method: "POST",
-        headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
-        body: JSON.stringify({
-          from: FROM_EMAIL,
-          to: [userEmail],
-          subject: `Votre rapport de valorisation Leenkey — ${result.prix_median} €`,
-          html: htmlUser,
-        }),
-      })
-    : Promise.resolve();
-
-  await Promise.all([adminEmailPromise, userEmailPromise]);
+  if (!adminRes.ok) {
+    console.error("Alerte lead non envoyée:", await adminRes.text());
+  }
 }
