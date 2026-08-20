@@ -148,6 +148,10 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     // ne part JAMAIS au client ici : lui ne reçoit son rapport que s'il clique
     // « Recevoir par email » (send-report). Cet email confirme la demande.
     if (sendToClient && clientEmail) {
+      // Le site promet 24 h pour le rappel conseiller (bandeau du rapport),
+      // 48 h 7 j/7 pour les formulaires de contact : l'email doit dire pareil.
+      const delai =
+        source === "rappel-conseiller" ? "sous 24 heures, 7 j/7" : "sous 48 heures, 7 j/7";
       const htmlClient = `
 <!DOCTYPE html>
 <html><body style="margin:0;padding:24px;background:#f8fafc;font-family:-apple-system,sans-serif;color:#0F172A;">
@@ -160,7 +164,7 @@ export default async function handler(req: VercelRequest, res: VercelResponse) {
     <p style="font-size:15px;line-height:1.6;color:#0F172A;margin:0 0 20px">Bonjour ${escapeHtml(prenom)},</p>
     <p style="font-size:14px;line-height:1.7;color:#475569;margin:0 0 18px">
       Nous avons bien reçu votre demande de contact. Un conseiller Leenkey vous contactera
-      <strong>sous 48 heures, 7 j/7</strong> pour échanger avec vous sur votre projet de vente.
+      <strong>${delai}</strong> pour échanger avec vous sur votre projet de vente.
     </p>
     <p style="font-size:14px;line-height:1.7;color:#475569;margin:24px 0 0">À très vite,</p>
     <p style="font-size:14px;color:#0F172A;margin:4px 0 0"><strong>L'équipe Leenkey</strong></p>
