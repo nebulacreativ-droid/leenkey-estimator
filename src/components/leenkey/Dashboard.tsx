@@ -609,11 +609,23 @@ export function EstimationDashboard({
               {[
                 { i: "✅", l: "Rapport généré", done: true },
                 {
-                  i: "📧",
-                  l: `Rapport détaillé envoyé à ${form.email || "votre email"}`,
-                  done: false,
+                  // Suit l'envoi réel : figé sur « envoyé » non coché, la liste
+                  // contredisait le panneau « Rapport envoyé » d'à côté.
+                  i: emailStatus === "sent" ? "✅" : "📧",
+                  l:
+                    emailStatus === "sent"
+                      ? `Rapport détaillé envoyé à ${form.email || "votre email"}`
+                      : "Recevoir le rapport détaillé par email",
+                  done: emailStatus === "sent",
                 },
-                { i: "📞", l: "Appel avec un conseiller Leenkey", done: false },
+                {
+                  i: rappelEnvoye || contactStatus === "sent" ? "✅" : "📞",
+                  l:
+                    rappelEnvoye || contactStatus === "sent"
+                      ? "Rappel demandé — un conseiller vous appelle sous 24 h"
+                      : "Appel avec un conseiller Leenkey",
+                  done: rappelEnvoye || contactStatus === "sent",
+                },
                 { i: "🏷️", l: "Mise en vente sans agence", done: false },
               ].map((it, i) => (
                 <li
